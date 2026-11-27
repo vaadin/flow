@@ -132,6 +132,7 @@ import com.vaadin.flow.dom.JsFunction;
  * @see JsInvokers
  * @see JsSnippets
  * @see JsExpression
+ * @see JsDefinitionImport
  * @see Element#executeJs(Class)
  * @see Page#executeJs(Class)
  * @see JsSnippets#of(Class)

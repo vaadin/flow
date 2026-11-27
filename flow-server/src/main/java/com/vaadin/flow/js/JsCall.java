@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.internal.JsDefinitionImports;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
@@ -190,7 +191,10 @@ public record JsCall(Class<?> definitionType, String methodName,
      * declare the same JavaScript are different functions, and so are two
      * snippets called with different parameters. A method annotated with
      * {@link JsWithExecutionContext} is generated with the execution context as
-     * a leading parameter, and is told apart the same way.
+     * a leading parameter, and is told apart the same way. The
+     * {@link JsDefinitionImport imports} of the interface that declares the
+     * method are hashed with it too, so the same JavaScript with other imports
+     * is another function.
      *
      * @param method
      *            a method annotated with {@link JsExpression}, not
@@ -201,6 +205,19 @@ public record JsCall(Class<?> definitionType, String methodName,
      *             declares parameter names that can not be generated
      */
     public static String functionId(Method method) {
+        String functionId = functionIdWithoutImports(method);
+        String imports = JsDefinitionImports.describe(
+                JsDefinitionImports.collect(method.getDeclaringClass()));
+        if (imports.isEmpty()) {
+            return functionId;
+        }
+        // Nothing else is hashed from what starts with "imports", and the
+        // identifier it ends with tells apart the kinds of function
+        return StringUtil.getHash("imports" + imports + ":" + functionId,
+                StandardCharsets.UTF_8);
+    }
+
+    private static String functionIdWithoutImports(Method method) {
         JsExpression annotation = method.getAnnotation(JsExpression.class);
         if (annotation == null) {
             throw new IllegalArgumentException("Method " + method.getName()
@@ -288,9 +305,7 @@ public record JsCall(Class<?> definitionType, String methodName,
         }
         List<String> names = List.of(annotation.value());
         for (String name : names) {
-            if (!IDENTIFIER.matcher(name).matches()
-                    || RESERVED_WORDS.contains(name)
-                    || CAPTURE_NAME.matcher(name).matches()) {
+            if (!isParameterName(name)) {
                 throw new IllegalArgumentException("Method " + method.getName()
                         + " of " + method.getDeclaringClass().getName()
                         + " declares '" + name
@@ -307,6 +322,18 @@ public record JsCall(Class<?> definitionType, String methodName,
                     + names);
         }
         return names;
+    }
+
+    /**
+     * Checks whether the given name can name a parameter of a generated
+     * function: it is a JavaScript identifier that is not a reserved word and
+     * not one of <code>$0</code>, <code>$1</code>, &hellip;, which name the
+     * arguments of the call.
+     */
+    static boolean isParameterName(String name) {
+        return IDENTIFIER.matcher(name).matches()
+                && !RESERVED_WORDS.contains(name)
+                && !CAPTURE_NAME.matcher(name).matches();
     }
 
     /**

@@ -28,9 +28,12 @@ import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -55,6 +58,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.internal.JsDefinitionImports;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 /**
@@ -209,8 +213,10 @@ public final class JsDefinitionProxy {
      *             if the type is not an interface, is not annotated with
      *             {@link JsDefinition}, extends neither or both of
      *             {@link JsInvokers} and {@link JsSnippets}, is annotated with
-     *             {@link JsFunctionParameterNames}, or has a method that does
-     *             not fit what the definition declares
+     *             {@link JsFunctionParameterNames}, has a method that does not
+     *             fit what the definition declares, or has a method declared by
+     *             an interface whose {@link JsDefinitionImport imports} can not
+     *             be generated
      */
     public static Kind checkDefinition(Class<?> definitionType) {
         if (!definitionType.isInterface()) {
@@ -290,6 +296,10 @@ public final class JsDefinitionProxy {
         List<String> unanswerable = new ArrayList<>();
         List<String> untyped = new ArrayList<>();
         List<String> inJava = new ArrayList<>();
+        // The definition itself, even when it declares no methods, so that
+        // an import it can not have is not ignored
+        Set<Class<?>> importingTypes = new LinkedHashSet<>();
+        importingTypes.add(definitionType);
         // Not the shared mapper's factory, whose cache would keep the classes
         // of the project that the build checks reachable after the build
         TypeFactory types = TypeFactory.createDefaultInstance();
@@ -308,6 +318,7 @@ public final class JsDefinitionProxy {
                 undeclared.add(method.getName());
                 continue;
             }
+            importingTypes.add(method.getDeclaringClass());
             if (!snippets && method.getReturnType() == JavaScriptResult.class
                     && typedResultType(method, definitionType, types) == null) {
                 untyped.add(method.getName());
@@ -360,6 +371,75 @@ public final class JsDefinitionProxy {
                     + " that declares JavaScript is for. Annotate every method"
                     + " with @JsExpression, and compose the calls in the class"
                     + " that makes them");
+        }
+        for (Class<?> importingType : importingTypes) {
+            checkImports(definitionType, importingType, snippets);
+        }
+    }
+
+    /**
+     * Checks the {@link JsDefinitionImport imports} of an interface that
+     * declares methods of the given definition: they are only for a definition
+     * whose functions are asynchronous and run what was declared, every one of
+     * them names something, and every name can be a parameter of the generated
+     * function, once.
+     */
+    private static void checkImports(Class<?> definitionType,
+            Class<?> importingType, boolean snippets) {
+        JsDefinitionImport[] imports = importingType
+                .getDeclaredAnnotationsByType(JsDefinitionImport.class);
+        if (imports.length == 0) {
+            return;
+        }
+        String declarer = importingType == definitionType
+                ? definitionType.getName()
+                : definitionType.getName() + " extends "
+                        + importingType.getName() + ", which";
+        if (snippets) {
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport, which only"
+                    + " applies to an interface that extends JsInvokers. The"
+                    + " function of a snippet is not asynchronous, so it can"
+                    + " not wait for a module to load");
+        }
+        if (definitionType.isAnnotationPresent(JsStringFallback.class)) {
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport, which does not"
+                    + " apply to an interface annotated with"
+                    + " @JsStringFallback: the string it stands in for can not"
+                    + " name what a module exports");
+        }
+        Set<String> names = new HashSet<>();
+        for (JsDefinitionImport declared : imports) {
+            List<JsDefinitionImports.Binding> bindings = JsDefinitionImports
+                    .bindings(declared);
+            if (bindings.isEmpty()) {
+                throw new IllegalArgumentException(declarer
+                        + " has @JsDefinitionImport(from = \"" + declared.from()
+                        + "\") with no names to import. Declare a"
+                        + " defaultExport, a namespace or exports, or use"
+                        + " @JsModule to load the module for its side effects");
+            }
+            for (JsDefinitionImports.Binding binding : bindings) {
+                String name = binding.name();
+                if (!JsCall.isParameterName(name)
+                        || JsDefinitionImports.EXECUTION_CONTEXT.equals(name)) {
+                    throw new IllegalArgumentException(declarer + " declares '"
+                            + name + "' in @JsDefinitionImport(from = \""
+                            + declared.from() + "\"), which can not be"
+                            + " imported as a name. Use a JavaScript"
+                            + " identifier that is not a reserved word, not"
+                            + " $0, $1, ..., which name the arguments, and"
+                            + " not " + JsDefinitionImports.EXECUTION_CONTEXT
+                            + ". Import a module whose export can not be"
+                            + " named so as a namespace");
+                }
+                if (!names.add(name)) {
+                    throw new IllegalArgumentException(declarer + " declares '"
+                            + name + "' more than once in @JsDefinitionImport."
+                            + " Import one of them as a namespace");
+                }
+            }
         }
     }
 

@@ -116,6 +116,28 @@ class FrontendModuleResolver {
         return jsImport;
     }
 
+    /**
+     * Resolves the path of a module to the path a generated file imports it by,
+     * wherever that file is: a file of the frontend folder or of a jar, which
+     * is named with a path starting with {@code ./}, is imported through the
+     * {@value FrontendUtils#FRONTEND_FOLDER_ALIAS} alias, and an npm package as
+     * it is. Unlike {@link #toValidBrowserImport(String)}, a path starting with
+     * {@code ./} is resolved even before the file is there, since the frontend
+     * files of jars are copied after some files that import them are generated.
+     *
+     * @param modulePath
+     *            the path as it is declared, not <code>null</code>
+     * @return the path to import the module by, not <code>null</code>
+     */
+    String resolveImport(String modulePath) {
+        String resolved = resolveResource(modulePath);
+        if (resolved.startsWith("./")) {
+            return FRONTEND_FOLDER_ALIAS
+                    + STARTING_DOT_SLASH.matcher(resolved).replaceFirst("");
+        }
+        return toValidBrowserImport(resolved);
+    }
+
     private boolean hasMetaInfResource(String resource) {
         return classFinder.getResource(
                 RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null

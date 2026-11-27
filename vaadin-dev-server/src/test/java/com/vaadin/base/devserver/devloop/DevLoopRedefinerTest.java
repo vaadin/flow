@@ -44,6 +44,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -300,6 +301,30 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(EnterFallbacks.class));
         assertNotEquals(imports,
                 DevLoopRedefiner.frontendDependencies(UnmarkedFallbacks.class));
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface GridImportJs extends JsInvokers {
+        @JsExpression("grid.refresh(this)")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./list.js", namespace = "grid")
+    interface ListImportJs extends JsInvokers {
+        @JsExpression("grid.refresh(this)")
+        void refresh();
+    }
+
+    @Test
+    void frontendDependencies_seesTheImportsOfADefinition() {
+        // The modules are loaded by the generated function, so importing
+        // another one changes what the browser has to run while the
+        // expression stays the same
+        assertNotEquals(
+                DevLoopRedefiner.frontendDependencies(GridImportJs.class),
+                DevLoopRedefiner.frontendDependencies(ListImportJs.class));
     }
 
     // Only extended by definitions, so not annotated

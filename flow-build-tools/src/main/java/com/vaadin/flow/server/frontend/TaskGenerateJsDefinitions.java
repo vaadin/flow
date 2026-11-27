@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -60,6 +61,7 @@ import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
@@ -67,6 +69,8 @@ import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.js.JsStringFallback;
+import com.vaadin.flow.js.internal.JsDefinitionImports;
+import com.vaadin.flow.js.internal.JsDefinitionImports.ModuleImport;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -82,8 +86,10 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * JavaScript when called, in another for those of them that are annotated with
  * {@link JsWithExecutionContext} and take the execution context as their first
  * parameter, and in a third for the methods that declare a {@link JsSnippet},
- * which the client turns into a function when it decodes the snippet. A
- * definition that does not pass
+ * which the client turns into a function when it decodes the snippet. A method
+ * declared by an interface with {@link JsDefinitionImport imports} loads their
+ * modules the first time it is called, and its JavaScript gets what they export
+ * as parameters. A definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
  * in the log.
  * <p>
@@ -128,7 +134,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     // What the declared JavaScript of a function that gets the execution
     // context calls it by
-    private static final String EXECUTION_CONTEXT = "$executionContext";
+    private static final String EXECUTION_CONTEXT = JsDefinitionImports.EXECUTION_CONTEXT;
 
     // A function that gets the execution context is kept apart from the
     // others, so that being found here is what tells the client to pass it:
@@ -385,7 +391,44 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             definitions = definitions.stream().filter(needed).toList();
             eventTypes = eventTypes.stream().filter(needed).toList();
         }
-        return render(definitions, eventTypes, !options.isProductionMode());
+        reportMisplacedImports(classFinder);
+        return render(definitions, eventTypes, !options.isProductionMode(),
+                createImportResolver(options));
+    }
+
+    /**
+     * Reports the types annotated with {@link JsDefinitionImport} that no
+     * definition can import anything through, since they are not an interface
+     * that a definition can extend. Logged rather than failing the build, which
+     * would break every application that has the type on its class path, an
+     * add-on its developer can not fix among them. An interface that extends
+     * {@link JsSnippets} is reported by the definitions that extend it, as for
+     * any other mistake in what a definition declares.
+     */
+    private static void reportMisplacedImports(ClassFinder classFinder) {
+        Set<Class<?>> annotated = new LinkedHashSet<>(
+                classFinder.getAnnotatedClasses(JsDefinitionImport.class));
+        annotated.addAll(classFinder
+                .getAnnotatedClasses(JsDefinitionImport.Container.class));
+        annotated.stream()
+                .filter(type -> !type.isInterface()
+                        || !(JsInvokers.class.isAssignableFrom(type)
+                                || JsSnippets.class.isAssignableFrom(type)))
+                .sorted(Comparator.comparing(Class::getName))
+                .forEach(type -> getLogger().error(
+                        "Ignoring @JsDefinitionImport on {}, which only applies"
+                                + " to an interface that extends JsInvokers",
+                        type.getName()));
+    }
+
+    /**
+     * Resolves the module of a {@link JsDefinitionImport} to the path the
+     * generated file imports it by.
+     */
+    private static UnaryOperator<String> createImportResolver(Options options) {
+        FrontendModuleResolver resolver = new FrontendModuleResolver(options,
+                getLogger());
+        return resolver::resolveImport;
     }
 
     /**
@@ -478,10 +521,38 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     static Rendered render(Collection<Class<?>> definitions,
             Collection<Class<?>> eventTypes, boolean withNames) {
+        // The modules of imports are rendered as declared, which is enough
+        // for what has no files to resolve them against
+        return render(definitions, eventTypes, withNames,
+                UnaryOperator.identity());
+    }
+
+    /**
+     * Renders the file that registers the JavaScript of the given definition
+     * interfaces and the {@link EventData} values of the given event types that
+     * {@link BundledEventData} puts into the bundle, together with the
+     * identifiers of the functions it registers.
+     *
+     * @param definitions
+     *            the JavaScript definitions to render, not <code>null</code>
+     * @param eventTypes
+     *            the classes annotated with {@link DomEvent} to render the
+     *            event data of, not <code>null</code>
+     * @param withNames
+     *            whether to register what a message about a call names it by,
+     *            which is for a development bundle
+     * @param importResolver
+     *            turns the module of a {@link JsDefinitionImport} into the path
+     *            the file imports it by, not <code>null</code>
+     * @return the content of the file and the functions it registers
+     */
+    static Rendered render(Collection<Class<?>> definitions,
+            Collection<Class<?>> eventTypes, boolean withNames,
+            UnaryOperator<String> importResolver) {
         List<RenderedFunction> functions = new ArrayList<>();
         definitions.stream().sorted(Comparator.comparing(Class::getName))
-                .forEach(definition -> functions
-                        .addAll(renderFunctions(definition, withNames)));
+                .forEach(definition -> functions.addAll(renderFunctions(
+                        definition, withNames, importResolver)));
         functions.addAll(
                 renderEventDataFunctions(eventTypes, definitions, withNames));
 
@@ -700,8 +771,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> findMissingFromGeneratedFile(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
+        UnaryOperator<String> importResolver = createImportResolver(options);
         return definitions.stream()
-                .filter(definition -> !isInGeneratedFile(definition, generated))
+                .filter(definition -> !isInGeneratedFile(definition, generated,
+                        importResolver))
                 .toList();
     }
 
@@ -755,7 +828,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> updateJsDefinitions(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        String content = withMissingEntries(generated, definitions);
+        UnaryOperator<String> importResolver = createImportResolver(options);
+        String content = withMissingEntries(generated, definitions,
+                importResolver);
 
         TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
         try {
@@ -764,8 +839,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             getLogger().debug("Could not write {}", task.getGeneratedFile(), e);
             // The file is as it was, so only what it was already missing is
             // missing now
-            return definitions.stream().filter(
-                    definition -> !isInGeneratedFile(definition, generated))
+            return definitions.stream()
+                    .filter(definition -> !isInGeneratedFile(definition,
+                            generated, importResolver))
                     .toList();
         }
         // Everything asked for went into the content that was written
@@ -781,7 +857,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * calling it.
      */
     private static boolean isInGeneratedFile(Class<?> definition,
-            String generated) {
+            String generated, UnaryOperator<String> importResolver) {
         if (generated == null) {
             return false;
         }
@@ -791,7 +867,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         boolean eventDataInFile = findFallbackEventData(definition).stream()
                 .allMatch(data -> generated.contains(renderEventDataFunction(
                         data.functionId(), data.expression())));
-        List<String> declared = renderDefinitionLines(definition, true);
+        List<String> declared = renderDefinitionLines(definition, true,
+                importResolver);
         if (declared.isEmpty()) {
             // Declares no JavaScript of its own to carry
             return eventDataInFile;
@@ -812,14 +889,16 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * than for everything an application declares.
      */
     private static String withMissingEntries(String generated,
-            Collection<Class<?>> definitions) {
+            Collection<Class<?>> definitions,
+            UnaryOperator<String> importResolver) {
         if (generated == null || generated.isBlank()) {
-            return renderFileContent(definitions, true);
+            return render(definitions, List.of(), true, importResolver)
+                    .content();
         }
         List<String> missing = new ArrayList<>(definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
-                .flatMap(definition -> renderFunctions(definition, true)
-                        .stream().map(RenderedFunction::text))
+                .flatMap(definition -> renderFunctions(definition, true,
+                        importResolver).stream().map(RenderedFunction::text))
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
@@ -910,12 +989,15 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *
      * @param definition
      *            the JavaScript definition to render, not <code>null</code>
+     * @param importResolver
+     *            turns the module of a {@link JsDefinitionImport} into the path
+     *            the file imports it by, not <code>null</code>
      * @return the lines this definition contributes, empty if it declares no
      *         JavaScript
      */
     static List<String> renderDefinitionLines(Class<?> definition,
-            boolean withNames) {
-        return renderFunctions(definition, withNames).stream()
+            boolean withNames, UnaryOperator<String> importResolver) {
+        return renderFunctions(definition, withNames, importResolver).stream()
                 .flatMap(function -> Arrays
                         .stream(function.text().split(System.lineSeparator())))
                 .toList();
@@ -926,7 +1008,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * method that declares JavaScript, each as the lines it is written as.
      */
     private static List<RenderedFunction> renderFunctions(Class<?> definition,
-            boolean withNames) {
+            boolean withNames, UnaryOperator<String> importResolver) {
         boolean snippets;
         try {
             snippets = JsDefinitionProxy
@@ -1000,12 +1082,17 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                                 ? (parameters.isEmpty() ? EXECUTION_CONTEXT
                                         : EXECUTION_CONTEXT + ", " + parameters)
                                 : parameters));
+                List<ModuleImport> imports = JsDefinitionImports
+                        .collect(method.getDeclaringClass());
                 if (JsStringFallbacks.isStringFallbackCall(definition,
                         method)) {
                     // Sees the element as the parameter after the arguments,
                     // as the string it stands in for does
                     function.addAll(JsStringFallbacks.stringFallbackBody(
                             expression, method.getParameterCount()));
+                } else if (!imports.isEmpty()) {
+                    function.addAll(renderImportingBody(expression, imports,
+                            importResolver));
                 } else {
                     function.add(expression);
                 }
@@ -1021,6 +1108,38 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     String.join(System.lineSeparator(), function)));
         }
         return functions;
+    }
+
+    /**
+     * Renders the body of a function whose JavaScript gets names from modules:
+     * it loads the modules, which a browser does once and then answers from
+     * what it loaded, and runs the JavaScript in a function that gets the names
+     * as parameters, with the same <code>this</code>. The arguments of the call
+     * and the execution context are seen from the outer function, since no name
+     * can be one of theirs.
+     */
+    private static List<String> renderImportingBody(String expression,
+            List<ModuleImport> imports, UnaryOperator<String> importResolver) {
+        List<String> modules = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+        for (int index = 0; index < imports.size(); index++) {
+            ModuleImport module = imports.get(index);
+            modules.add("import(" + quote(importResolver.apply(module.from()))
+                    + ")");
+            for (JsDefinitionImports.Binding binding : module.bindings()) {
+                names.add(binding.name());
+                values.add("$modules[" + index + "]"
+                        + (binding.export() == null ? ""
+                                : "[" + quote(binding.export()) + "]"));
+            }
+        }
+        return List.of(
+                "  const $modules = await Promise.all(["
+                        + String.join(", ", modules) + "]);",
+                "  return (async function (" + String.join(", ", names) + ") {",
+                expression,
+                "  }).call(this, " + String.join(", ", values) + ");");
     }
 
     /**
