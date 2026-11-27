@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1403,7 +1404,7 @@ final class DevLoopRedefiner {
             signatures.add(
                     "f:" + field.getName() + ":" + field.getType().getName());
         }
-        java.util.Collections.sort(signatures);
+        signatures.sort(Comparator.naturalOrder());
         return String.join(";", signatures);
     }
 
@@ -1525,7 +1526,7 @@ final class DevLoopRedefiner {
             imports.add("theme:" + theme.value() + ":" + theme.variant() + ":"
                     + theme.themeClass().getName());
         }
-        java.util.Collections.sort(imports);
+        imports.sort(Comparator.naturalOrder());
         return String.join(";", imports);
     }
 
@@ -1631,7 +1632,7 @@ final class DevLoopRedefiner {
         // Sorted because the order the compiler reports them in is the order
         // they were written in, and moving one along the clause is not a
         // change to what the class is.
-        java.util.Collections.sort(interfaces);
+        interfaces.sort(Comparator.naturalOrder());
         names.addAll(interfaces);
         return String.join(";", names);
     }
@@ -1697,7 +1698,7 @@ final class DevLoopRedefiner {
                 }
                 interfaces.add("implements:" + implemented);
             }
-            java.util.Collections.sort(interfaces);
+            interfaces.sort(Comparator.naturalOrder());
             names.addAll(interfaces);
             return String.join(";", names);
         } catch (RuntimeException e) {
