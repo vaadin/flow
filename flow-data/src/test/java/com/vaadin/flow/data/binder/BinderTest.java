@@ -587,6 +587,37 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    void changeDetection_writeBean_writtenValueBecomesNewOriginalValue()
+            throws ValidationException {
+        Person person = new Person();
+        person.setFirstName("Foo");
+
+        Binder<Person> binder = new Binder<>();
+        binder.setChangeDetectionEnabled(true);
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.withValidator(p -> !"Invalid".equals(p.getFirstName()),
+                "Invalid name");
+
+        binder.readBean(person);
+        nameField.setValue("Bar");
+        binder.writeBean(person);
+        assertFalse(binder.hasChanges());
+
+        nameField.setValue("Foo");
+        assertTrue(binder.hasChanges());
+
+        nameField.setValue("Bar");
+        assertFalse(binder.hasChanges());
+
+        // A failed write keeps the previous baseline
+        nameField.setValue("Invalid");
+        assertThrows(ValidationException.class, () -> binder.writeBean(person));
+        nameField.setValue("Bar");
+        assertFalse(binder.hasChanges());
+    }
+
+    @Test
     void update_to_initial_value_does_not_remove_binding_from_changedBindings_by_default()
             throws ValidationException {
         Person person = new Person();
@@ -2973,6 +3004,34 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Check that invalid record writing fails
         ageField.setValue("invalid value");
         assertThrows(ValidationException.class, () -> binder.writeRecord());
+    }
+
+    @Test
+    void changeDetection_writeRecord_writtenValueBecomesNewOriginalValue()
+            throws ValidationException {
+        Binder<TestRecord> binder = new Binder<>(TestRecord.class);
+        binder.setChangeDetectionEnabled(true);
+        TestTextField nameField = new TestTextField();
+        TestTextField ageField = new TestTextField();
+        binder.forField(ageField)
+                .withConverter(
+                        new StringToIntegerConverter(0, "Failed to convert"))
+                .bind("age");
+        binder.forField(nameField).bind("name");
+        binder.readRecord(new TestRecord("Foo", 42));
+
+        nameField.setValue("Bar");
+        ageField.setValue("43");
+        binder.writeRecord();
+        assertFalse(binder.hasChanges());
+
+        nameField.setValue("Foo");
+        ageField.setValue("42");
+        assertTrue(binder.hasChanges());
+
+        nameField.setValue("Bar");
+        ageField.setValue("43");
+        assertFalse(binder.hasChanges());
     }
 
     private TestTextField createNullRejectingFieldWithEmptyValue(
