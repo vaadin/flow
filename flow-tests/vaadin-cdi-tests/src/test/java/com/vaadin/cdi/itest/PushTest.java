@@ -65,9 +65,9 @@ public class PushTest extends AbstractCdiTest {
         getDriver().get(getTestURL() + "websocket-xhr");
         click(PushComponent.RUN_BACKGROUND);
         waitForPush();
+        assertAllExceptRequestAndSessionActive();
         new PushConnectionTracker(getDriver())
                 .assertOnlyTransport(Transport.WEBSOCKET_XHR);
-        assertAllExceptRequestAndSessionActive();
     }
 
     @Test
@@ -85,9 +85,9 @@ public class PushTest extends AbstractCdiTest {
         getDriver().get(getTestURL() + "websocket");
         click(PushComponent.RUN_BACKGROUND);
         waitForPush();
+        assertAllExceptRequestAndSessionActive();
         new PushConnectionTracker(getDriver())
                 .assertOnlyTransport(Transport.WEBSOCKET);
-        assertAllExceptRequestAndSessionActive();
     }
 
     @Test

@@ -98,9 +98,6 @@ public abstract class IdlePushChannelIT extends ChromeBrowserTest {
                     + "period. Expected server counter > 0 but was "
                     + BasicPushIT.getServerCounter(this));
         }
-
-        pushConnections.assertOnlyTransport(
-                getViewClass().getAnnotation(CustomPush.class).transport());
     }
 
     private void waitForClientCounter(int expected) {

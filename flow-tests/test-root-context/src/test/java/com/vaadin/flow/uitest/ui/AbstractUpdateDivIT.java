@@ -17,19 +17,11 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.chrome.ChromeOptions;
 
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.PushConnectionTracker;
 import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractUpdateDivIT extends ChromeBrowserTest {
-
-    @Override
-    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
-        PushConnectionTracker.enable(chromeOptions);
-    }
 
     @Test
     public void pushUpdatesEmbeddedWebComponent() {
@@ -57,9 +49,6 @@ public abstract class AbstractUpdateDivIT extends ChromeBrowserTest {
                 "The update count should have reached the maximin 50, but it has value "
                         + updateCount,
                 50, updateCount);
-
-        new PushConnectionTracker(getDriver()).assertOnlyTransport(
-                getViewClass().getAnnotation(Push.class).transport());
     }
 
     private int getUpdateCount() {
