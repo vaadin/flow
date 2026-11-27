@@ -291,11 +291,18 @@ export class Flow {
         };
 
         if (this.isUiTerminated()) {
-          // A stopped UI cannot show the route
+          // A stopped UI cannot show the route, so load the target as a new
+          // page, which starts a new UI. Not the page already loaded: its UI
+          // may have stopped while starting, and loading it again could loop.
           serverConnected(true);
+          const target = ctx.pathname + (ctx.search ?? '');
+          if (target !== window.location.pathname + window.location.search) {
+            this.loadPage(target);
+          }
           return;
         }
-        // Cancel the navigation if the UI stops before the server answers
+        // Cancel the navigation if the UI stops before the server answers,
+        // which keeps the error notification of the stop on screen
         this.settleRoundTrip = () => serverConnected(true);
 
         // Call server side to navigate to the given route
@@ -572,6 +579,11 @@ export class Flow {
 
   private isFlowClientLoaded(): boolean {
     return this.response !== undefined;
+  }
+
+  // Loads the given URL as a new page.
+  private loadPage(url: string): void {
+    window.location.assign(url);
   }
 
   // The client of the UI this router navigates in. Exported web components on

@@ -417,12 +417,15 @@ describe('Flow', () => {
 
   it('should cancel a server navigation when the UI stops before the server answers it', async () => {
     failingEvent = 'ui-navigate';
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
     const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
     const cmd = { prevent: () => 'prevented' };
 
     expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
+    // The error notification stays on screen
+    expect(loadPage.called).to.be.false;
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
@@ -456,7 +459,8 @@ describe('Flow', () => {
     expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, leave))).to.equal('continued');
   });
 
-  it('should cancel a server navigation when the UI stopped while the client started', async () => {
+  it('should load other routes as a new page when the UI stopped while the client started', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
     stubServerRemoteFunction('foobar-12345');
     server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
       req.respond(
@@ -465,10 +469,18 @@ describe('Flow', () => {
         createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
       );
     });
-    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    const { pathname, search } = window.location;
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname, search });
     const cmd = { prevent: () => 'prevented' };
 
-    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
+    // The initial navigation to the page already loaded is cancelled, as
+    // loading it again could stop the same way
+    expect(await settledSoon(elem.onBeforeEnter({ pathname, search }, cmd))).to.equal('prevented');
+    expect(loadPage.called).to.be.false;
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: '/Foo', search: '?a=1' }, cmd))).to.equal('prevented');
+    expect(loadPage.calledOnceWith('/Foo?a=1')).to.be.true;
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
