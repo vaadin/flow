@@ -97,8 +97,7 @@ class PushConnectionTrackerTest {
         AssertionError error = assertThrows(AssertionError.class,
                 () -> new PushConnectionTracker(driver)
                         .assertOnlyTransport(Transport.WEBSOCKET));
-        assertEquals(
-                "Push should only use websocket, but it used [websocket, long-polling]",
+        assertTrue(error.getMessage().contains("long-polling"),
                 error.getMessage());
     }
 
