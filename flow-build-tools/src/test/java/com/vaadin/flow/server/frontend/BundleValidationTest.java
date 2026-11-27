@@ -1207,11 +1207,14 @@ class BundleValidationTest {
         doReturn(Set.of(ImportingBundledJs.class)).when(finder)
                 .getAnnotatedClasses(JsDefinition.class);
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
-        // Found in a jar, so imported from where the build copies it
-        doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
-                .toURL()).when(finder)
-                .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
-                        + "/definition-addon.js");
+        // Found in a jar, so imported from where the build copies it. A jar
+        // that is gone takes the file off the class path too.
+        if (addonContent != null) {
+            doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
+                    .toURL()).when(finder)
+                    .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
+                            + "/definition-addon.js");
+        }
         File projectFile = new File(options.getFrontendDirectory(),
                 "definition-project.js");
         FileUtils.forceMkdir(projectFile.getParentFile());
