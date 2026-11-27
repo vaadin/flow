@@ -3179,8 +3179,14 @@ public class Binder<BEAN> implements Serializable {
             boolean validatorsDisabledStatus = isValidatorsDisabled();
             setValidatorsDisabled(true);
             Map<Binding<BEAN, ?>, Result<?>> writtenValues = new LinkedHashMap<>();
-            currentBindings.forEach(binding -> writtenValues.put(binding,
-                    ((BindingImpl<BEAN, ?, ?>) binding).writeFieldValue(bean)));
+            currentBindings.forEach(binding -> {
+                Result<?> value = ((BindingImpl<BEAN, ?, ?>) binding)
+                        .writeFieldValue(bean);
+                // A read-only binding writes nothing, so it keeps its baseline
+                if (!binding.isReadOnly()) {
+                    writtenValues.put(binding, value);
+                }
+            });
             setValidatorsDisabled(validatorsDisabledStatus);
 
             // Now run bean level validation against the updated bean

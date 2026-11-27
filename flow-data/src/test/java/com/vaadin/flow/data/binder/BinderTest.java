@@ -596,6 +596,8 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setChangeDetectionEnabled(true);
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
+        binder.withValidator(p -> !"Invalid".equals(p.getFirstName()),
+                "Invalid name");
 
         binder.readBean(person);
         nameField.setValue("Bar");
@@ -605,6 +607,12 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         nameField.setValue("Foo");
         assertTrue(binder.hasChanges());
 
+        nameField.setValue("Bar");
+        assertFalse(binder.hasChanges());
+
+        // A failed write keeps the previous baseline
+        nameField.setValue("Invalid");
+        assertThrows(ValidationException.class, () -> binder.writeBean(person));
         nameField.setValue("Bar");
         assertFalse(binder.hasChanges());
     }
@@ -3013,13 +3021,16 @@ class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.readRecord(new TestRecord("Foo", 42));
 
         nameField.setValue("Bar");
+        ageField.setValue("43");
         binder.writeRecord();
         assertFalse(binder.hasChanges());
 
         nameField.setValue("Foo");
+        ageField.setValue("42");
         assertTrue(binder.hasChanges());
 
         nameField.setValue("Bar");
+        ageField.setValue("43");
         assertFalse(binder.hasChanges());
     }
 
