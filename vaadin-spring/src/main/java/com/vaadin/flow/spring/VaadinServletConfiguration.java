@@ -112,14 +112,21 @@ public class VaadinServletConfiguration {
     /**
      * Handler mapping that forwards everything to Vaadin except the URLs the
      * application excluded and the requests a static resource handler answers.
+     * <p>
+     * When the default forwarding controller is used and the servlet context
+     * has no servlet under the name it forwards to, which is the case when the
+     * application registers the Vaadin servlet itself, the mapping handles no
+     * requests, so that the {@link DispatcherServlet} treats requests it has no
+     * other handler for as not found.
      *
      * @since 24.0
      */
     public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
-        private List<String> excludeUrls;
-        private AntPathMatcher matcher;
-        private UrlPathHelper urlPathHelper = new UrlPathHelper();
-        private HandlerMapping resourceHandlerMapping;
+        private final List<String> excludeUrls;
+        private final AntPathMatcher matcher;
+        private final UrlPathHelper urlPathHelper = new UrlPathHelper();
+        private final HandlerMapping resourceHandlerMapping;
+        private final String forwardingServletName;
 
         /**
          * Creates the handler mapping.
@@ -139,6 +146,9 @@ public class VaadinServletConfiguration {
                 HandlerMapping resourceHandlerMapping) {
             this.excludeUrls = excludeUrls;
             this.resourceHandlerMapping = resourceHandlerMapping;
+            forwardingServletName = vaadinForwardingController instanceof VaadinForwardingController forwardingController
+                    ? forwardingController.servletName
+                    : null;
             matcher = new AntPathMatcher();
 
             setOrder(Ordered.LOWEST_PRECEDENCE - 1);
@@ -153,6 +163,11 @@ public class VaadinServletConfiguration {
         @Override
         protected Object getHandlerInternal(HttpServletRequest request)
                 throws Exception {
+            if (forwardingServletName != null && request.getServletContext()
+                    .getNamedDispatcher(forwardingServletName) == null) {
+                // Forwarding would fail with a server error
+                return null;
+            }
             if (excludeUrls != null && !excludeUrls.isEmpty()) {
                 String requestPath = urlPathHelper
                         .getPathWithinApplication(request);
@@ -234,10 +249,18 @@ public class VaadinServletConfiguration {
      */
     @Bean(name = "vaadinForwardingController")
     public Controller vaadinForwardingController() {
-        ServletForwardingController controller = new ServletForwardingController();
-        controller.setServletName(
+        return new VaadinForwardingController(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class));
-        return controller;
+    }
+
+    private static final class VaadinForwardingController
+            extends ServletForwardingController {
+        private final String servletName;
+
+        private VaadinForwardingController(String servletName) {
+            this.servletName = servletName;
+            setServletName(servletName);
+        }
     }
 
 }
