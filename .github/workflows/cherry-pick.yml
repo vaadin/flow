@@ -21,10 +21,24 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # The job below needs CHERRY_PICK_TOKEN, and the secrets context cannot be
+  # read from a job level if, so its presence is probed here. A repository that
+  # holds the token runs the workflow and one that does not skips it, which
+  # keeps the decision in the scope of the secret rather than in this file.
+  has-token:
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      present: ${{ steps.probe.outputs.present }}
+    steps:
+      - id: probe
+        env:
+          TOKEN: ${{ secrets.CHERRY_PICK_TOKEN }}
+        run: echo "present=${TOKEN:+true}" >> "$GITHUB_OUTPUT"
+
   cherry-pick:
-    # Only in vaadin/flow: a copy of this repository that has the organization
-    # secrets would otherwise open cherry-pick pull requests of its own.
-    if: github.repository == 'vaadin/flow'
+    needs: has-token
+    if: needs.has-token.outputs.present == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 180
     permissions:
