@@ -236,5 +236,9 @@ jobs:
         # the Maven runtime scoped transitives of flow-plugin-base and the
         # TestKit runtime. Those stay cold, and running the tests here to warm
         # them would cost more than they save.
+        #
+        # The same Central mirror init script as validation's build: Gradle
+        # keeps resolved metadata per repository URL, so a home warmed from
+        # Central itself would not answer the mirror's lookups.
         working-directory: flow-plugins/flow-gradle-plugin
-        run: ./gradlew assemble testClasses functionalTestClasses
+        run: ./gradlew assemble testClasses functionalTestClasses --init-script "$GITHUB_WORKSPACE/.github/gradle/central-mirror.init.gradle"

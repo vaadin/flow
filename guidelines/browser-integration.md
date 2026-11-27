@@ -20,7 +20,7 @@ anything else:
 ## JavaScript location and globals
 
 - **Non-trivial JS goes in its own file**, never inlined beyond a
-  one-liner in a Java string. Two valid homes:
+  one-liner in a Java string. Three valid homes:
   - `flow-client/src/main/frontend/Xxx.ts` imported from `Flow.ts`
     (`import './Xxx';`). Use this for platform-level features that
     need to be available before the bootstrap handshake (anything

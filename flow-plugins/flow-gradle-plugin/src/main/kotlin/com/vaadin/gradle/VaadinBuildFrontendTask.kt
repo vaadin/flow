@@ -29,6 +29,7 @@ import com.vaadin.flow.server.InitParameters
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.services.ServiceReference
@@ -102,11 +103,28 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     internal abstract val frontendSourceFiles: ConfigurableFileCollection
 
+    /**
+     * The artifacts of other projects in the same build that this project
+     * depends on. Tracked with [Classpath] for content-based change
+     * detection: they are few, and they are usually rebuilt with the same
+     * file name, so a change to their bytecode alone (e.g. the JavaScript of
+     * a `@JsDefinition` interface) must still invalidate the bundle.
+     *
+     * A jar that differs on every build, e.g. because its manifest carries a
+     * build timestamp, therefore reruns this task every time. Such attributes
+     * can be left out of the comparison with Gradle's runtime classpath
+     * normalization:
+     * `normalization { runtimeClasspath { metaInf { ignoreAttribute("Build-Time") } } }`.
+     */
+    @get:Classpath
+    internal abstract val projectDependencyFiles: ConfigurableFileCollection
+
     @get:Internal
     internal abstract val dependencyJarFiles: ConfigurableFileCollection
 
     /**
-     * A lightweight fingerprint of the dependency JARs on the classpath.
+     * A lightweight fingerprint of the dependency JARs on the classpath
+     * that do not come from other projects in the same build.
      * Using a fingerprint (name + size) instead of
      * [Classpath] content hashing avoids reading hundreds of JAR files
      * into memory, which can cause OOM on large projects (e.g. Spring Boot
@@ -201,13 +219,22 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             project.getSourceSet(sourceSetName).output.classesDirs
         )
 
-        // Dependency JARs are tracked with a lightweight fingerprint
+        // Artifacts of other projects in the same build are tracked by
+        // content, since they keep their file name when rebuilt. All other
+        // dependency JARs are tracked with a lightweight fingerprint
         // (name + size) to avoid the memory cost of content-hashing
         // hundreds of JARs on large classpaths.
         val dependencyConfiguration =
             project.configurations.getByName(config.dependencyScope.get())
+        projectDependencyFiles.from(
+            dependencyConfiguration.incoming.artifactView {
+                it.componentFilter { id -> id is ProjectComponentIdentifier }
+            }.files
+        )
         dependencyJarFiles.from(
-            dependencyConfiguration.incoming.files.filter {
+            dependencyConfiguration.incoming.artifactView {
+                it.componentFilter { id -> id !is ProjectComponentIdentifier }
+            }.files.filter {
                 it.name.endsWith(".jar", true)
             }
         )

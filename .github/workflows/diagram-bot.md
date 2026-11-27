@@ -48,8 +48,14 @@ network:
 
 timeout-minutes: 20
 
+# Every label change on a pull request starts a run, and the `if:` above only
+# skips its jobs. Only runs for the `diagram` label share a group, so adding
+# the label again replaces a run in progress. A run for any other label gets
+# a group of its own: sharing one, adding a second label would cancel a
+# diagram run in progress, and labels added together would cancel each other,
+# showing cancelled jobs on the pull request.
 concurrency:
-  group: diagram-bot-${{ github.event.pull_request.number }}
+  group: diagram-bot-${{ github.event.pull_request.number }}-${{ github.event.label.name == 'diagram' && 'diagram' || github.run_id }}
   cancel-in-progress: true
 
 env:

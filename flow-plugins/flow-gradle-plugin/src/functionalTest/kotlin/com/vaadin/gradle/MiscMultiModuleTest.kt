@@ -243,6 +243,113 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         }
     }
 
+    /**
+     * A sibling project's jar keeps its name when rebuilt, and a change to
+     * its bytecode may keep its size too, yet the JavaScript of its
+     * `@JsDefinition` classes goes into the bundle.
+     */
+    @Test
+    fun `vaadinBuildFrontend reruns when sibling project jar content changes with the same size`() {
+        testProject.settingsFile.writeText("include 'lib', 'web'")
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin.flow' apply false
+            }
+            allprojects {
+                repositories {
+                    mavenLocal()
+                    mavenCentral()
+                    maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                }
+            }
+            project(':lib') {
+                apply plugin: 'java'
+                dependencies {
+                    compileOnly("com.vaadin:flow-server:$flowVersion")
+                }
+                // uncompressed entries, so that the jar size depends only on
+                // the length of the content
+                tasks.withType(Jar).configureEach {
+                    entryCompression = ZipEntryCompression.STORED
+                }
+            }
+            project(':web') {
+                apply plugin: 'java'
+                apply plugin: 'com.vaadin.flow'
+
+                dependencies {
+                    implementation project(':lib')
+                    implementation("com.vaadin:flow:$flowVersion")
+                }
+
+                vaadin {
+                    eagerServerLoad = false
+                }
+            }
+            """.trimIndent()
+        )
+        val painter = testProject.newFile(
+            "lib/src/main/java/example/Painter.java",
+            painterSource("MARK-red")
+        )
+        // an optimized bundle only carries the definitions a route reaches
+        testProject.newFile(
+            "web/src/main/java/example/MainView.java",
+            """
+            package example;
+
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.router.Route;
+
+            @Route("")
+            public class MainView extends Div {
+                void paint(Painter painter) {
+                    painter.paint();
+                }
+            }
+            """.trimIndent()
+        )
+        testProject.newFolder("web/src/main/frontend")
+        val libJar = File(testProject.dir, "lib/build/libs/lib.jar")
+
+        var result = testProject.build("-Pvaadin.productionMode", "web:vaadinBuildFrontend")
+        result.expectTaskSucceded("web:vaadinBuildFrontend")
+        expect(true) { bundleContains("web", "MARK-red") }
+        val jarSize = libJar.length()
+
+        painter.writeText(painterSource("MARK-tan"))
+        result = testProject.build(
+            "-Pvaadin.productionMode", "web:vaadinBuildFrontend",
+            checkTasksSuccessful = false
+        )
+        expect(jarSize, "lib.jar size must not change") { libJar.length() }
+        result.expectTaskSucceded("web:vaadinBuildFrontend")
+        expect(true) { bundleContains("web", "MARK-tan") }
+        expect(false) { bundleContains("web", "MARK-red") }
+    }
+
+    private fun painterSource(marker: String): String = """
+        package example;
+
+        import com.vaadin.flow.js.JsDefinition;
+        import com.vaadin.flow.js.JsExpression;
+        import com.vaadin.flow.js.JsInvokers;
+
+        @JsDefinition
+        public interface Painter extends JsInvokers {
+            @JsExpression("window.__painterMarker = '$marker';")
+            void paint();
+        }
+        """.trimIndent()
+
+    private fun bundleContains(module: String, text: String): Boolean =
+        File(testProject.dir, "$module/build/vaadin-build-frontend/META-INF/VAADIN/webapp/VAADIN/build")
+            .walkTopDown()
+            .filter { it.isFile && it.name.endsWith(".js") }
+            .any { it.readText().contains(text) }
+
     @Test
     fun `vaadinBuildFrontend application identifier from custom project name`() {
         testProject.settingsFile.writeText("""

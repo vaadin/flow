@@ -80,11 +80,12 @@ import com.vaadin.flow.component.dependency.JsModule;
  * The names are given to the expression as parameters, so each one has to be a
  * JavaScript identifier that is not a reserved word, such as
  * <code>default</code> or <code>this</code>, and not <code>$0</code>,
- * <code>$1</code>, &hellip;, which name the arguments of the call. A name can
- * be declared only once by the imports of an interface. The expression runs in
- * a function of its own, so <code>arguments</code> in it holds the imported
- * values rather than the arguments of the call: use <code>$0</code>,
- * <code>$1</code>, &hellip; instead.
+ * <code>$1</code>, &hellip;, which name the arguments of the call, or
+ * <code>$executionContext</code>, which Flow reserves. A name can be declared
+ * only once by the imports of an interface. The expression runs in a function
+ * of its own, so <code>arguments</code> in it holds the imported values rather
+ * than the arguments of the call: use <code>$0</code>, <code>$1</code>,
+ * &hellip; instead.
  * <p>
  * The annotation applies to an interface whose methods are called through a
  * definition that extends {@link JsInvokers}, the definition itself or an
