@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -1899,8 +1900,9 @@ public class Binder<BEAN> implements Serializable {
          *
          * @param bean
          *            the bean to set the property value to
+         * @return the result of converting and validating the field value
          */
-        private BindingValidationStatus<TARGET> writeFieldValue(BEAN bean) {
+        private Result<TARGET> writeFieldValue(BEAN bean) {
             assert bean != null;
 
             return execute(() -> {
@@ -1917,7 +1919,7 @@ public class Binder<BEAN> implements Serializable {
                         }
                     });
                 }
-                return toValidationStatus(result);
+                return result;
             });
         }
 
@@ -2112,6 +2114,19 @@ public class Binder<BEAN> implements Serializable {
                     }
                 });
             }
+        }
+
+        /**
+         * Makes the written value the value that change detection compares
+         * against. Called after the value has been successfully written, as
+         * there are no pending changes for this binding anymore.
+         *
+         * @param writtenValue
+         *            the converted value that was written
+         */
+        @SuppressWarnings("unchecked")
+        private void resetInitialValue(Result<?> writtenValue) {
+            ((Result<TARGET>) writtenValue).ifOk(value -> initialValue = value);
         }
 
         public SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
@@ -3066,13 +3081,13 @@ public class Binder<BEAN> implements Serializable {
             boolean validatorsDisabledStatus = isValidatorsDisabled();
             setValidatorsDisabled(true);
             // Fetch all conversion results
-            List<Result<?>> values = new ArrayList<>();
+            Map<Binding<BEAN, ?>, Result<?>> values = new LinkedHashMap<>();
             for (RecordComponent rc : beanType.getRecordComponents()) {
                 String name = rc.getName();
                 if (boundProperties.containsKey(name)) {
-                    Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
-                            .get(name)).doConversion();
-                    values.add(value);
+                    Binding<BEAN, ?> binding = boundProperties.get(name);
+                    values.put(binding,
+                            ((BindingImpl<BEAN, ?, ?>) binding).doConversion());
                 } else {
                     throw new IllegalStateException(
                             "Unable to create record since no "
@@ -3086,7 +3101,7 @@ public class Binder<BEAN> implements Serializable {
 
             // Gather successfully converted values
             final List<Object> convertedValues = new ArrayList<>();
-            values.forEach(value -> value.ifOk(convertedValues::add));
+            values.values().forEach(value -> value.ifOk(convertedValues::add));
 
             try {
                 record = beanType.cast(beanType.getDeclaredConstructors()[0]
@@ -3100,7 +3115,7 @@ public class Binder<BEAN> implements Serializable {
             binderResults = validateBean(bean);
             bean = null;
             if (binderResults.stream().noneMatch(ValidationResult::isError)) {
-                changedBindings.clear();
+                resetChangesAfterWrite(values);
             }
         }
 
@@ -3163,9 +3178,9 @@ public class Binder<BEAN> implements Serializable {
             // Field level validation can be skipped as it was done already
             boolean validatorsDisabledStatus = isValidatorsDisabled();
             setValidatorsDisabled(true);
-            currentBindings
-                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                            .writeFieldValue(bean));
+            Map<Binding<BEAN, ?>, Result<?>> writtenValues = new LinkedHashMap<>();
+            currentBindings.forEach(binding -> writtenValues.put(binding,
+                    ((BindingImpl<BEAN, ?, ?>) binding).writeFieldValue(bean)));
             setValidatorsDisabled(validatorsDisabledStatus);
 
             // Now run bean level validation against the updated bean
@@ -3178,14 +3193,14 @@ public class Binder<BEAN> implements Serializable {
                  * Changes have been successfully saved. The set is only cleared
                  * when the changes are stored in the currently set bean.
                  */
-                changedBindings.clear();
+                resetChangesAfterWrite(writtenValues);
             } else if (getBean() == null) {
                 /*
                  * When using readBean and writeBean there is no knowledge of
                  * which bean the changes come from or are stored in. Binder is
                  * no longer "changed" when saved succesfully to any bean.
                  */
-                changedBindings.clear();
+                resetChangesAfterWrite(writtenValues);
             }
         }
 
@@ -4430,6 +4445,23 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Clears the changed bindings after a successful write and makes the
+     * written values the ones that change detection compares against, so that
+     * reverting a field to its written value is not reported as a change.
+     *
+     * @param writtenValues
+     *            the written bindings and the converted values they wrote
+     */
+    @SuppressWarnings("unchecked")
+    private void resetChangesAfterWrite(
+            Map<Binding<BEAN, ?>, Result<?>> writtenValues) {
+        changedBindings.clear();
+        writtenValues
+                .forEach((binding, value) -> ((BindingImpl<BEAN, ?, ?>) binding)
+                        .resetInitialValue(value));
+    }
+
+    /**
      * Removes (internally) the {@code Binding} from the changed bindings
      */
     private void removeFromChangedBindings(Binding<BEAN, ?> binding) {
@@ -4538,7 +4570,9 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Sets change/revert detection enabled or disabled. When set to
      * {@literal true}, any binding that is first changed and then reverted to
-     * its original value will be removed from the list of changed bindings.
+     * its original value will be removed from the list of changed bindings. The
+     * original value is the value that was last read from the bean or
+     * successfully written to it.
      *
      * By default, {@link Objects#equals(Object, Object)} is used for value
      * comparison, but it can be overridden on binding level using
@@ -4555,7 +4589,9 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Returns if change/revert detection is enabled. When set to
      * {@literal true}, any binding that is first changed and then reverted to
-     * its original value will be removed from the list of changed bindings.
+     * its original value will be removed from the list of changed bindings. The
+     * original value is the value that was last read from the bean or
+     * successfully written to it.
      *
      * By default, {@link Objects#equals(Object, Object)} is used for value
      * comparison, but it can be overridden on binding level using
