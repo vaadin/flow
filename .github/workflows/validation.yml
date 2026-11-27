@@ -833,7 +833,9 @@ jobs:
         # vaadin-spring. Enumerating everything that can break the job is
         # error prone and goes stale as modules are added, so anything that is
         # not known to be irrelevant runs it: what is left out is the
-        # integration tests, documentation and the unrelated workflows.
+        # integration tests, documentation and the unrelated workflows. The
+        # init scripts under .github/gradle are passed to the build, so they
+        # count.
         # Merge groups carry a base_sha, so they are filtered the same way; a
         # push or a manual run has nothing to compare against and always
         # builds. run stays true whenever the comparison cannot be made: a gate
@@ -868,6 +870,7 @@ jobs:
           else
             RELEVANT=$(printf '%s\n' "$CHANGED" | awk '
               $0 == ".github/workflows/validation.yml" { print; next }
+              /^\.github\/gradle\// { print; next }
               /^flow-tests\// { next }
               /^\.github\// { next }
               /\.md$/ { next }
