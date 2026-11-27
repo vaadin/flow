@@ -450,6 +450,23 @@ class MavenGoalRuntimeTest {
     }
 
     /**
+     * An embedded server adds only the java.net open to the jdk.internal.loader
+     * one every launch has: the two together let HotswapAgent honour
+     * extraClasspath, and without java.net that fails in silence.
+     */
+    @Test
+    void embeddedServer_addsOnlyTheJavaNetOpen() throws IOException {
+        MavenGoalRuntime runtime = runtimeOf(
+                launchOf(module("jetty-app", JETTY)));
+
+        assertEquals(
+                List.of("-DexcludedClassLoaderPatterns="
+                        + "com.vaadin.flow.plugin.maven.Reflector.*",
+                        "--add-opens", "java.base/java.net=ALL-UNNAMED"),
+                runtime.extraJvmFlags());
+    }
+
+    /**
      * Neither of the embedded server's extras applies to a forked one, which
      * may also have to build a server before it can start it - and a flag the
      * parameter would split is named for that parameter, not for

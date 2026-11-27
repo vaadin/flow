@@ -156,8 +156,8 @@ final class MavenGoalRuntime implements AppRuntime {
             command.addAll(forkedJvmFlags(jvmFlags, systemProperties));
         }
 
-        // Only for an embedded server. extraClasspath is what the two
-        // --add-opens in extraJvmFlags pay for, and those do not go to a
+        // Only for an embedded server. extraClasspath is what the java.net
+        // open in extraJvmFlags pays for, and that does not go to a
         // forked server; writing it anyway would ask HotswapAgent for a swap
         // it has not been given the access to make, and log a failure for it
         // on every start.
@@ -776,26 +776,29 @@ final class MavenGoalRuntime implements AppRuntime {
      * and HotswapAgent applies it JVM-wide - and a wrong name here would be
      * accepted in silence and exclude nothing.
      * <p>
-     * And the two {@code --add-opens}: the price of the {@code extraClasspath}
-     * that lets HotswapAgent see itself from the webapp class loader; see
-     * {@link #writeHotswapAgentProperties}.
+     * And the {@code --add-opens} of {@code java.net}: with the
+     * {@code jdk.internal.loader} open every launch already has, the price of
+     * the {@code extraClasspath} that lets HotswapAgent see itself from the
+     * webapp class loader; see {@link #writeHotswapAgentProperties}.
      * <p>
-     * None of it goes to a forked server, and the opens least of all. They buy
-     * HotswapAgent the right to replace {@code ucp} on every
-     * {@code URLClassLoader} in the JVM, which is worth it where the webapp
-     * loader is one and cannot otherwise see the agent. A container of its own
-     * is neither: the agent is already on that JVM's class path, and JBoss
-     * Modules hands the deployment a {@code ModuleClassLoader} that the swap
-     * could not help in any case. What the swap does reach there is the
-     * server's own loaders - measured against WildFly 38, the transactions
-     * subsystem then failed to read {@code jbossts-properties.xml} out of its
-     * own jar and the boot was unrecoverable, listeners bound and all.
+     * None of it goes to a forked server, and the open least of all. It is the
+     * half of the pair that buys HotswapAgent the right to replace {@code ucp}
+     * on every {@code URLClassLoader} in the JVM - the other half alone does
+     * not, which is why a forked server can have that one - and the swap is
+     * worth it where the webapp loader is one and cannot otherwise see the
+     * agent. A container of its own is neither: the agent is already on that
+     * JVM's class path, and JBoss Modules hands the deployment a
+     * {@code ModuleClassLoader} that the swap could not help in any case. What
+     * the swap does reach there is the server's own loaders - measured against
+     * WildFly 38, the transactions subsystem then failed to read
+     * {@code jbossts-properties.xml} out of its own jar and the boot was
+     * unrecoverable, listeners bound and all.
      */
     @Override
     public List<String> extraJvmFlags() {
         if (!plugin.embedded()) {
             // Neither of the embedded flags applies to a forked server, and
-            // the opens are actively harmful there; see below.
+            // the open is actively harmful there; see below.
             return List.of();
         }
         return List.of(
@@ -811,11 +814,11 @@ final class MavenGoalRuntime implements AppRuntime {
                 // extraClasspath written by writeHotswapAgentProperties:
                 // it swaps URLClassLoader.ucp for a javassist proxy of
                 // jdk.internal.loader.URLClassPath, and both packages
-                // have to be open to it. Without the second one it fails
-                // in silence, at debug level - which is how the setting
-                // was once concluded not to work at all.
-                "--add-opens", "java.base/java.net=ALL-UNNAMED", "--add-opens",
-                "java.base/jdk.internal.loader=ALL-UNNAMED");
+                // have to be open to it. Every launch opens the second one
+                // already. Without it the swap fails in silence, at debug
+                // level - which is how the setting was once concluded not
+                // to work at all.
+                "--add-opens", "java.base/java.net=ALL-UNNAMED");
     }
 
     /**
