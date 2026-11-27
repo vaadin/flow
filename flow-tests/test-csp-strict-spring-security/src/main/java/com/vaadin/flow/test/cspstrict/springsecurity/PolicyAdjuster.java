@@ -23,8 +23,9 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 
 /**
  * Adds a directive to the policy that Vaadin sends with a bootstrap page. This
- * is how an application adjusts the policy in the {@code strict} mode, also for
- * what it would otherwise configure in Spring Security.
+ * is how an application adjusts the policy in the {@code strict} mode when
+ * Vaadin sends it. In this application Spring Security sends the policy, so
+ * there is none to adjust and the directive must not show up.
  */
 @Component
 public class PolicyAdjuster implements VaadinServiceInitListener {

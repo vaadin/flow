@@ -60,6 +60,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.ContentSecurityPolicyNonceProvider;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -313,6 +314,43 @@ public class IndexHtmlRequestHandlerTest {
         responseOutput.reset();
         assertFalse(serveIndexHtmlAndCaptureCspHeader().contains(nonce),
                 "Every response should get a new nonce");
+    }
+
+    @Test
+    public void serveIndexHtml_strictCspAndNonceProvided_scriptsGetItAndNoPolicyIsSent()
+            throws IOException {
+        deploymentConfiguration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        // The provider of the nonce may have written its policy already
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        ContentSecurityPolicyNonceProvider provider = request -> "provided-nonce";
+        when(context.getAttribute(Lookup.class)
+                .lookup(ContentSecurityPolicyNonceProvider.class))
+                .thenReturn(provider);
+        List<IndexHtmlResponse> responses = new ArrayList<>();
+        service.addIndexHtmlRequestListener(evt -> {
+            responses.add(evt);
+            evt.getDocument().body().appendElement("script").attr("src",
+                    "listener.js");
+        });
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertEquals("provided-nonce",
+                responses.get(0).getContentSecurityPolicyNonce());
+        assertNull(responses.get(0).getContentSecurityPolicy());
+        Elements scripts = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8))
+                .getElementsByTag("script");
+        assertTrue(scripts.size() > 1);
+        for (Element script : scripts) {
+            assertEquals("provided-nonce", script.attr("nonce"),
+                    script.outerHtml());
+        }
     }
 
     @Test

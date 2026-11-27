@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -56,25 +55,40 @@ public class SpringSecurityPolicyIT {
             + System.getProperty("serverPort", "8891");
 
     @Test
-    public void bootstrapPage_carriesOnlyThePolicyOfVaadinWithTheAddedDirective()
+    public void bootstrapPage_carriesThePolicyOfSpringSecurityWithTheNonceOfItsScripts()
             throws Exception {
         try (HttpClient client = HttpClient.newHttpClient()) {
-            List<String> policies = fetch(client, "/").headers()
-                    .allValues(HEADER);
+            HttpResponse<String> response = fetch(client, "/");
 
-            assertEquals(1, policies.size(),
-                    "The bootstrap page should have one policy: " + policies);
-            String policy = policies.get(0);
-            assertTrue(policy.contains("script-src 'nonce-"),
-                    "The policy should be the nonce-based one of Vaadin: "
-                            + policy);
-            assertFalse(policy.contains("form-action"),
-                    "The policy of Spring Security should not be merged in: "
-                            + policy);
-            String directive = PolicyAdjuster.DIRECTIVE + " "
-                    + PolicyAdjuster.SOURCE;
-            assertTrue(List.of(policy.split("; ")).contains(directive),
-                    "No " + directive + " in the policy: " + policy);
+            String nonce = assertPolicyOfSpringSecurity(response);
+            Matcher scripts = Pattern.compile("<script[^>]*>")
+                    .matcher(response.body());
+            int count = 0;
+            while (scripts.find()) {
+                count++;
+                assertTrue(scripts.group().contains("nonce=\"" + nonce + "\""),
+                        "Every script should have the nonce of the policy: "
+                                + scripts.group());
+            }
+            assertTrue(count > 0, "No script in: " + response.body());
+        }
+    }
+
+    @Test
+    public void bootstrapPageOfPathWithoutPolicyOfSpringSecurity_carriesNoPolicy()
+            throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpResponse<String> response = fetch(client,
+                    "/" + SecurityConfig.PATH_WITHOUT_SPRING_SECURITY_POLICY);
+
+            assertEquals(200, response.statusCode());
+            // Where the policy applies is configured in Spring Security, and
+            // Vaadin does not send its own policy in place of it
+            assertEquals(List.of(), response.headers().allValues(HEADER));
+            assertTrue(
+                    Pattern.compile("<script[^>]* nonce=\"[^\"]+\"")
+                            .matcher(response.body()).find(),
+                    "No script with a nonce in: " + response.body());
         }
     }
 
@@ -102,8 +116,7 @@ public class SpringSecurityPolicyIT {
             HttpResponse<String> response = fetch(client, "/" + script);
 
             assertEquals(200, response.statusCode());
-            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
-                    response.headers().allValues(HEADER));
+            assertPolicyOfSpringSecurity(response);
         }
     }
 
@@ -121,8 +134,7 @@ public class SpringSecurityPolicyIT {
             assertEquals(200, response.statusCode());
             assertEquals(DownloadLink.CONTENT_TYPE,
                     response.headers().firstValue("Content-Type").orElse(null));
-            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
-                    response.headers().allValues(HEADER));
+            assertPolicyOfSpringSecurity(response);
         }
     }
 
@@ -135,9 +147,30 @@ public class SpringSecurityPolicyIT {
             HttpResponse<String> response = fetch(client, "/needs-login");
 
             assertEquals(403, response.statusCode());
-            assertEquals(List.of(SecurityConfig.SPRING_SECURITY_POLICY),
-                    response.headers().allValues(HEADER));
+            assertPolicyOfSpringSecurity(response);
         }
+    }
+
+    /**
+     * Checks that a response has one policy, which is the one configured in
+     * Spring Security with a nonce in place of the placeholder.
+     *
+     * @return the nonce
+     */
+    private static String assertPolicyOfSpringSecurity(
+            HttpResponse<String> response) {
+        List<String> policies = response.headers().allValues(HEADER);
+        assertEquals(1, policies.size(),
+                "The response should have one policy: " + policies);
+        String[] parts = SecurityConfig.SPRING_SECURITY_POLICY
+                .split(Pattern.quote("{nonce}"));
+        Matcher matcher = Pattern.compile(Pattern.quote(parts[0])
+                + "([A-Za-z0-9+/]{22})" + Pattern.quote(parts[1]))
+                .matcher(policies.get(0));
+        assertTrue(matcher.matches(),
+                "The policy should be the one of Spring Security with a nonce: "
+                        + policies.get(0));
+        return matcher.group(1);
     }
 
     private static String find(Pattern pattern, String body) {
