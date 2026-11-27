@@ -19,6 +19,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
+import com.vaadin.flow.spring.scopes.VaadinBrowserTabScope;
 import com.vaadin.flow.spring.scopes.VaadinRouteScope;
 import com.vaadin.flow.spring.scopes.VaadinSessionScope;
 import com.vaadin.flow.spring.scopes.VaadinUIScope;
@@ -69,5 +70,15 @@ public class VaadinScopesConfig {
     @Bean
     public static BeanFactoryPostProcessor vaadinRouteScope() {
         return new VaadinRouteScope();
+    }
+
+    /**
+     * Creates a Vaadin browser tab scope.
+     *
+     * @return the Vaadin browser tab scope
+     */
+    @Bean
+    public static BeanFactoryPostProcessor vaadinBrowserTabScope() {
+        return new VaadinBrowserTabScope();
     }
 }

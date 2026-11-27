@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.test;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -82,6 +83,31 @@ public class ScopesIT extends AbstractSpringTest {
         innerId = findElement(By.id("inner")).getText();
 
         Assert.assertEquals(anotherMainId, innerId);
+    }
+
+    @Test
+    public void checkBrowserTabScope() {
+        getDriver().get(getTestURL() + "browser-tab-scope");
+        waitForDevServer();
+        String tabBean = findElement(By.id("tab-bean")).getText();
+        String uiBean = findElement(By.id("ui-bean")).getText();
+
+        // A new UI in the same tab, as after a reload or a typed URL
+        getDriver().get(getTestURL() + "browser-tab-scope");
+        Assert.assertEquals(tabBean, findElement(By.id("tab-bean")).getText());
+        // self check: it should be another UI
+        Assert.assertNotEquals(uiBean, findElement(By.id("ui-bean")).getText());
+
+        // Another tab
+        String firstTab = getDriver().getWindowHandle();
+        ((JavascriptExecutor) getDriver()).executeScript("window.open('"
+                + getTestURL() + "browser-tab-scope', '_blank');");
+        String secondTab = getDriver().getWindowHandles().stream()
+                .filter(handle -> !handle.equals(firstTab)).findFirst()
+                .orElseThrow();
+        getDriver().switchTo().window(secondTab);
+        Assert.assertNotEquals(tabBean,
+                findElement(By.id("tab-bean")).getText());
     }
 
     @Test
