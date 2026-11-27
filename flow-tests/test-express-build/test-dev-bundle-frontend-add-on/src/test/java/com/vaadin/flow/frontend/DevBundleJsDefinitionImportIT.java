@@ -43,9 +43,13 @@ public class DevBundleJsDefinitionImportIT extends ChromeBrowserTest {
         open();
         waitForElementPresent(By.id(DevBundleJsDefinitionImportView.RUN_ID));
         ObjectNode frontendHashes = DevBundleCssImportIT.getFrontendHashes();
+        // Hashed as any module of the bundle in the frontend folder is, so
+        // this holds without the list of definition imports too
         Assert.assertTrue(
                 "content hash of the project file a definition imports is expected",
                 frontendHashes.has("js/definition-import.js"));
+        // Hashed only because the list of definition imports names it: the
+        // copied jar files are not among the modules hashed above
         Assert.assertTrue(
                 "content hash of the jar file a definition imports is expected",
                 frontendHashes.has("definition-import-addon.js"));

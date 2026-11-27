@@ -291,8 +291,8 @@ class TaskGenerateJsDefinitionsTest {
     public static class NotADefinition {
     }
 
-    // Extends no marker interface, and gives its imports to the methods a
-    // definition extending it inherits
+    // An interface with imports that extends no marker interface. Not
+    // reported here: the definitions that extend it check its imports.
     @JsDefinitionImport(from = "./project.js", namespace = "project")
     @JsDefinitionImport(from = "./addon.js", namespace = "addon")
     public interface ImportingMixin {
