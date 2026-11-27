@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -139,7 +141,10 @@ class PwaHandlerTest {
         PwaIcon icon = ctor.newInstance(size, size,
                 PwaConfiguration.DEFAULT_ICON);
         icon.setRegistry(registry);
-        icon.setImage(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB));
+        Method setImage = PwaIcon.class.getDeclaredMethod("setImage",
+                InputStream.class);
+        setImage.setAccessible(true);
+        setImage.invoke(icon, new ByteArrayInputStream(new byte[] { 1 }));
         return icon;
     }
 }
