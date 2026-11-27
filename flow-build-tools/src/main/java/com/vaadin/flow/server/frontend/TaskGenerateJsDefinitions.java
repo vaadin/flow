@@ -171,6 +171,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     static final String NAMES_KEY = "names";
 
+    /**
+     * The key of the paths of the modules that the functions import in the file
+     * next to the generated one, which vite.generated.ts hashes the frontend
+     * files of, as it does for the imports of the application, so that a build
+     * can tell whether the bundle carries what they are now.
+     */
+    static final String IMPORTS_KEY = "imports";
+
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
     // the module can accept its own update and nothing else has to be reloaded
@@ -201,18 +209,22 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            identifier: one name per declaration, in the order of the
      *            file, so the last is the one the file registers; empty when
      *            the file registers no names
+     * @param imports
+     *            the paths of the modules that the functions import, as the
+     *            file imports them, sorted; empty when they import nothing
      */
     record Rendered(String content, Map<String, String> functionIds,
-            Map<String, List<String>> names) {
+            Map<String, List<String>> names, List<String> imports) {
     }
 
     /**
      * One function the file registers: its identifier, the binary name of the
      * class that declares its JavaScript, the name it registers for it or
-     * <code>null</code> when it registers none, and what it is written as.
+     * <code>null</code> when it registers none, what it is written as, and the
+     * paths of the modules it imports.
      */
     private record RenderedFunction(String id, String declaredBy, String name,
-            String text) {
+            String text, List<String> imports) {
     }
 
     @Override
@@ -229,6 +241,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 ObjectNode names = ids.putObject(NAMES_KEY);
                 rendered.names().forEach((id, declared) -> names.put(id,
                         declared.get(declared.size() - 1)));
+            }
+            if (!rendered.imports().isEmpty()) {
+                ArrayNode imports = ids.putArray(IMPORTS_KEY);
+                rendered.imports().forEach(imports::add);
             }
             writeIfChanged(functionIdsFile, JacksonUtils.toFileJson(ids));
         } catch (IOException exception) {
@@ -397,27 +413,24 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
-     * Reports the types annotated with {@link JsDefinitionImport} that no
-     * definition can import anything through, since they are not an interface
-     * that a definition can extend. Logged rather than failing the build, which
-     * would break every application that has the type on its class path, an
-     * add-on its developer can not fix among them. An interface that extends
-     * {@link JsSnippets} is reported by the definitions that extend it, as for
-     * any other mistake in what a definition declares.
+     * Reports the classes annotated with {@link JsDefinitionImport}, which no
+     * definition can extend, so their imports are never used. Logged rather
+     * than failing the build, which would break every application that has the
+     * class on its class path, an add-on its developer can not fix among them.
+     * A mistake on an interface is reported by the definitions that extend it,
+     * as for any other mistake in what a definition declares.
      */
     private static void reportMisplacedImports(ClassFinder classFinder) {
         Set<Class<?>> annotated = new LinkedHashSet<>(
                 classFinder.getAnnotatedClasses(JsDefinitionImport.class));
         annotated.addAll(classFinder
                 .getAnnotatedClasses(JsDefinitionImport.Container.class));
-        annotated.stream()
-                .filter(type -> !type.isInterface()
-                        || !(JsInvokers.class.isAssignableFrom(type)
-                                || JsSnippets.class.isAssignableFrom(type)))
+        annotated.stream().filter(type -> !type.isInterface())
                 .sorted(Comparator.comparing(Class::getName))
                 .forEach(type -> getLogger().error(
                         "Ignoring @JsDefinitionImport on {}, which only applies"
-                                + " to an interface that extends JsInvokers",
+                                + " to an interface whose methods a definition"
+                                + " extending JsInvokers declares",
                         type.getName()));
     }
 
@@ -559,7 +572,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>(renderHeader(withNames));
         Map<String, String> functionIds = new LinkedHashMap<>();
         Map<String, List<String>> names = new LinkedHashMap<>();
+        Set<String> imports = new TreeSet<>();
         for (RenderedFunction function : functions) {
+            imports.addAll(function.imports());
             lines.addAll(Arrays
                     .asList(function.text().split(System.lineSeparator())));
             // The identifier is a hash of the JavaScript, so a function
@@ -574,7 +589,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         lines.addAll(FOOTER);
         return new Rendered(String.join(System.lineSeparator(), lines),
-                functionIds, names);
+                functionIds, names, List.copyOf(imports));
     }
 
     /**
@@ -651,7 +666,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             functions.add(new RenderedFunction(functionId,
                     declaringClassOf.get(functionId),
                     withNames ? declaredBy.get(functionId) : null,
-                    String.join(System.lineSeparator(), lines)));
+                    String.join(System.lineSeparator(), lines), List.of()));
         });
         return functions;
     }
@@ -1051,6 +1066,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             String expression = method.getAnnotation(JsExpression.class)
                     .value();
             List<String> function = new ArrayList<>();
+            List<String> importPaths = List.of();
             if (snippets) {
                 // A snippet is evaluated by what it is passed to, which may
                 // need the value right away, so its function is not async.
@@ -1091,8 +1107,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     function.addAll(JsStringFallbacks.stringFallbackBody(
                             expression, method.getParameterCount()));
                 } else if (!imports.isEmpty()) {
-                    function.addAll(renderImportingBody(expression, imports,
-                            importResolver));
+                    importPaths = imports.stream().map(ModuleImport::from)
+                            .map(importResolver).toList();
+                    function.addAll(renderImportingBody(expression, importPaths,
+                            imports));
                 } else {
                     function.add(expression);
                 }
@@ -1105,7 +1123,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             }
             functions.add(new RenderedFunction(rawId, definition.getName(),
                     withNames ? nameOf(definition, method) : null,
-                    String.join(System.lineSeparator(), function)));
+                    String.join(System.lineSeparator(), function),
+                    importPaths));
         }
         return functions;
     }
@@ -1119,14 +1138,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * can be one of theirs.
      */
     private static List<String> renderImportingBody(String expression,
-            List<ModuleImport> imports, UnaryOperator<String> importResolver) {
+            List<String> importPaths, List<ModuleImport> imports) {
         List<String> modules = new ArrayList<>();
         List<String> names = new ArrayList<>();
         List<String> values = new ArrayList<>();
         for (int index = 0; index < imports.size(); index++) {
             ModuleImport module = imports.get(index);
-            modules.add("import(" + quote(importResolver.apply(module.from()))
-                    + ")");
+            modules.add("import(" + quote(importPaths.get(index)) + ")");
             for (JsDefinitionImports.Binding binding : module.bindings()) {
                 names.add(binding.name());
                 values.add("$modules[" + index + "]"

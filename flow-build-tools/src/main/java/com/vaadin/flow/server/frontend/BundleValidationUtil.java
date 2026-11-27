@@ -1093,6 +1093,10 @@ public final class BundleValidationUtil {
                 + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
         TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
                 options).render();
+        if (definitionImportsChanged(options, frontendHashes,
+                rendered.imports())) {
+            return true;
+        }
 
         JsonNode bundledIds = statsJson
                 .get(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
@@ -1153,6 +1157,57 @@ public final class BundleValidationUtil {
                     "Detected JavaScript declared by the JavaScript definitions, event data or event filters that the bundle does not carry");
             return true;
         }
+        return false;
+    }
+
+    /**
+     * Checks whether a frontend file that a JavaScript definition imports, of
+     * the project or of a jar, is not what the bundle was built with. The files
+     * are hashed in the stats under the same keys as the imports of the
+     * application, and are taken out of the hashes once checked, as they are
+     * then. An npm package is not hashed, as for those imports.
+     */
+    private static boolean definitionImportsChanged(Options options,
+            JsonNode frontendHashes, List<String> imports) {
+        String resourcePath = "generated/jar-resources/";
+        List<String> faultyContent = new ArrayList<>();
+        List<String> checked = new ArrayList<>();
+        for (String importPath : imports) {
+            if (!importPath.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)) {
+                continue;
+            }
+            String content;
+            String key;
+            if (importPath.contains(resourcePath)) {
+                key = importPath.substring(importPath.indexOf(resourcePath)
+                        + resourcePath.length());
+                content = FrontendBuildUtils.getJarResourceString(key,
+                        options.getClassFinder());
+            } else {
+                key = importPath.substring(
+                        FrontendUtils.FRONTEND_FOLDER_ALIAS.length());
+                File file = new File(options.getFrontendDirectory(), key);
+                try {
+                    content = file.isFile() ? Files.readString(file.toPath())
+                            : null;
+                } catch (IOException e) {
+                    getLogger().debug("Could not read {}", file, e);
+                    content = null;
+                }
+            }
+            if (content == null) {
+                getLogger().info("No file found for '{}'", key);
+                return true;
+            }
+            compareFrontendHashes(frontendHashes, faultyContent, key, content);
+            checked.add(key);
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files that JavaScript definitions import:");
+            return true;
+        }
+        ((ObjectNode) frontendHashes).remove(checked);
         return false;
     }
 

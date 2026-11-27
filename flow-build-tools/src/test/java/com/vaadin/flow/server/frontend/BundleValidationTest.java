@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
@@ -1178,6 +1180,58 @@ class BundleValidationTest {
         Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
                 Mockito.contains("the bundle does not carry"),
                 Mockito.eq(BundledJs.class.getName()));
+    }
+
+    static Stream<Arguments> modesAndImportedFileContents() {
+        // What the frontend file of the project and the one of a jar that a
+        // definition imports hold, when the bundle was built with the first
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 1;", false),
+                Arguments.of(mode, "export const project = 2;",
+                        "export const addon = 1;", true),
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 2;", true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndImportedFileContents")
+    void fileImportedByADefinitionChanged_bundleRebuild(Mode mode,
+            String projectContent, String addonContent,
+            boolean expectedNeedsBuild)
+            throws IOException, NoSuchMethodException {
+        setupMode(mode);
+        doReturn(Set.of(ImportingBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        // Found in a jar, so imported from where the build copies it
+        doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
+                .toURL()).when(finder)
+                .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
+                        + "/definition-addon.js");
+        File projectFile = new File(options.getFrontendDirectory(),
+                "definition-project.js");
+        FileUtils.forceMkdir(projectFile.getParentFile());
+        Files.writeString(projectFile.toPath(), projectContent);
+        jarResources.put("definition-addon.js", addonContent);
+
+        ObjectNode stats = getBasicStats();
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        hashes.put("definition-project.js", BundleValidationUtil
+                .calculateHash("export const project = 1;"));
+        hashes.put("definition-addon.js",
+                BundleValidationUtil.calculateHash("export const addon = 1;"));
+        String focus = JsCall
+                .functionId(ImportingBundledJs.class.getMethod("focus"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(focus);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(focus, ImportingBundledJs.class.getName() + ".focus/0");
+        setupFrontendUtilsMock(stats);
+
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a changed file that a definition imports should make the bundle be rebuilt");
     }
 
     static Stream<Arguments> reachedDefinitions() {
@@ -3184,6 +3238,14 @@ class BundleValidationTest {
                         ? new File(temporaryFolder, q.getArgument(0).toString())
                                 .toURI().toURL()
                         : null);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-project.js", namespace = "project")
+    @JsDefinitionImport(from = "./definition-addon.js", namespace = "addon")
+    interface ImportingBundledJs extends JsInvokers {
+        @JsExpression("addon.focus(this, project)")
+        void focus();
     }
 
     @JsDefinition

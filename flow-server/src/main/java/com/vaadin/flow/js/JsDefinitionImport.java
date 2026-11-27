@@ -73,13 +73,19 @@ import com.vaadin.flow.component.dependency.JsModule;
  * JavaScript identifier that is not a reserved word, such as
  * <code>default</code> or <code>this</code>, and not <code>$0</code>,
  * <code>$1</code>, &hellip;, which name the arguments of the call. A name can
- * be declared only once by the imports of an interface.
+ * be declared only once by the imports of an interface. The expression runs in
+ * a function of its own, so <code>arguments</code> in it holds the imported
+ * values rather than the arguments of the call: use <code>$0</code>,
+ * <code>$1</code>, &hellip; instead.
  * <p>
- * The annotation applies only to an interface that extends {@link JsInvokers}.
- * The functions of a {@link JsSnippets} interface are not asynchronous and can
- * not wait for a module to load, and an interface annotated with
- * {@link JsStringFallback} stands in for JavaScript that names nothing of a
- * module, so both are refused, as is an annotation that names nothing.
+ * The annotation applies to an interface whose methods are called through a
+ * definition that extends {@link JsInvokers}, the definition itself or an
+ * interface it extends, and is ignored, with an error in the log of the build,
+ * on a class. The functions of a {@link JsSnippets} interface are not
+ * asynchronous and can not wait for a module to load, and an interface
+ * annotated with {@link JsStringFallback} stands in for JavaScript that names
+ * nothing of a module, so both are refused, as is an annotation that names
+ * nothing.
  *
  * @see JsDefinition
  * @see JsInvokers

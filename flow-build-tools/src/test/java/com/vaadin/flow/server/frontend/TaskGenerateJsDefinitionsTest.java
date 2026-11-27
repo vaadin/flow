@@ -289,6 +289,19 @@ class TaskGenerateJsDefinitionsTest {
     public static class NotADefinition {
     }
 
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    @JsDefinitionImport(from = "./addon.js", namespace = "addon")
+    public static class TwiceNotADefinition {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public interface ImportingStopperJs extends JsInvokers {
+        @JsExpression("project.stop($executionContext, $0);")
+        @JsWithExecutionContext
+        void stop(String reason);
+    }
+
     @BeforeEach
     void setUp() {
         frontendFolder = new File(temporaryFolder, FRONTEND);
@@ -1433,10 +1446,35 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void importingExecutionContextMethod_seesTheContextAndTheArguments()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ImportingStopperJs.class), false);
+
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(ImportingStopperJs.class
+                                .getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {",
+                "  const $modules = await Promise.all([import(\"./project.js\")]);",
+                "  return (async function (project) {",
+                "project.stop($executionContext, $0);",
+                "  }).call(this, $modules[0]);", "};");
+        assertTrue(content.contains(function),
+                "the context and the arguments should be seen from the function around the expression: "
+                        + content);
+    }
+
+    @Test
     void importOnATypeThatIsNotADefinition_isReported() {
         ClassFinder classFinder = mock(ClassFinder.class);
         when(classFinder.getAnnotatedClasses(JsDefinitionImport.class))
                 .thenReturn(Set.of(NotADefinition.class, ImportingJs.class));
+        // Found only through the container when annotated twice
+        when(classFinder
+                .getAnnotatedClasses(JsDefinitionImport.Container.class))
+                .thenReturn(
+                        Set.of(TwiceNotADefinition.class, ImportingJs.class));
         Options reportingOptions = new Options(mock(Lookup.class), classFinder,
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(false);
@@ -1452,6 +1490,9 @@ class TaskGenerateJsDefinitionsTest {
         }
 
         verify(logger).error(anyString(), eq(NotADefinition.class.getName()));
+        verify(logger).error(anyString(),
+                eq(TwiceNotADefinition.class.getName()));
+        // An interface is reported by the definitions it is wrong for
         Mockito.verifyNoMoreInteractions(logger);
     }
 

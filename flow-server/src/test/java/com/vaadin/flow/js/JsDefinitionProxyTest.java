@@ -349,6 +349,11 @@ class JsDefinitionProxyTest {
 
     @JsDefinition
     @JsDefinitionImport(from = "./grid.js")
+    interface ImportWithoutNamesOnlyInheritingJs extends ImportingParentJs {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js")
     interface ImportWithoutNamesJs extends JsInvokers {
         @JsExpression("this.refresh()")
         void refresh();
@@ -1026,6 +1031,9 @@ class JsDefinitionProxyTest {
 
     static Stream<Arguments> refusedImports() {
         return Stream.of(Arguments.of(ImportWithoutNamesJs.class, "@JsModule"),
+                // Declares no method of its own to find the import through
+                Arguments.of(ImportWithoutNamesOnlyInheritingJs.class,
+                        "@JsModule"),
                 Arguments.of(ImportOfReservedWordJs.class, "'this'"),
                 Arguments.of(ImportOfNonIdentifierJs.class, "'grid-connector'"),
                 Arguments.of(ImportOfArgumentNameJs.class, "'$0'"),

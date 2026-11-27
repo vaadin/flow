@@ -311,20 +311,21 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    @JsDefinitionImport(from = "./list.js", namespace = "grid")
-    interface ListImportJs extends JsInvokers {
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid", exports = "refresh")
+    interface GridImportWithExportJs extends JsInvokers {
         @JsExpression("grid.refresh(this)")
         void refresh();
     }
 
     @Test
     void frontendDependencies_seesTheImportsOfADefinition() {
-        // The modules are loaded by the generated function, so importing
-        // another one changes what the browser has to run while the
-        // expression stays the same
+        // The names are parameters of the generated function, so importing
+        // one more export changes what the browser has to run while the
+        // module and the expression stay the same
         assertNotEquals(
                 DevLoopRedefiner.frontendDependencies(GridImportJs.class),
-                DevLoopRedefiner.frontendDependencies(ListImportJs.class));
+                DevLoopRedefiner
+                        .frontendDependencies(GridImportWithExportJs.class));
     }
 
     // Only extended by definitions, so not annotated
