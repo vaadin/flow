@@ -20,14 +20,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockFilterChain;
@@ -40,6 +38,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
@@ -48,22 +47,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.vaadin.flow.internal.ContentSecurityPolicyHeaderDelegate;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.server.ContentSecurityPolicy;
-import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -72,11 +64,14 @@ import static org.mockito.Mockito.when;
         VaadinSecurityConfigurerTest.TestConfig.class })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
-class SpringSecurityContentSecurityPolicyInitializerTest {
+class StrictContentSecurityPolicyHeaderWriterTest {
 
-    private static final String SPRING_POLICY = "img-src https://img.example.com; frame-ancestors 'none'";
-    private static final String VAADIN_POLICY = "script-src 'nonce-abc'";
     private static final String HEADER = "Content-Security-Policy";
+    private static final String SPRING_POLICY = "IMG-SRC https://img.example.com;; "
+            + "img-src https://repeated.example.com; "
+            + "default-src https://cdn.example.com; "
+            + "script-src 'self' 'unsafe-inline'; base-uri 'none'; "
+            + "media-src 'none'; frame-ancestors 'none'; report-to csp";
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -86,9 +81,6 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
 
     @Autowired
     private PathPatternRequestMatcher.Builder requestMatcherBuilder;
-
-    @Autowired
-    private SpringSecurityContentSecurityPolicyInitializer initializer;
 
     @MockitoBean
     private EndpointRequestUtil endpointRequestUtil;
@@ -111,13 +103,19 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
     }
 
     @Test
-    void policyInSpringSecurity_vaadinPageGetsItMergedAndOtherResponsesGetItAsIs()
+    void policyInSpringSecurity_vaadinPageGetsOneMergedHeaderAndOtherResponsesGetItAsIs()
             throws Exception {
         http.headers(headers -> headers.contentSecurityPolicy(
                 policy -> policy.policyDirectives(SPRING_POLICY)));
 
         MockHttpServletResponse vaadinPage = serve(true);
-        assertEquals(List.of(VAADIN_POLICY + "+" + SPRING_POLICY),
+        assertEquals(List.of("default-src 'self' https://cdn.example.com; "
+                + "script-src 'nonce-abc' 'strict-dynamic'; "
+                + "style-src 'self' 'unsafe-inline' https://cdn.example.com; "
+                + "img-src 'self' data: https://img.example.com; "
+                + "connect-src 'self' https://cdn.example.com; "
+                + "worker-src 'self'; object-src 'none'; base-uri 'self'; "
+                + "media-src 'none'; frame-ancestors 'none'; report-to csp"),
                 vaadinPage.getHeaders(HEADER));
         // The other headers of Spring Security are not affected
         assertEquals("nosniff", vaadinPage.getHeader("X-Content-Type-Options"));
@@ -126,51 +124,69 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
     }
 
     @Test
-    void policyInSpringSecurityWrittenEagerly_vaadinPageGetsItMerged()
+    void policyInSpringSecurityWrittenAtStartOfRequest_vaadinPageGetsOneMergedHeader()
             throws Exception {
-        http.headers(headers -> headers
-                .contentSecurityPolicy(
-                        policy -> policy.policyDirectives(SPRING_POLICY))
+        http.headers(headers -> headers.contentSecurityPolicy(
+                policy -> policy.policyDirectives("frame-ancestors 'none'"))
                 .withObjectPostProcessor(writeHeadersEagerly()));
 
-        assertEquals(List.of(VAADIN_POLICY + "+" + SPRING_POLICY),
+        assertEquals(List.of(vaadinPolicy() + "; frame-ancestors 'none'"),
                 serve(true).getHeaders(HEADER));
     }
 
     @Test
-    void noPolicyInSpringSecurity_vaadinPolicyUnchanged() throws Exception {
+    void noPolicyInSpringSecurity_vaadinPageGetsThePolicyOfVaadin()
+            throws Exception {
         http.headers(Customizer.withDefaults());
 
-        assertEquals(List.of(VAADIN_POLICY), serve(true).getHeaders(HEADER));
+        assertEquals(List.of(vaadinPolicy()), serve(true).getHeaders(HEADER));
+    }
+
+    @Test
+    void policyThatCannotBeParsed_vaadinPageGetsThePolicyOfVaadin()
+            throws Exception {
+        http.headers(headers -> headers.contentSecurityPolicy(policy -> policy
+                .policyDirectives("img-src 'self', default-src 'none'")));
+
+        assertEquals(List.of(vaadinPolicy()), serve(true).getHeaders(HEADER));
     }
 
     @Test
     void reportOnlyPolicyInSpringSecurity_notMergedAndStillSent()
             throws Exception {
-        http.headers(headers -> headers.contentSecurityPolicy(
-                policy -> policy.policyDirectives(SPRING_POLICY).reportOnly()));
+        http.headers(headers -> headers.contentSecurityPolicy(policy -> policy
+                .policyDirectives("frame-ancestors 'none'").reportOnly()));
 
         MockHttpServletResponse vaadinPage = serve(true);
-        assertEquals(List.of(VAADIN_POLICY), vaadinPage.getHeaders(HEADER));
-        assertEquals(List.of(SPRING_POLICY),
+        assertEquals(List.of(vaadinPolicy()), vaadinPage.getHeaders(HEADER));
+        assertEquals(List.of("frame-ancestors 'none'"),
                 vaadinPage.getHeaders(HEADER + "-Report-Only"));
     }
 
     @Test
-    void notStrictMode_nothingMerged() {
-        IndexHtmlResponse response = mock(IndexHtmlResponse.class);
-        when(response.getContentSecurityPolicy()).thenReturn(null);
+    void headersDisabledInSpringSecurity_headerIsLeftToVaadin()
+            throws Exception {
+        http.headers(HeadersConfigurer::disable);
 
-        registeredListener().modifyIndexHtmlResponse(response);
+        // The stand-in for Vaadin sets this header when nothing takes over
+        assertEquals(List.of("written by Vaadin"),
+                serve(true).getHeaders(HEADER));
+    }
 
-        verify(response, never()).mergeContentSecurityPolicy(anyString());
+    @Test
+    void noHeadersConfiguredInSpringSecurity_headerIsLeftToVaadin()
+            throws Exception {
+        assertEquals(List.of("written by Vaadin"),
+                serve(true).getHeaders(HEADER));
+        assertNull(serve(false).getHeader(HEADER));
     }
 
     /**
      * Sends a request through the security filter chain to a servlet that
-     * stands in for Vaadin. For a Vaadin page, it runs the listener the way
-     * {@code IndexHtmlRequestHandler} does and then sets the header of the
-     * strict mode, joining the merged policies with a plus sign.
+     * stands in for Vaadin. For a Vaadin page, the servlet does what
+     * {@code IndexHtmlRequestHandler} does in the strict mode: it hands the
+     * policy of the page to the delegate of the request, or sets the header
+     * itself when the request has none.
      */
     private MockHttpServletResponse serve(boolean vaadinPage) throws Exception {
         if (filters == null) {
@@ -180,7 +196,6 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
                                     .anyRequest(AuthorizedUrl::permitAll))
                     .build().getFilters();
         }
-        IndexHtmlRequestListener listener = registeredListener();
         HttpServlet servlet = new HttpServlet() {
             @Override
             protected void service(HttpServletRequest request,
@@ -188,23 +203,23 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
                 if (!vaadinPage) {
                     return;
                 }
-                List<String> merged = new ArrayList<>(List.of(VAADIN_POLICY));
-                IndexHtmlResponse indexHtmlResponse = mock(
-                        IndexHtmlResponse.class);
-                VaadinRequest vaadinRequest = mock(VaadinRequest.class);
-                when(vaadinRequest.getAttribute(anyString())).thenAnswer(
-                        call -> request.getAttribute(call.getArgument(0)));
-                when(indexHtmlResponse.getVaadinRequest())
-                        .thenReturn(vaadinRequest);
-                when(indexHtmlResponse.getContentSecurityPolicy())
-                        .thenReturn(new ContentSecurityPolicy());
-                when(indexHtmlResponse.mergeContentSecurityPolicy(anyString()))
-                        .thenAnswer(call -> {
-                            merged.add(call.getArgument(0));
-                            return List.of();
-                        });
-                listener.modifyIndexHtmlResponse(indexHtmlResponse);
-                response.setHeader(HEADER, String.join("+", merged));
+                Object delegate = request.getAttribute(
+                        ContentSecurityPolicyHeaderDelegate.class.getName());
+                if (delegate instanceof ContentSecurityPolicyHeaderDelegate headerDelegate) {
+                    headerDelegate.writeHeader(new ContentSecurityPolicy()
+                            .setDirective("default-src", "'self'")
+                            .setDirective("script-src", "'nonce-abc'",
+                                    "'strict-dynamic'")
+                            .setDirective("style-src", "'self'",
+                                    "'unsafe-inline'")
+                            .setDirective("img-src", "'self'", "data:")
+                            .setDirective("connect-src", "'self'")
+                            .setDirective("worker-src", "'self'")
+                            .setDirective("object-src", "'none'")
+                            .setDirective("base-uri", "'self'"));
+                } else {
+                    response.setHeader(HEADER, "written by Vaadin");
+                }
             }
         };
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
@@ -214,13 +229,11 @@ class SpringSecurityContentSecurityPolicyInitializerTest {
         return response;
     }
 
-    private IndexHtmlRequestListener registeredListener() {
-        ServiceInitEvent event = mock(ServiceInitEvent.class);
-        initializer.serviceInit(event);
-        ArgumentCaptor<IndexHtmlRequestListener> listener = ArgumentCaptor
-                .forClass(IndexHtmlRequestListener.class);
-        verify(event).addIndexHtmlRequestListener(listener.capture());
-        return listener.getValue();
+    private static String vaadinPolicy() {
+        return "default-src 'self'; script-src 'nonce-abc' 'strict-dynamic'; "
+                + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                + "connect-src 'self'; worker-src 'self'; object-src 'none'; "
+                + "base-uri 'self'";
     }
 
     private static ObjectPostProcessor<HeaderWriterFilter> writeHeadersEagerly() {

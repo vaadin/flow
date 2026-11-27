@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -61,6 +60,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.ContentSecurityPolicyHeaderDelegate;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -75,7 +75,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -318,79 +317,35 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_strictCspAndPolicyMerged_combinesDirectivesAndKeepsScriptPolicy()
+    public void serveIndexHtml_strictCspAndHeaderDelegate_handsOverPolicyAndSetsNoHeader()
             throws IOException {
         deploymentConfiguration
                 .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
-        List<String> ignored = new ArrayList<>();
-        service.addIndexHtmlRequestListener(
-                evt -> ignored.addAll(evt.mergeContentSecurityPolicy(
-                        "default-src https://cdn.example.com; "
-                                + "script-src 'self' 'unsafe-inline'; "
-                                + "IMG-SRC https://img.example.com;; "
-                                + "img-src https://repeated.example.com; "
-                                + "base-uri 'none'; media-src 'none'; "
-                                + "frame-ancestors 'none'; report-to csp")));
-
-        String header = serveIndexHtmlAndCaptureCspHeader();
-
-        assertEquals(List.of("script-src"), ignored);
-        Matcher matcher = Pattern.compile("'nonce-[A-Za-z0-9+/]{22}'")
-                .matcher(header);
-        assertTrue(matcher.find(), header);
-        assertEquals("default-src 'self' https://cdn.example.com; script-src "
-                + matcher.group() + " 'strict-dynamic'; "
-                + "style-src 'self' 'unsafe-inline' https://cdn.example.com; "
-                + "img-src 'self' data: https://img.example.com; "
-                + "font-src 'self' data: https://cdn.example.com; "
-                + "connect-src 'self' data: https://cdn.example.com; "
-                + "worker-src 'self'; "
-                + "object-src 'none'; base-uri 'self'; media-src 'none'; "
-                + "frame-ancestors 'none'; report-to csp", header);
-    }
-
-    @Test
-    public void serveIndexHtml_strictCspAndSeveralPoliciesMerged_throwsAndSendsNoHeader() {
-        deploymentConfiguration
-                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
-        service.addIndexHtmlRequestListener(
-                evt -> evt.mergeContentSecurityPolicy(
-                        "img-src 'self', default-src 'none'"));
-        VaadinServletRequest request = createVaadinRequest("/");
-
-        assertThrows(IllegalArgumentException.class,
-                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                        request, response));
-        verify(response, never()).setHeader(eq("Content-Security-Policy"),
-                any());
-    }
-
-    @Test
-    public void serveIndexHtml_strictCspAndPresentHeaderWasMerged_replacesHeader()
-            throws IOException {
-        deploymentConfiguration
-                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
-        VaadinServletResponse servletResponse = mock(
-                VaadinServletResponse.class);
-        when(servletResponse.getOutputStream())
-                .thenReturn(mock(ServletOutputStream.class));
-        when(servletResponse.containsHeader("Content-Security-Policy"))
+        // A delegate may have written a header of its own already
+        when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
-        when(servletResponse.getHeaders("Content-Security-Policy"))
-                .thenReturn(List.of("frame-ancestors 'none'"));
-        service.addIndexHtmlRequestListener(evt -> evt
-                .mergeContentSecurityPolicy("frame-ancestors 'none'"));
+        List<String> handedOver = new ArrayList<>();
+        ContentSecurityPolicyHeaderDelegate delegate = policy -> handedOver
+                .add(policy.toHeaderValue());
+        HttpServletRequest request = createRequest("/");
+        when(request.getAttribute(
+                ContentSecurityPolicyHeaderDelegate.class.getName()))
+                .thenReturn(delegate);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), servletResponse);
+                new VaadinServletRequest(request, spy(service)), response);
 
-        ArgumentCaptor<String> header = ArgumentCaptor.forClass(String.class);
-        verify(servletResponse).setHeader(eq("Content-Security-Policy"),
-                header.capture());
-        assertTrue(header.getValue().contains("'strict-dynamic'"),
-                header.getValue());
-        assertTrue(header.getValue().endsWith("frame-ancestors 'none'"),
-                header.getValue());
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertEquals(1, handedOver.size());
+        Matcher nonce = Pattern
+                .compile("script-src 'nonce-([^']+)' 'strict-dynamic'")
+                .matcher(handedOver.get(0));
+        assertTrue(nonce.find(), handedOver.get(0));
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+        assertEquals(nonce.group(1),
+                document.getElementsByTag("script").first().attr("nonce"));
     }
 
     @Test

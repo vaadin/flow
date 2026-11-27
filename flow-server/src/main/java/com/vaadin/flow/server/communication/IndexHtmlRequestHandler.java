@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -54,6 +52,7 @@ import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReload.Backend;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ContentSecurityPolicyHeaderDelegate;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -307,8 +306,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static void applyContentSecurityPolicy(
             IndexHtmlResponse indexHtmlResponse) {
         VaadinResponse response = indexHtmlResponse.getVaadinResponse();
-        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)
-                && !isMergedContentSecurityPolicy(indexHtmlResponse)) {
+        // An integration that owns the security headers writes this one too,
+        // and may already have written its own
+        Object delegate = indexHtmlResponse.getVaadinRequest().getAttribute(
+                ContentSecurityPolicyHeaderDelegate.class.getName());
+        if (!(delegate instanceof ContentSecurityPolicyHeaderDelegate)
+                && response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
             // Sending the page without Vaadin's policy would silently drop
             // the protection the strict mode promises
             throw new IllegalStateException(String.format(
@@ -331,21 +334,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexHtmlResponse.getDocument().select(
                 "script, link[rel=modulepreload], link[rel=preload][as=script]")
                 .attr("nonce", nonce);
-        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
-                policy.toHeaderValue());
-    }
-
-    // A header that a listener has merged into the policy is replaced by the
-    // merged policy, so nothing of it is lost
-    private static boolean isMergedContentSecurityPolicy(
-            IndexHtmlResponse indexHtmlResponse) {
-        if (indexHtmlResponse
-                .getVaadinResponse() instanceof HttpServletResponse response) {
-            return response.getHeaders(CONTENT_SECURITY_POLICY_HEADER).stream()
-                    .allMatch(
-                            indexHtmlResponse::hasMergedContentSecurityPolicy);
+        if (delegate instanceof ContentSecurityPolicyHeaderDelegate headerDelegate) {
+            headerDelegate.writeHeader(policy);
+        } else {
+            response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                    policy.toHeaderValue());
         }
-        return false;
     }
 
     private void initializeFeatureFlags(Document indexDocument,

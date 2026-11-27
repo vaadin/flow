@@ -970,20 +970,22 @@ public final class VaadinSecurityConfigurer
         }
     }
 
-    // Lets Vaadin read the Content Security Policy configured in Spring
-    // Security, to merge it into the policy of its own pages in strict mode
+    // Sends the Content Security Policy of a Vaadin page in strict mode
+    // through the header writers of Spring Security, merged with the policy
+    // configured there
     private void customizeHeaders(HeadersConfigurer<HttpSecurity> configurer) {
-        var captureFilter = new SpringSecurityContentSecurityPolicyInitializer.HeaderCaptureFilter();
+        var writer = new StrictContentSecurityPolicyHeaderWriter();
+        configurer.addHeaderWriter(writer);
         configurer.withObjectPostProcessor(
                 new ObjectPostProcessor<HeaderWriterFilter>() {
                     @Override
                     public <O extends HeaderWriterFilter> O postProcess(
                             O filter) {
-                        captureFilter.setHeaderWriterFilter(filter);
+                        writer.setHeaderWriterFilterPresent();
                         return filter;
                     }
                 });
-        getBuilder().addFilterAfter(captureFilter, HeaderWriterFilter.class);
+        getBuilder().addFilterAfter(writer, HeaderWriterFilter.class);
     }
 
     private void customizeLogout(LogoutConfigurer<HttpSecurity> configurer) {
