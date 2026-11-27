@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -163,6 +164,11 @@ public class StateTree implements NodeOwner {
 
     private Set<StateNode> pendingExecutionNodes = new HashSet<>();
 
+    /**
+     * Registered nodes that have visibility change listeners.
+     */
+    private final Set<StateNode> visibilityListenerNodes = new HashSet<>();
+
     private int nextBeforeClientResponseIndex = 1;
 
     private final StateNode rootNode;
@@ -227,6 +233,9 @@ public class StateTree implements NodeOwner {
             // A response is written for the node again
             node.getBeforeClientResponseEntries().forEach(StateTree::restore);
         }
+        if (node.hasVisibilityChangeListeners()) {
+            visibilityListenerNodes.add(node);
+        }
 
         return nodeId;
     }
@@ -250,10 +259,40 @@ public class StateTree implements NodeOwner {
         }
 
         pendingExecutionNodes.remove(node);
+        visibilityListenerNodes.remove(node);
         // The executions stay on the node, but no response is written for a
         // node that is not in the tree
         node.getBeforeClientResponseEntries().forEach(StateTree::discard);
         uiInternals.discardPendingJavaScriptInvocations(node);
+    }
+
+    /**
+     * Fires the visibility change listeners of the nodes in this tree whose
+     * visibility has changed since their listeners were last fired. Called when
+     * the visibility of an element in this tree is set, since that can change
+     * the visibility of any of its descendants.
+     *
+     * @see StateNode#addVisibilityChangeListener(com.vaadin.flow.server.Command)
+     */
+    public void fireVisibilityChangeListeners() {
+        new ArrayList<>(visibilityListenerNodes)
+                .forEach(StateNode::fireVisibilityChangeListenersIfChanged);
+    }
+
+    /**
+     * Starts or stops tracking the given registered node for visibility
+     * changes, depending on whether it has visibility change listeners.
+     *
+     * @param node
+     *            the node whose listeners were added or removed, not
+     *            <code>null</code>
+     */
+    void updateVisibilityListenerNode(StateNode node) {
+        if (node.hasVisibilityChangeListeners()) {
+            visibilityListenerNodes.add(node);
+        } else {
+            visibilityListenerNodes.remove(node);
+        }
     }
 
     @Override

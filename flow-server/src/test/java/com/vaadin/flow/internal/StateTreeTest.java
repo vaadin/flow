@@ -948,6 +948,31 @@ class StateTreeTest {
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
     }
 
+    @Test
+    void visibilityChangeListener_nodeDetached_nodeGarbageCollected()
+            throws InterruptedException {
+        Element parent = ElementFactory.createDiv();
+        tree.getUI().getElement().appendChild(parent);
+
+        WeakReference<StateNode> ref = detachChildWithVisibilityListener(
+                parent);
+        // Collect to release from list of detached nodes
+        tree.collectChanges(value -> {
+        });
+
+        assertTrue(TestUtil.isGarbageCollected(ref));
+    }
+
+    private static WeakReference<StateNode> detachChildWithVisibilityListener(
+            Element parent) {
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        child.getNode().addVisibilityChangeListener(() -> {
+        });
+        parent.removeChild(child);
+        return new WeakReference<>(child.getNode());
+    }
+
     private static class TestExecution implements DiscardAwareExecution {
         private int executed;
         private int discarded;

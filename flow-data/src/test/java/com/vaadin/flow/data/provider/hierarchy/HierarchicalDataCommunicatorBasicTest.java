@@ -39,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,11 +53,13 @@ class HierarchicalDataCommunicatorBasicTest
     private CompositeDataGenerator<Item> compositeDataGenerator = new CompositeDataGenerator<>();
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
+    private Element element;
+
     @BeforeEach
     void init() {
         super.init();
 
-        var element = new Element("div");
+        element = new Element("div");
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 compositeDataGenerator, arrayUpdater, element.getNode(),
@@ -74,6 +77,38 @@ class HierarchicalDataCommunicatorBasicTest
         fakeClientCommunication();
         assertArrayUpdateSize(0);
         assertArrayUpdateRange(0, 0);
+    }
+
+    @Test
+    void reset_nodeHidden_flushedOnceVisible() {
+        fakeClientCommunication();
+        clearInvocations(arrayUpdater);
+
+        element.setVisible(false);
+        dataCommunicator.reset();
+        fakeClientCommunication();
+        dataCommunicator.reset();
+        fakeClientCommunication();
+        verify(arrayUpdater, never()).startUpdate(anyInt());
+
+        element.setVisible(true);
+        fakeClientCommunication();
+        verify(arrayUpdater).startUpdate(anyInt());
+    }
+
+    @Test
+    void attachedWhileHidden_clientSideInitializedOnceVisible() {
+        var hidden = new Element("div");
+        hidden.setVisible(false);
+        ui.getElement().appendChild(hidden);
+        new HierarchicalDataCommunicator<>(compositeDataGenerator, arrayUpdater,
+                hidden.getNode(), () -> null);
+        fakeClientCommunication();
+        clearInvocations(arrayUpdater);
+
+        hidden.setVisible(true);
+        fakeClientCommunication();
+        verify(arrayUpdater).initialize();
     }
 
     @Test
