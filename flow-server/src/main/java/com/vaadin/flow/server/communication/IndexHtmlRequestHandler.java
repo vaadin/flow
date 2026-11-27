@@ -277,6 +277,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 // A policy with the nonce is sent by its provider, whatever
                 // the mode, so the scripts need the nonce to run
                 addNonceToScripts(indexHtmlResponse);
+                if (config.isProductionMode()) {
+                    // The page must not be left without a policy if the
+                    // provider turns out to send none for this response
+                    Objects.requireNonNull(contentSecurityPolicyNonceProvider)
+                            .setFallbackPolicy(request, response,
+                                    createDefaultContentSecurityPolicy(Objects
+                                            .requireNonNull(indexHtmlResponse
+                                                    .getContentSecurityPolicyNonce())));
+                }
             } else if (config.isProductionMode()) {
                 // The dev server and dev tools need eval, so the policy of
                 // Vaadin is only sent in production mode
