@@ -148,6 +148,14 @@ if (!agent) {
     throw new RuntimeException(
             "install-dev-cli should have provisioned HotswapAgent into " + cache);
 }
+// When run 1 had to fetch it, it came through the build's own repositories -
+// the local repository, mirrors and retries of Maven - and not from a direct
+// download, which is only the fallback for when Maven cannot resolve it.
+if (first.indexOf("HotswapAgent ") >= 0
+        && first.indexOf("from https://repo1.maven.org/") >= 0) {
+    throw new RuntimeException(
+            "run 1 should have resolved HotswapAgent through Maven: " + first);
+}
 // Both runs say where it is, whether they downloaded it or found it cached:
 // the answer to "can this machine start the loop?" should not depend on which.
 if (first.indexOf("HotswapAgent") < 0) {

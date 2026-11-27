@@ -227,8 +227,9 @@ public class DevCliInstallerTest {
                 }
                 """);
 
-        Optional<Path> provisioned = DevCliInstaller
-                .provisionHotswapAgent(daemon, info::add, warnings::add);
+        Optional<Path> provisioned = DevCliInstaller.provisionHotswapAgent(
+                daemon, coordinates -> Optional.empty(), info::add,
+                warnings::add);
 
         // The version reported is the one pinned by the jar that was handed
         // over, not one this plugin knows: the CLI runs the daemon the project
@@ -244,14 +245,52 @@ public class DevCliInstallerTest {
     }
 
     @Test
+    public void provisionHotswapAgent_daemonTakesAResolver_offersItTheBuildRepositories()
+            throws Exception {
+        Path daemon = daemonJar("""
+                package com.vaadin.flow.devloop.daemon;
+
+                public final class HotswapAgentJar {
+                    public static final String VERSION = "9.9.9";
+
+                    public static java.nio.file.Path provision(
+                            java.util.function.Consumer<String> progress) {
+                        throw new IllegalStateException("downloaded");
+                    }
+
+                    public static java.nio.file.Path provision(
+                            java.util.function.Consumer<String> progress,
+                            java.util.function.Function<String,
+                                    java.nio.file.Path> resolver) {
+                        return resolver.apply("org.example:agent:jar:9.9.9");
+                    }
+                }
+                """);
+        List<String> asked = new ArrayList<>();
+
+        Optional<Path> provisioned = DevCliInstaller
+                .provisionHotswapAgent(daemon, coordinates -> {
+                    asked.add(coordinates);
+                    return Optional.of(Path.of("m2", "agent-9.9.9.jar"));
+                }, info::add, warnings::add);
+
+        // The coordinates come from the daemon, so the build resolves the
+        // version the daemon that will run has pinned.
+        Assert.assertEquals(List.of("org.example:agent:jar:9.9.9"), asked);
+        Assert.assertEquals(Optional.of(Path.of("m2", "agent-9.9.9.jar")),
+                provisioned);
+    }
+
+    @Test
     public void provisionHotswapAgent_daemonTooOldToProvision_warnsAndCarriesOn()
             throws Exception {
         // A daemon from before this feature. Not a failure: the CLI is
         // installed and correct, and the first start downloads as it used to.
         Path daemon = daemonJar(null);
 
-        Optional<Path> provisioned = DevCliInstaller
-                .provisionHotswapAgent(daemon, info::add, warnings::add);
+        Optional<Path> provisioned = DevCliInstaller.provisionHotswapAgent(
+                daemon, coordinates -> Optional.empty(), info::add,
+                warnings::add);
 
         Assert.assertEquals(Optional.empty(), provisioned);
         Assert.assertEquals(1, warnings.size());
