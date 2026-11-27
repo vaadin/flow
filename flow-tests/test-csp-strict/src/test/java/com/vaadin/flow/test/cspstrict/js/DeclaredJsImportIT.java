@@ -42,7 +42,7 @@ public class DeclaredJsImportIT extends AbstractCspStrictIT {
         run.click();
 
         waitUntil(ExpectedConditions.textToBe(By.id("status"),
-                "DESCRIBED IMPORTED true"));
+                "DESCRIBED IMPORTED true from add-on"));
         Assertions.assertEquals(Boolean.TRUE,
                 executeScript("return window.jsDefinitionImportLoaded"));
         assertNoCspViolations();
