@@ -372,6 +372,17 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportingElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    interface ElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
     @JsDefinitionImport(from = "./grid.js")
     interface ImportWithoutNamesOnlyInheritingJs extends ImportingParentJs {
     }
@@ -1135,6 +1146,20 @@ class JsDefinitionProxyTest {
                 exception.getMessage());
         assertTrue(exception.getMessage().contains(expectedInMessage),
                 exception.getMessage());
+    }
+
+    @Test
+    void elementMethodWithImports_isAnotherFunctionOfTheElementMethod()
+            throws NoSuchMethodException {
+        assertEquals(JsDefinitionProxy.Kind.CALLS, JsDefinitionProxy
+                .checkDefinition(ImportingElementMethodJs.class));
+        Method importing = ImportingElementMethodJs.class.getMethod("refresh",
+                String.class);
+        assertEquals("return this.refresh($0);",
+                JsCall.declaredExpression(importing));
+        assertNotEquals(JsCall.functionId(
+                ElementMethodJs.class.getMethod("refresh", String.class)),
+                JsCall.functionId(importing));
     }
 
     @Test

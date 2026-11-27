@@ -297,6 +297,12 @@ class TaskGenerateJsDefinitionsTest {
 
     @JsDefinition
     @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public interface ImportingElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
     public interface ImportingStopperJs extends JsInvokers {
         @JsExpression("project.stop($executionContext, $0);")
         @JsWithExecutionContext
@@ -1467,6 +1473,24 @@ class TaskGenerateJsDefinitionsTest {
         assertTrue(content.contains(function),
                 "the context and the arguments should be seen from the function around the expression: "
                         + content);
+    }
+
+    @Test
+    void importingElementMethod_callsItInTheFunctionAroundTheExpression()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(ImportingElementMethodJs.class), false);
+
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(ImportingElementMethodJs.class
+                                .getMethod("refresh", String.class))
+                        + "\"] = async function ($0) {",
+                "  const $modules = await Promise.all([import(\"./project.js\")]);",
+                "  return (async function (project) {",
+                "return this.refresh($0);", "  }).call(this, $modules[0]);",
+                "};");
+        assertTrue(content.contains(function), content);
     }
 
     @Test
