@@ -86,24 +86,4 @@ class ContentSecurityPolicyTest {
         assertThrows(IllegalArgumentException.class,
                 () -> policy.setDirective("img-src; a"));
     }
-
-    @Test
-    void parse_headerValue_keepsDirectivesAndFirstOfRepeated() {
-        ContentSecurityPolicy policy = ContentSecurityPolicy.parse(
-                " IMG-SRC 'self'  https://cdn.example.com ;; upgrade-insecure-requests; img-src https://other.example.com;frame-ancestors 'none' ");
-
-        assertEquals(
-                "img-src 'self' https://cdn.example.com; upgrade-insecure-requests; frame-ancestors 'none'",
-                policy.toHeaderValue());
-        assertEquals(
-                List.of("img-src", "upgrade-insecure-requests",
-                        "frame-ancestors"),
-                List.copyOf(policy.getDirectives()));
-    }
-
-    @Test
-    void parse_severalPolicies_throws() {
-        assertThrows(IllegalArgumentException.class, () -> ContentSecurityPolicy
-                .parse("img-src 'self', default-src 'none'"));
-    }
 }

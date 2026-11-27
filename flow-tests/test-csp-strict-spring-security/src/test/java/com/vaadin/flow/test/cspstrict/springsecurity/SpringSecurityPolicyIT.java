@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -56,7 +55,7 @@ public class SpringSecurityPolicyIT {
             + System.getProperty("serverPort", "8891");
 
     @Test
-    public void bootstrapPage_carriesOnlyThePolicyOfVaadinWithTheAddedDirective()
+    public void bootstrapPage_carriesOnePolicyWithSpringSecurityMergedAndTheAddedDirective()
             throws Exception {
         try (HttpClient client = HttpClient.newHttpClient()) {
             List<String> policies = fetch(client, "/").headers()
@@ -68,12 +67,13 @@ public class SpringSecurityPolicyIT {
             assertTrue(policy.contains("script-src 'nonce-"),
                     "The policy should be the nonce-based one of Vaadin: "
                             + policy);
-            assertFalse(policy.contains("form-action"),
-                    "The policy of Spring Security should not be merged in: "
+            List<String> directives = List.of(policy.split("; "));
+            assertTrue(directives.contains("form-action 'self'"),
+                    "The policy of Spring Security should be merged in: "
                             + policy);
             String directive = PolicyAdjuster.DIRECTIVE + " "
                     + PolicyAdjuster.SOURCE;
-            assertTrue(List.of(policy.split("; ")).contains(directive),
+            assertTrue(directives.contains(directive),
                     "No " + directive + " in the policy: " + policy);
         }
     }

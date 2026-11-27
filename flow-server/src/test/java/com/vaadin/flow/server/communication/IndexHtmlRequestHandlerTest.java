@@ -327,7 +327,8 @@ public class IndexHtmlRequestHandlerTest {
                 evt -> ignored.addAll(evt.mergeContentSecurityPolicy(
                         "default-src https://cdn.example.com; "
                                 + "script-src 'self' 'unsafe-inline'; "
-                                + "img-src https://img.example.com; "
+                                + "IMG-SRC https://img.example.com;; "
+                                + "img-src https://repeated.example.com; "
                                 + "base-uri 'none'; media-src 'none'; "
                                 + "frame-ancestors 'none'; report-to csp")));
 
@@ -343,9 +344,25 @@ public class IndexHtmlRequestHandlerTest {
                 + "img-src 'self' data: https://img.example.com; "
                 + "font-src 'self' data: https://cdn.example.com; "
                 + "connect-src 'self' data: https://cdn.example.com; "
-                + "worker-src 'self' https://cdn.example.com; "
+                + "worker-src 'self'; "
                 + "object-src 'none'; base-uri 'self'; media-src 'none'; "
                 + "frame-ancestors 'none'; report-to csp", header);
+    }
+
+    @Test
+    public void serveIndexHtml_strictCspAndSeveralPoliciesMerged_throwsAndSendsNoHeader() {
+        deploymentConfiguration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        service.addIndexHtmlRequestListener(
+                evt -> evt.mergeContentSecurityPolicy(
+                        "img-src 'self', default-src 'none'"));
+        VaadinServletRequest request = createVaadinRequest("/");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                        request, response));
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
     }
 
     @Test

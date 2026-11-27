@@ -16,9 +16,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -53,11 +55,13 @@ public class IndexHtmlResponse {
     // another policy
     private static final Set<String> SCRIPT_DIRECTIVES = Set.of("script-src",
             "script-src-elem", "script-src-attr");
-    // The directives a browser reads default-src for when they are not set
+    // The directives a browser reads default-src for when they are not set.
+    // worker-src and child-src are left out: they load code that runs as
+    // script, and a browser reads script-src for them before default-src
     private static final Set<String> DEFAULT_SRC_FALLBACK_DIRECTIVES = Set.of(
-            "child-src", "connect-src", "font-src", "frame-src", "img-src",
-            "manifest-src", "media-src", "object-src", "style-src",
-            "style-src-elem", "style-src-attr", "worker-src");
+            "connect-src", "font-src", "frame-src", "img-src", "manifest-src",
+            "media-src", "object-src", "style-src", "style-src-elem",
+            "style-src-attr");
 
     /**
      * Create a response object for client side bootstrapping with UI.
@@ -210,7 +214,8 @@ public class IndexHtmlResponse {
      * <li>The {@code default-src} sources of the other policy are also added to
      * the resource directives that Vaadin sets and the other policy does not,
      * because that is where the other policy applies them. A directive that
-     * Vaadin sets to {@code 'none'} stays that way.
+     * Vaadin sets to {@code 'none'} stays that way, and so does
+     * {@code worker-src}, because workers run script.
      * </ul>
      *
      * @param headerValue
@@ -221,8 +226,8 @@ public class IndexHtmlResponse {
      *             if this response has no policy, i.e. the mode is not
      *             {@link ContentSecurityPolicyMode#STRICT}
      * @throws IllegalArgumentException
-     *             if the header value cannot be parsed, see
-     *             {@link ContentSecurityPolicy#parse(String)}
+     *             if a directive name is not valid, or if the value holds
+     *             several policies separated by a comma
      */
     public List<String> mergeContentSecurityPolicy(String headerValue) {
         ContentSecurityPolicy policy = contentSecurityPolicy;
@@ -231,11 +236,20 @@ public class IndexHtmlResponse {
                     "This response has no Content Security Policy to merge into. "
                             + "A policy is only created in the strict mode.");
         }
-        ContentSecurityPolicy other = ContentSecurityPolicy.parse(headerValue);
+        ContentSecurityPolicy other = new ContentSecurityPolicy();
+        List<String> otherDirectives = new ArrayList<>();
+        for (String directive : headerValue.split(";")) {
+            String[] tokens = directive.strip().split("\\s+");
+            String name = tokens[0].toLowerCase(Locale.ENGLISH);
+            // A browser uses the first of a repeated directive
+            if (!name.isEmpty() && !otherDirectives.contains(name)) {
+                // Also rejects what is not valid in a header
+                other.setDirective(name,
+                        Arrays.copyOfRange(tokens, 1, tokens.length));
+                otherDirectives.add(name);
+            }
+        }
         List<String> ignored = new ArrayList<>();
-        Set<String> otherDirectives = other.getDirectives();
-        // Read before merging, since merging adds to the directives of policy
-        Set<String> ownDirectives = Set.copyOf(policy.getDirectives());
         for (String directive : otherDirectives) {
             if (SCRIPT_DIRECTIVES.contains(directive)) {
                 ignored.add(directive);
@@ -245,10 +259,10 @@ public class IndexHtmlResponse {
             }
         }
         if (otherDirectives.contains(DEFAULT_SRC)) {
-            for (String directive : ownDirectives) {
-                if (DEFAULT_SRC_FALLBACK_DIRECTIVES.contains(directive)
-                        && !otherDirectives.contains(directive) && !policy
-                                .getSources(directive).equals(List.of(NONE))) {
+            for (String directive : DEFAULT_SRC_FALLBACK_DIRECTIVES) {
+                List<String> own = policy.getSources(directive);
+                if (!own.isEmpty() && !own.equals(List.of(NONE))
+                        && !otherDirectives.contains(directive)) {
                     addAllowedSources(policy, directive,
                             other.getSources(DEFAULT_SRC));
                 }

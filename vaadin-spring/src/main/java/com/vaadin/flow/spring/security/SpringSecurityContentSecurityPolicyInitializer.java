@@ -65,6 +65,8 @@ import com.vaadin.flow.server.communication.IndexHtmlResponse;
  * headers of that chain available to the request. When Vaadin then writes its
  * page, this listener reads the policy Spring Security would send for the
  * request and merges it.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class SpringSecurityContentSecurityPolicyInitializer
         implements VaadinServiceInitListener {

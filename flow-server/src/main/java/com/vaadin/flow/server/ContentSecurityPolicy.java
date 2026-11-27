@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -57,37 +56,6 @@ public class ContentSecurityPolicy implements Serializable {
     private static final Pattern INVALID_SOURCE = Pattern.compile("[\\s;,]");
 
     private final Map<String, List<String>> directives = new LinkedHashMap<>();
-
-    /**
-     * Parses the value of a {@code Content-Security-Policy} header. When a
-     * directive is repeated, the first one is used and the rest are ignored,
-     * like a browser does.
-     *
-     * @param headerValue
-     *            the header value, e.g.
-     *            {@code "img-src 'self' https://cdn.example.com; frame-ancestors 'none'"},
-     *            not null
-     * @return a new policy with the directives of the header value
-     * @throws IllegalArgumentException
-     *             if a directive name is not valid, or if the value holds
-     *             several policies separated by a comma
-     */
-    public static ContentSecurityPolicy parse(String headerValue) {
-        Objects.requireNonNull(headerValue, "Header value must not be null");
-        ContentSecurityPolicy policy = new ContentSecurityPolicy();
-        for (String directive : headerValue.split(";")) {
-            String[] tokens = directive.strip().split("\\s+");
-            if (tokens[0].isEmpty()) {
-                continue;
-            }
-            String name = normalizeDirective(tokens[0]);
-            if (!policy.directives.containsKey(name)) {
-                policy.setDirective(name,
-                        Arrays.copyOfRange(tokens, 1, tokens.length));
-            }
-        }
-        return policy;
-    }
 
     /**
      * Sets the sources of a directive, replacing any sources it had before.
@@ -160,16 +128,6 @@ public class ContentSecurityPolicy implements Serializable {
         List<String> sources = directives.get(normalizeDirective(directive));
         return sources == null ? List.of()
                 : Collections.unmodifiableList(sources);
-    }
-
-    /**
-     * Gets the names of the directives that are set, in the order they were
-     * first set.
-     *
-     * @return an unmodifiable set of the directive names, in lower case
-     */
-    public Set<String> getDirectives() {
-        return Collections.unmodifiableSet(directives.keySet());
     }
 
     /**

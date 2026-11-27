@@ -4,13 +4,15 @@ Integration tests for the `contentSecurityPolicy=strict` setting in an applicati
 uses Spring Security, where Spring Security is configured with a
 `Content-Security-Policy` of its own.
 
-Both Vaadin and Spring Security want to send the header. The tests pin what
+Both Vaadin and Spring Security want to send the header. Vaadin merges the
+policy of Spring Security into its own for a bootstrap page, so the
+application configures its policy in Spring Security only. The tests pin what
 each response carries:
 
 | Response | Policy |
 |---|---|
-| A bootstrap page | Only the nonce-based policy of Vaadin. The policy of Spring Security is not sent and not merged in. |
-| A bootstrap page, with a directive added through `IndexHtmlResponse.getContentSecurityPolicy()` in an `IndexHtmlRequestListener` | The policy of Vaadin with that directive. This is how an application adds what it would otherwise configure in Spring Security. |
+| A bootstrap page | One policy: the nonce-based policy of Vaadin with the directives of Spring Security merged in. |
+| A bootstrap page, with a directive added through `IndexHtmlResponse.getContentSecurityPolicy()` in an `IndexHtmlRequestListener` | The merged policy with that directive. This is how an application adds what should only apply to Vaadin pages. |
 | A file of the production bundle, `VAADIN/build/*.js` | The policy of Spring Security. |
 | A download served by a `DownloadHandler` | The policy of Spring Security. |
 | A response that Spring Security writes itself, such as a 403 | The policy of Spring Security. |
