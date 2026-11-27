@@ -1234,6 +1234,36 @@ class BundleValidationTest {
                 "a changed file that a definition imports should make the bundle be rebuilt");
     }
 
+    @ParameterizedTest
+    @MethodSource("modes")
+    void importsTheBundleHashesNoFileFor_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // Vite builds both, but the stats hash neither under the path it is
+        // imported by: one has a query, the other no extension
+        setupMode(mode);
+        doReturn(Set.of(UnhashedImportsJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        File frontend = options.getFrontendDirectory();
+        FileUtils.forceMkdir(frontend);
+        Files.writeString(new File(frontend, "definition-styles.css").toPath(),
+                "p {}");
+        Files.writeString(new File(frontend, "definition-probe.js").toPath(),
+                "export const apply = () => {};");
+
+        ObjectNode stats = getBasicStats();
+        String apply = JsCall
+                .functionId(UnhashedImportsJs.class.getMethod("apply"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(apply);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(apply, UnhashedImportsJs.class.getName() + ".apply/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a bundle that carries the function should not be rebuilt for an import it hashes no file for");
+    }
+
     static Stream<Arguments> reachedDefinitions() {
         // The bundle carries the function of AlsoBundledJs only, so it is
         // rebuilt only when BundledJs is reached
@@ -3246,6 +3276,14 @@ class BundleValidationTest {
     interface ImportingBundledJs extends JsInvokers {
         @JsExpression("addon.focus(this, project)")
         void focus();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-styles.css?inline", defaultExport = "styles")
+    @JsDefinitionImport(from = "./definition-probe", namespace = "probe")
+    interface UnhashedImportsJs extends JsInvokers {
+        @JsExpression("probe.apply(this, styles)")
+        void apply();
     }
 
     @JsDefinition

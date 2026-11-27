@@ -1166,7 +1166,8 @@ public final class BundleValidationUtil {
      * are hashed in the stats under the same keys as the imports of the
      * application. They stay in the hashes, as a file can also be one of those
      * imports, which are checked later. An npm package is not hashed, as for
-     * those imports.
+     * those imports, and neither is a file the stats have no hash for under the
+     * path it is imported by.
      */
     private static boolean definitionImportsChanged(Options options,
             JsonNode frontendHashes, List<String> imports) {
@@ -1176,25 +1177,28 @@ public final class BundleValidationUtil {
             if (!importPath.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)) {
                 continue;
             }
-            String content;
-            String key;
-            if (importPath.contains(resourcePath)) {
-                key = importPath.substring(importPath.indexOf(resourcePath)
-                        + resourcePath.length());
-                content = FrontendBuildUtils.getJarResourceString(key,
-                        options.getClassFinder());
-            } else {
-                key = importPath.substring(
-                        FrontendUtils.FRONTEND_FOLDER_ALIAS.length());
-                File file = new File(options.getFrontendDirectory(), key);
-                try {
-                    content = file.isFile() ? Files.readString(file.toPath())
-                            : null;
-                } catch (IOException e) {
-                    getLogger().debug("Could not read {}", file, e);
-                    content = null;
-                }
+            // A query, such as ?inline, is not part of the file name
+            String path = importPath.contains("?")
+                    ? importPath.substring(0, importPath.indexOf('?'))
+                    : importPath;
+            boolean inJar = path.contains(resourcePath);
+            String key = inJar
+                    ? path.substring(
+                            path.indexOf(resourcePath) + resourcePath.length())
+                    : path.substring(
+                            FrontendUtils.FRONTEND_FOLDER_ALIAS.length());
+            if (!frontendHashes.has(key)) {
+                // A file the bundle hashes under another name, such as one
+                // imported without its extension, or does not hash at all.
+                // Whether the bundle carries the import at all is told by the
+                // identifiers of the functions, which hash the imports.
+                continue;
             }
+            String content = inJar
+                    ? FrontendBuildUtils.getJarResourceString(key,
+                            options.getClassFinder())
+                    : readFrontendFile(
+                            new File(options.getFrontendDirectory(), key));
             if (content == null) {
                 getLogger().info("No file found for '{}'", key);
                 return true;
@@ -1207,6 +1211,15 @@ public final class BundleValidationUtil {
             return true;
         }
         return false;
+    }
+
+    private static String readFrontendFile(File file) {
+        try {
+            return file.isFile() ? Files.readString(file.toPath()) : null;
+        } catch (IOException e) {
+            getLogger().debug("Could not read {}", file, e);
+            return null;
+        }
     }
 
     private static Map<String, String> getRemainingImports(

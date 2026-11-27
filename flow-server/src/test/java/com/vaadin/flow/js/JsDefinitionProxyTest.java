@@ -383,6 +383,11 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportOnlyInheritingJs extends ImportingParentJs {
+    }
+
+    @JsDefinition
     @JsDefinitionImport(from = "./grid.js")
     interface ImportWithoutNamesOnlyInheritingJs extends ImportingParentJs {
     }
@@ -1119,6 +1124,9 @@ class JsDefinitionProxyTest {
                 // Declares no method of its own to find the import through
                 Arguments.of(ImportWithoutNamesOnlyInheritingJs.class,
                         "@JsModule"),
+                // The inherited method gets the imports of its own interface
+                Arguments.of(ImportOnlyInheritingJs.class,
+                        "declares no method of its own"),
                 Arguments.of(ImportOfReservedWordJs.class, "'this'"),
                 Arguments.of(ImportOfNonIdentifierJs.class, "'grid-connector'"),
                 Arguments.of(ImportOfArgumentNameJs.class, "'$0'"),

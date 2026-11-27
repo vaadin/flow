@@ -59,6 +59,14 @@ import com.vaadin.flow.component.dependency.JsModule;
  * some views need does not slow down the others. Later calls use the loaded
  * module. A {@link JsModule} on the same interface is still loaded eagerly.
  * <p>
+ * Since the call waits for its modules, even ones that are already loaded, its
+ * JavaScript runs after the JavaScript of the calls that follow it in the same
+ * round trip, rather than in the order of the calls, and two calls that import
+ * different modules may run in either order. When a later call depends on what
+ * this one does, make the later call from the result of this one, for example
+ * by returning {@link com.vaadin.flow.component.page.PendingJavaScriptResult}
+ * and making the next call in its handler.
+ * <p>
  * {@link #from()} is resolved the way {@link JsModule#value()} is: a path
  * starting with <code>./</code> names a file in the frontend folder of the
  * project or in <code>META-INF/frontend</code> of a jar, and any other path

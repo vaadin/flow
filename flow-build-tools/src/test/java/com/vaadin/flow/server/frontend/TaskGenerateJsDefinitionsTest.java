@@ -297,6 +297,13 @@ class TaskGenerateJsDefinitionsTest {
 
     @JsDefinition
     @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public interface ShadowingImportJs extends JsInvokers {
+        @JsExpression("const project = this.project; project.refresh();")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
     public interface ImportingElementMethodJs extends JsInvokers {
         void refresh(String value);
     }
@@ -1439,7 +1446,7 @@ class TaskGenerateJsDefinitionsTest {
                         + "\"] = async function ($0) {",
                 "  const $modules = await Promise.all([import(\"Frontend/generated/jar-resources/addon.js\"), import(\"Frontend/project.js\"), import(\"@vaadin/tooltip\")]);",
                 "  return (async function (init, refresh, project, projectModule, tooltip) {",
-                "init(this, project, projectModule, tooltip, $0);",
+                "{", "init(this, project, projectModule, tooltip, $0);", "}",
                 "  }).call(this, $modules[0][\"init\"], $modules[0][\"refresh\"], $modules[1][\"default\"], $modules[1], $modules[2]);",
                 "};");
         assertTrue(content.contains(function),
@@ -1467,8 +1474,8 @@ class TaskGenerateJsDefinitionsTest {
                                 .getMethod("stop", String.class))
                         + "\"] = async function ($executionContext, $0) {",
                 "  const $modules = await Promise.all([import(\"./project.js\")]);",
-                "  return (async function (project) {",
-                "project.stop($executionContext, $0);",
+                "  return (async function (project) {", "{",
+                "project.stop($executionContext, $0);", "}",
                 "  }).call(this, $modules[0]);", "};");
         assertTrue(content.contains(function),
                 "the context and the arguments should be seen from the function around the expression: "
@@ -1487,10 +1494,47 @@ class TaskGenerateJsDefinitionsTest {
                                 .getMethod("refresh", String.class))
                         + "\"] = async function ($0) {",
                 "  const $modules = await Promise.all([import(\"./project.js\")]);",
-                "  return (async function (project) {",
-                "return this.refresh($0);", "  }).call(this, $modules[0]);",
-                "};");
+                "  return (async function (project) {", "{",
+                "return this.refresh($0);", "}",
+                "  }).call(this, $modules[0]);", "};");
         assertTrue(content.contains(function), content);
+    }
+
+    @Test
+    void importingExpression_declaringAnImportedName_hidesIt() {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ShadowingImportJs.class), false);
+
+        // A const of the same name as a parameter in the function body itself
+        // would not parse, which breaks every function of the file
+        assertTrue(content.contains(String.join(System.lineSeparator(),
+                "  return (async function (project) {", "{",
+                "const project = this.project; project.refresh();", "}")),
+                content);
+    }
+
+    @Test
+    void execute_listsTheModulesTheFunctionsImport()
+            throws ExecutionFailedException, IOException {
+        Options importingOptions = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(ImportingJs.class)), null)
+                .withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+
+        new TaskGenerateJsDefinitions(importingOptions).execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
+        // As the file imports them, which is what vite.generated.ts hashes
+        assertEquals(
+                List.of("@vaadin/tooltip", "Frontend/addon.js",
+                        "Frontend/project.js"),
+                JacksonUtils
+                        .<JsonNode> stream((ArrayNode) written
+                                .get(TaskGenerateJsDefinitions.IMPORTS_KEY))
+                        .map(JsonNode::asString).toList());
     }
 
     @Test

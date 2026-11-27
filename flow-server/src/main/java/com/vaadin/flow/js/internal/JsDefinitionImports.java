@@ -89,7 +89,8 @@ public final class JsDefinitionImports implements Serializable {
         for (JsDefinitionImport annotation : type
                 .getDeclaredAnnotationsByType(JsDefinitionImport.class)) {
             byModule.computeIfAbsent(annotation.from(),
-                    from -> new ArrayList<>()).addAll(bindings(annotation));
+                    from -> new ArrayList<>())
+                    .addAll(collectBindings(annotation));
         }
         return byModule.entrySet().stream()
                 .map(entry -> new ModuleImport(entry.getKey(),
@@ -106,7 +107,7 @@ public final class JsDefinitionImports implements Serializable {
      *            the annotation, not <code>null</code>
      * @return the names, empty when the annotation declares none
      */
-    public static List<Binding> bindings(JsDefinitionImport annotation) {
+    public static List<Binding> collectBindings(JsDefinitionImport annotation) {
         List<Binding> bindings = new ArrayList<>();
         if (!annotation.defaultExport().isEmpty()) {
             bindings.add(new Binding(annotation.defaultExport(), "default"));

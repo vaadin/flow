@@ -32,7 +32,14 @@ anything else:
     `UI.java` or a component. Use this when the script is tied to a
     specific Java API surface and does not need to run at bootstrap
     time.
+  - `META-INF/frontend/xxx.js` as an ES module whose exports a
+    `@JsDefinition` names with `@JsDefinitionImport`. Use this when the
+    script is only reached through calls of that definition: the module
+    sets no global and is loaded the first time one of its methods is
+    called. The call then waits for the module, so its JavaScript runs
+    after the calls that follow it in the same round trip.
 - **Global state and helper functions live under `window.Vaadin.Flow`**
+  unless only a `@JsDefinitionImport` definition calls them
   (e.g. `window.Vaadin.Flow.geolocation`,
   `window.Vaadin.Flow.pageVisibility`,
   `window.Vaadin.Flow.componentSizeObserver`). Use annotations on

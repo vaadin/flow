@@ -1156,7 +1156,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 "  const $modules = await Promise.all(["
                         + String.join(", ", modules) + "]);",
                 "  return (async function (" + String.join(", ", names) + ") {",
-                expression,
+                // In a block of its own, so that a let, const or class of the
+                // expression may hide an imported name rather than clash with
+                // the parameter and stop the whole file from parsing
+                "{", expression, "}",
                 "  }).call(this, " + String.join(", ", values) + ");");
     }
 

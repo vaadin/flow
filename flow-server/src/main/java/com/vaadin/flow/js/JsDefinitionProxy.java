@@ -300,6 +300,7 @@ public final class JsDefinitionProxy {
         // an import it can not have is not ignored
         Set<Class<?>> importingTypes = new LinkedHashSet<>();
         importingTypes.add(definitionType);
+        Set<Class<?>> declaringTypes = new HashSet<>();
         List<String> unmatchable = new ArrayList<>();
         boolean fallback = definitionType
                 .isAnnotationPresent(JsStringFallback.class);
@@ -311,6 +312,7 @@ public final class JsDefinitionProxy {
             // Any method that is not refused below is generated with the
             // imports of the interface that declares it
             importingTypes.add(method.getDeclaringClass());
+            declaringTypes.add(method.getDeclaringClass());
             if (method.isDefault()
                     || Modifier.isStatic(method.getModifiers())) {
                 inJava.add(method.getName());
@@ -392,7 +394,8 @@ public final class JsDefinitionProxy {
                     + " that makes them");
         }
         for (Class<?> importingType : importingTypes) {
-            checkImports(definitionType, importingType, snippets);
+            checkImports(definitionType, importingType, snippets,
+                    declaringTypes.contains(importingType));
         }
     }
 
@@ -400,11 +403,11 @@ public final class JsDefinitionProxy {
      * Checks the {@link JsDefinitionImport imports} of an interface that
      * declares methods of the given definition: they are only for a definition
      * whose functions are asynchronous and run what was declared, every one of
-     * them names something, and every name can be a parameter of the generated
-     * function, once.
+     * them names something, every name can be a parameter of the generated
+     * function, once, and the interface declares a method that gets them.
      */
     private static void checkImports(Class<?> definitionType,
-            Class<?> importingType, boolean snippets) {
+            Class<?> importingType, boolean snippets, boolean declaresMethods) {
         JsDefinitionImport[] imports = importingType
                 .getDeclaredAnnotationsByType(JsDefinitionImport.class);
         if (imports.length == 0) {
@@ -431,7 +434,7 @@ public final class JsDefinitionProxy {
         Set<String> names = new HashSet<>();
         for (JsDefinitionImport declared : imports) {
             List<JsDefinitionImports.Binding> bindings = JsDefinitionImports
-                    .bindings(declared);
+                    .collectBindings(declared);
             if (bindings.isEmpty()) {
                 throw new IllegalArgumentException(declarer
                         + " has @JsDefinitionImport(from = \"" + declared.from()
@@ -459,6 +462,16 @@ public final class JsDefinitionProxy {
                             + " Import one of them as a namespace");
                 }
             }
+        }
+        if (!declaresMethods) {
+            // The imports of an interface are given to the methods it
+            // declares, so these would reach no JavaScript at all
+            throw new IllegalArgumentException(declarer
+                    + " is annotated with @JsDefinitionImport but declares no"
+                    + " method of its own. The imports are given to the"
+                    + " methods of the interface that declares them, so"
+                    + " annotate the interface that declares the methods"
+                    + " that use them");
         }
     }
 
