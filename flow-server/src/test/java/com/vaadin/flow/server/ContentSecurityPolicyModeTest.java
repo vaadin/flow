@@ -45,7 +45,9 @@ import com.vaadin.flow.component.KeyUpEvent;
 import com.vaadin.flow.component.Shortcuts;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.clipboard.Clipboard;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.trigger.internal.SinkTrigger;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.DomEventData;
 import com.vaadin.flow.dom.DomEventFilter;
@@ -289,6 +291,12 @@ class ContentSecurityPolicyModeTest {
             Shortcuts.setShortcutListenOnElementLocator(
                     JsSnippets.of(LocatorJs.class).locateFirstChild(), owner);
             owner.addClickShortcut(Key.ENTER).listenOn(owner);
+            // A client action reads the value a template passes it from a
+            // declared snippet, also when it reports the outcome back
+            new SinkTrigger(owner.getElement(), action -> () -> {
+            }).triggers(Clipboard.writeText(), Clipboard.writeText(text -> {
+            }, error -> {
+            }));
             ui.getInternals().getStateTree()
                     .runExecutionsBeforeClientResponse();
         });
