@@ -25,10 +25,11 @@ import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
- * Runs JavaScript that calls what a module of the frontend folder and a
- * frontend resource, which the build copies as it copies the frontend files of
- * jars, export, imported through {@link JsDefinitionImport}: the modules are in
- * chunks of the bundle that are loaded the first time the definition is called.
+ * Runs JavaScript that calls functions exported by a module of the frontend
+ * folder and by a frontend resource (copied by the build like the frontend
+ * files of jars), both imported through {@link JsDefinitionImport}: the modules
+ * are in chunks of the bundle that are loaded the first time the definition is
+ * called.
  */
 @Route("declared-js-import")
 public class DeclaredJsImportView extends Div {
