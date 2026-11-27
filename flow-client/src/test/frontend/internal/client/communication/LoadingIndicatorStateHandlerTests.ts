@@ -146,7 +146,7 @@ describe('LoadingIndicatorStateHandler', () => {
 
   it('shows loading for a regular UI event', async () => {
     // Ported from test_regularUiEventFlow_loadingVisible.
-    for (const event of ['click', 'change', 'submit']) {
+    for (const event of ['click', 'change', 'submit', 'keydown', 'keyup', 'keypress']) {
       const { handler } = makeHandler();
       handler.processMessage(JsonConstants.RPC_TYPE_EVENT, event);
       handler.startLoading();
@@ -162,7 +162,7 @@ describe('LoadingIndicatorStateHandler', () => {
 
   it('stays muted for a high-frequency UI event', async () => {
     // Ported from test_mutedUiEventFlow_loadingMuted.
-    const mutedEvents = ['mousemove', 'touchmove', 'drag', 'keydown', 'keyup', 'keypress', 'wheel', 'scroll', 'input'];
+    const mutedEvents = ['mousemove', 'touchmove', 'drag', 'wheel', 'scroll', 'input'];
     for (const event of mutedEvents) {
       const { handler } = makeHandler();
       handler.processMessage(JsonConstants.RPC_TYPE_EVENT, event);
