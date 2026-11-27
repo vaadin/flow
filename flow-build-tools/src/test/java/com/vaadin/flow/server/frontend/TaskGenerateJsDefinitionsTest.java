@@ -32,6 +32,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -51,6 +55,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -60,6 +65,7 @@ import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.JsonConstants;
@@ -74,7 +80,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TaskGenerateJsDefinitionsTest {
@@ -262,6 +271,44 @@ class TaskGenerateJsDefinitionsTest {
     private TaskGenerateJsDefinitions task;
     private Options options;
     private File frontendFolder;
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", defaultExport = "project")
+    @JsDefinitionImport(from = "./project.js", namespace = "projectModule")
+    @JsDefinitionImport(from = "./addon.js", exports = { "init", "refresh" })
+    @JsDefinitionImport(from = "./addon.css?inline", defaultExport = "addonStyles")
+    @JsDefinitionImport(from = "@vaadin/tooltip", namespace = "tooltip")
+    public interface ImportingJs extends JsInvokers {
+        @JsExpression("init(this, project, projectModule, tooltip, $0);")
+        void init(String value);
+    }
+
+    @JsDefinition
+    public interface InheritingImportsJs extends ImportingJs {
+    }
+
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public static class NotADefinition {
+    }
+
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    @JsDefinitionImport(from = "./addon.js", namespace = "addon")
+    public static class TwiceNotADefinition {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public interface ImportingElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    public interface ImportingStopperJs extends JsInvokers {
+        @JsExpression("project.stop($executionContext, $0);")
+        @JsWithExecutionContext
+        void stop(String reason);
+    }
 
     @BeforeEach
     void setUp() {
@@ -1365,5 +1412,165 @@ class TaskGenerateJsDefinitionsTest {
                 List.of(EventFallbacks.class));
         assertEquals(written, Files.readString(generated.toPath()),
                 "a second update should add nothing");
+    }
+
+    @Test
+    void importingDefinition_loadsItsModulesWhenCalled()
+            throws NoSuchMethodException {
+        ClassFinder classFinder = mock(ClassFinder.class);
+        when(classFinder.getAnnotatedClasses(JsDefinition.class)).thenReturn(
+                Set.of(ImportingJs.class, InheritingImportsJs.class));
+        when(classFinder.getResource(
+                Constants.RESOURCES_FRONTEND_DEFAULT + "/addon.js"))
+                .thenReturn(TaskGenerateJsDefinitionsTest.class
+                        .getResource("TaskGenerateJsDefinitionsTest.class"));
+        when(classFinder.getResource(
+                Constants.RESOURCES_FRONTEND_DEFAULT + "/addon.css"))
+                .thenReturn(TaskGenerateJsDefinitionsTest.class
+                        .getResource("TaskGenerateJsDefinitionsTest.class"));
+        Options importingOptions = new Options(mock(Lookup.class), classFinder,
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+
+        String content = new TaskGenerateJsDefinitions(importingOptions)
+                .render().content();
+
+        // Files of a jar, one with a query, a file of the project and an npm
+        // package, each
+        // loaded once however many annotations name it, and every name given
+        // as a parameter in the order of the modules
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsDefinitions[\"" + JsCall.functionId(
+                        ImportingJs.class.getMethod("init", String.class))
+                        + "\"] = async function ($0) {",
+                "  const $modules = await Promise.all([import(\"Frontend/generated/jar-resources/addon.css?inline\"), import(\"Frontend/generated/jar-resources/addon.js\"), import(\"Frontend/project.js\"), import(\"@vaadin/tooltip\")]);",
+                "  return (async function (addonStyles, init, refresh, project, projectModule, tooltip) {",
+                "{", "init(this, project, projectModule, tooltip, $0);", "}",
+                "  }).call(this, $modules[0][\"default\"], $modules[1][\"init\"], $modules[1][\"refresh\"], $modules[2][\"default\"], $modules[2], $modules[3]);",
+                "};");
+        assertTrue(content.contains(function),
+                "the modules should be loaded by the function: " + content);
+        // Once for each definition: the inherited method keeps the imports of
+        // the interface that declares it
+        assertEquals(2, content.split(Pattern.quote(function), -1).length - 1,
+                "the inherited method is the function of the interface that declares it: "
+                        + content);
+        assertFalse(
+                Pattern.compile("^import ", Pattern.MULTILINE).matcher(content)
+                        .find(),
+                "nothing should be loaded before a call: " + content);
+    }
+
+    @Test
+    void importingExecutionContextMethod_seesTheContextAndTheArguments()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(ImportingStopperJs.class), false);
+
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsDefinitionsWithExecutionContext[\""
+                        + JsCall.functionId(ImportingStopperJs.class
+                                .getMethod("stop", String.class))
+                        + "\"] = async function ($executionContext, $0) {",
+                "  const $modules = await Promise.all([import(\"./project.js\")]);",
+                "  return (async function (project) {", "{",
+                "project.stop($executionContext, $0);", "}",
+                "  }).call(this, $modules[0]);", "};");
+        assertTrue(content.contains(function),
+                "the context and the arguments should be seen from the function around the expression: "
+                        + content);
+    }
+
+    @Test
+    void importingElementMethod_callsItInTheFunctionAroundTheExpression()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(ImportingElementMethodJs.class), false);
+
+        String function = String.join(System.lineSeparator(),
+                "window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(ImportingElementMethodJs.class
+                                .getMethod("refresh", String.class))
+                        + "\"] = async function ($0) {",
+                "  const $modules = await Promise.all([import(\"./project.js\")]);",
+                "  return (async function (project) {", "{",
+                "return this.refresh($0);", "}",
+                "  }).call(this, $modules[0]);", "};");
+        assertTrue(content.contains(function), content);
+    }
+
+    @Test
+    void execute_listsTheModulesTheFunctionsImport()
+            throws ExecutionFailedException, IOException {
+        Options importingOptions = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(ImportingJs.class)), null)
+                .withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+
+        new TaskGenerateJsDefinitions(importingOptions).execute();
+
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(Files.readString(idsFile.toPath()));
+        // As the file imports them, which is what vite.generated.ts hashes
+        assertEquals(
+                List.of("@vaadin/tooltip", "Frontend/addon.css",
+                        "Frontend/addon.js", "Frontend/project.js"),
+                JacksonUtils
+                        .<JsonNode> stream((ArrayNode) written
+                                .get(TaskGenerateJsDefinitions.IMPORTS_KEY))
+                        .map(JsonNode::asString).toList());
+    }
+
+    @Test
+    void importOnATypeThatIsNotADefinition_isReported() {
+        ClassFinder classFinder = mock(ClassFinder.class);
+        when(classFinder.getAnnotatedClasses(JsDefinitionImport.class))
+                .thenReturn(Set.of(NotADefinition.class, ImportingJs.class));
+        // Found only through the container when annotated twice
+        when(classFinder
+                .getAnnotatedClasses(JsDefinitionImport.Container.class))
+                .thenReturn(
+                        Set.of(TwiceNotADefinition.class, ImportingJs.class));
+        Options reportingOptions = new Options(mock(Lookup.class), classFinder,
+                null).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(TaskGenerateJsDefinitions.class))
+                    .thenReturn(logger);
+
+            new TaskGenerateJsDefinitions(reportingOptions).render();
+        }
+
+        verify(logger).error(anyString(), eq(NotADefinition.class.getName()));
+        verify(logger).error(anyString(),
+                eq(TwiceNotADefinition.class.getName()));
+        // An interface is reported by the definitions it is wrong for
+        Mockito.verifyNoMoreInteractions(logger);
+    }
+
+    @Test
+    void updateJsDefinitions_importingDefinition_resolvesItsModules()
+            throws ExecutionFailedException, IOException {
+        task.execute();
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        assertEquals(List.of(ImportingJs.class),
+                TaskGenerateJsDefinitions.findMissingFromGeneratedFile(options,
+                        List.of(ImportingJs.class)));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(ImportingJs.class));
+
+        assertTrue(Files.readString(generated.toPath())
+                .contains("import(\"Frontend/project.js\")"));
+        assertTrue(TaskGenerateJsDefinitions.findMissingFromGeneratedFile(
+                options, List.of(ImportingJs.class)).isEmpty());
     }
 }

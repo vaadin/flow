@@ -45,6 +45,7 @@ import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -235,14 +236,17 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
     /**
      * The least the generated file needs to be read and written: where the
-     * project is and where its frontend folder is. No class finder, since what
-     * the file has to hold is passed in rather than scanned for.
+     * project is and where its frontend folder is, and a class finder that only
+     * finds resources, which tell whether the module of an import is a frontend
+     * file of a jar. It finds no classes, since what the file has to hold is
+     * passed in rather than scanned for.
      */
     private static Options buildOptions(VaadinService service) {
         AbstractConfiguration configuration = service
                 .getDeploymentConfiguration();
         return new Options(service.getContext().getAttribute(Lookup.class),
-                null, configuration.getProjectFolder()).withFrontendDirectory(
+                new ClassFinder.DefaultClassFinder(service.getClassLoader()),
+                configuration.getProjectFolder()).withFrontendDirectory(
                         FrontendUtils.getProjectFrontendDir(configuration));
     }
 

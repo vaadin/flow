@@ -31,9 +31,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
@@ -338,6 +342,130 @@ class JsDefinitionProxyTest {
         @JsExpression("console.log($executionContext);")
         @JsWithExecutionContext
         JsFunction createLogger();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", defaultExport = "grid")
+    @JsDefinitionImport(from = "./grid.js", namespace = "gridModule", exports = {
+            "init", "refresh" })
+    @JsDefinitionImport(from = "@vaadin/tooltip", exports = "Tooltip")
+    interface ImportingJs extends JsInvokers {
+        @JsExpression("grid.init(this, Tooltip)")
+        void init();
+    }
+
+    @JsDefinitionImport(from = "./grid.js", namespace = "inherited")
+    interface ImportingParentJs extends JsInvokers {
+        @JsExpression("inherited.refresh(this)")
+        void refresh();
+    }
+
+    @JsDefinition
+    interface ImportingChildJs extends ImportingParentJs {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./list.js", namespace = "inherited")
+    interface ImportingOtherModuleJs extends JsInvokers {
+        @JsExpression("inherited.refresh(this)")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportingElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    interface ElementMethodJs extends JsInvokers {
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportOnlyInheritingJs extends ImportingParentJs {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js")
+    interface ImportWithoutNamesOnlyInheritingJs extends ImportingParentJs {
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js")
+    interface ImportWithoutNamesJs extends JsInvokers {
+        @JsExpression("this.refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", defaultExport = "this")
+    interface ImportOfReservedWordJs extends JsInvokers {
+        @JsExpression("this.refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", exports = "grid-connector")
+    interface ImportOfNonIdentifierJs extends JsInvokers {
+        @JsExpression("this.refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "$0")
+    interface ImportOfArgumentNameJs extends JsInvokers {
+        @JsExpression("this.refresh($0)")
+        void refresh(String value);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "$executionContext")
+    interface ImportOfExecutionContextNameJs extends JsInvokers {
+        @JsExpression("this.refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", defaultExport = "grid", namespace = "grid")
+    interface ImportOfNameTwiceJs extends JsInvokers {
+        @JsExpression("grid.refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", exports = "refresh")
+    @JsDefinitionImport(from = "./list.js", exports = "refresh")
+    interface ImportOfNameFromTwoModulesJs extends JsInvokers {
+        @JsExpression("refresh()")
+        void refresh();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportingSnippetsJs extends JsSnippets {
+        @JsExpression("grid.refresh()")
+        JsFunction refresh();
+    }
+
+    @JsDefinition
+    interface InheritingImportSnippetsJs
+            extends JsSnippets, ImportingSnippetsParentJs {
+    }
+
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportingSnippetsParentJs {
+        @JsExpression("grid.refresh()")
+        JsFunction refresh();
+    }
+
+    @JsDefinition
+    @JsStringFallback
+    @JsDefinitionImport(from = "./grid.js", namespace = "grid")
+    interface ImportingFallbacks extends JsInvokers {
+        @JsExpression("grid.refresh()")
+        void refresh();
     }
 
     private final List<JsCall> calls = new ArrayList<>();
@@ -981,5 +1109,80 @@ class JsDefinitionProxyTest {
         bundleUtils.verify(() -> BundleUtils
                 .checkJsFunctionsBundled(eq(definition), ids.capture()));
         return Set.copyOf(ids.getValue().get());
+    }
+
+    @Test
+    void checkDefinition_importsMergedAndInherited_pass() {
+        assertEquals(JsDefinitionProxy.Kind.CALLS,
+                JsDefinitionProxy.checkDefinition(ImportingJs.class));
+        assertEquals(JsDefinitionProxy.Kind.CALLS,
+                JsDefinitionProxy.checkDefinition(ImportingChildJs.class));
+    }
+
+    static Stream<Arguments> refusedImports() {
+        return Stream.of(Arguments.of(ImportWithoutNamesJs.class, "@JsModule"),
+                // Declares no method of its own to find the import through
+                Arguments.of(ImportWithoutNamesOnlyInheritingJs.class,
+                        "@JsModule"),
+                // The inherited method gets the imports of its own interface
+                Arguments.of(ImportOnlyInheritingJs.class,
+                        "declares no method of its own"),
+                Arguments.of(ImportOfReservedWordJs.class, "'this'"),
+                Arguments.of(ImportOfNonIdentifierJs.class, "'grid-connector'"),
+                Arguments.of(ImportOfArgumentNameJs.class, "'$0'"),
+                Arguments.of(ImportOfExecutionContextNameJs.class,
+                        "'$executionContext'"),
+                Arguments.of(ImportOfNameTwiceJs.class,
+                        "'grid' more than once"),
+                Arguments.of(ImportOfNameFromTwoModulesJs.class,
+                        "'refresh' more than once"),
+                Arguments.of(ImportingSnippetsJs.class, "JsInvokers"),
+                Arguments.of(InheritingImportSnippetsJs.class,
+                        ImportingSnippetsParentJs.class.getName()),
+                Arguments.of(ImportingFallbacks.class, "@JsStringFallback"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("refusedImports")
+    void checkDefinition_importThatCanNotBeGenerated_throws(Class<?> definition,
+            String expectedInMessage) {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(definition));
+
+        assertTrue(exception.getMessage().contains("@JsDefinitionImport"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains(expectedInMessage),
+                exception.getMessage());
+    }
+
+    @Test
+    void elementMethodWithImports_isAnotherFunctionOfTheElementMethod()
+            throws NoSuchMethodException {
+        assertEquals(JsDefinitionProxy.Kind.CALLS, JsDefinitionProxy
+                .checkDefinition(ImportingElementMethodJs.class));
+        Method importing = ImportingElementMethodJs.class.getMethod("refresh",
+                String.class);
+        assertEquals("return this.refresh($0);",
+                JsCall.declaredExpression(importing));
+        assertNotEquals(JsCall.functionId(
+                ElementMethodJs.class.getMethod("refresh", String.class)),
+                JsCall.functionId(importing));
+    }
+
+    @Test
+    void functionId_imports_tellApartTheSameJavaScript()
+            throws NoSuchMethodException {
+        String importing = JsCall
+                .functionId(ImportingParentJs.class.getMethod("refresh"));
+        String plain = JsCall.functionId("inherited.refresh(this)", 0, false);
+        assertNotEquals(plain, importing);
+        assertNotEquals(
+                JsCall.functionId(
+                        ImportingOtherModuleJs.class.getMethod("refresh")),
+                importing);
+        // Called through the child, the method still has its parent's imports
+        assertEquals(importing,
+                JsCall.functionId(ImportingChildJs.class.getMethod("refresh")));
     }
 }
