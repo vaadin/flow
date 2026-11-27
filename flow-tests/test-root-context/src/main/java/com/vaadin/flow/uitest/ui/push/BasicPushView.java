@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui.push;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
@@ -24,6 +25,14 @@ import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 @CustomPush
 @Route(value = "com.vaadin.flow.uitest.ui.push.BasicPushView", layout = ViewTestLayout.class)
 public class BasicPushView extends ClientServerCounter {
+
+    public static final String CLOSE_PUSH_LATER_ID = "close-push-later";
+
+    /**
+     * Delay before the push connection is closed, giving the test time to
+     * prepare the reconnect.
+     */
+    public static final int CLOSE_PUSH_DELAY_MS = 2000;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
@@ -36,5 +45,22 @@ public class BasicPushView extends ClientServerCounter {
 
         ui.getPushConfiguration().setPushMode(push.value());
         ui.getPushConfiguration().setTransport(push.transport());
+
+        // Lets a test close the push connection from the server, so that the
+        // client opens a new one
+        NativeButton closePushLater = new NativeButton(
+                "Close push connection in " + CLOSE_PUSH_DELAY_MS + " ms",
+                event -> new Thread(() -> {
+                    try {
+                        Thread.sleep(CLOSE_PUSH_DELAY_MS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                    ui.access(() -> ui.getInternals().getPushConnection()
+                            .disconnect());
+                }).start());
+        closePushLater.setId(CLOSE_PUSH_LATER_ID);
+        add(closePushLater);
     }
 }

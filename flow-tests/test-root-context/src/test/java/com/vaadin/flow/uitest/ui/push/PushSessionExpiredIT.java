@@ -21,18 +21,11 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category({ PushTests.class, IgnoreOSGi.class })
-public class SsePushSessionExpiredIT extends ChromeBrowserTest {
-
-    @Override
-    protected Class<? extends Component> getViewClass() {
-        return SsePushReconnectView.class;
-    }
+@Category(PushTests.class)
+public abstract class PushSessionExpiredIT extends ChromeBrowserTest {
 
     @Test
     public void sessionGone_pushReconnects_pageReloads() {
@@ -45,7 +38,7 @@ public class SsePushSessionExpiredIT extends ChromeBrowserTest {
 
         // As after a server restart: the server closes the push connection,
         // and the session is gone when the client opens a new one
-        findElement(By.id(SsePushReconnectView.CLOSE_PUSH_LATER_ID)).click();
+        findElement(By.id(BasicPushView.CLOSE_PUSH_LATER_ID)).click();
         getDriver().manage().deleteCookieNamed("JSESSIONID");
 
         // The new push connection is answered with the session expired
