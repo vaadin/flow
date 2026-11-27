@@ -124,18 +124,24 @@ class FrontendModuleResolver {
      * it is. Unlike {@link #toValidBrowserImport(String)}, a path starting with
      * {@code ./} is resolved even before the file is there, since the frontend
      * files of jars are copied after some files that import them are generated.
+     * A query, such as {@code ?inline}, is kept on the resolved path, but not
+     * used to find the file.
      *
      * @param modulePath
      *            the path as it is declared, not <code>null</code>
      * @return the path to import the module by, not <code>null</code>
      */
     String resolveImport(String modulePath) {
-        String resolved = resolveResource(modulePath);
+        int queryStart = modulePath.lastIndexOf('?');
+        String query = queryStart < 0 ? "" : modulePath.substring(queryStart);
+        String resolved = resolveResource(
+                modulePath.substring(0, modulePath.length() - query.length()));
         if (resolved.startsWith("./")) {
             return FRONTEND_FOLDER_ALIAS
-                    + STARTING_DOT_SLASH.matcher(resolved).replaceFirst("");
+                    + STARTING_DOT_SLASH.matcher(resolved).replaceFirst("")
+                    + query;
         }
-        return toValidBrowserImport(resolved);
+        return toValidBrowserImport(resolved) + query;
     }
 
     private boolean hasMetaInfResource(String resource) {

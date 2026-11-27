@@ -231,9 +231,11 @@ server bug.
 
 Put non-trivial JavaScript in its own file rather than inlining it in a Java
 string, and prefer TypeScript for new files. See
-`guidelines/browser-integration.md` for which of the two homes to use.
+`guidelines/browser-integration.md` for which of the three homes to use.
 
-Keep client-side global state and helper functions under `window.Vaadin.Flow`.
+Keep client-side global state and helper functions under `window.Vaadin.Flow`,
+unless only `@JsDefinitionImport` definitions use them: such a module exports
+them and sets no global.
 
 Make `init(element)` installers idempotent. Track installations per element
 with a `WeakMap` and dispose the previous listeners before attaching new ones.

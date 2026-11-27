@@ -276,6 +276,7 @@ class TaskGenerateJsDefinitionsTest {
     @JsDefinitionImport(from = "./project.js", defaultExport = "project")
     @JsDefinitionImport(from = "./project.js", namespace = "projectModule")
     @JsDefinitionImport(from = "./addon.js", exports = { "init", "refresh" })
+    @JsDefinitionImport(from = "./addon.css?inline", defaultExport = "addonStyles")
     @JsDefinitionImport(from = "@vaadin/tooltip", namespace = "tooltip")
     public interface ImportingJs extends JsInvokers {
         @JsExpression("init(this, project, projectModule, tooltip, $0);")
@@ -1423,6 +1424,10 @@ class TaskGenerateJsDefinitionsTest {
                 Constants.RESOURCES_FRONTEND_DEFAULT + "/addon.js"))
                 .thenReturn(TaskGenerateJsDefinitionsTest.class
                         .getResource("TaskGenerateJsDefinitionsTest.class"));
+        when(classFinder.getResource(
+                Constants.RESOURCES_FRONTEND_DEFAULT + "/addon.css"))
+                .thenReturn(TaskGenerateJsDefinitionsTest.class
+                        .getResource("TaskGenerateJsDefinitionsTest.class"));
         Options importingOptions = new Options(mock(Lookup.class), classFinder,
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(false);
@@ -1430,17 +1435,18 @@ class TaskGenerateJsDefinitionsTest {
         String content = new TaskGenerateJsDefinitions(importingOptions)
                 .render().content();
 
-        // A file of a jar, a file of the project and an npm package, each
+        // Files of a jar, one with a query, a file of the project and an npm
+        // package, each
         // loaded once however many annotations name it, and every name given
         // as a parameter in the order of the modules
         String function = String.join(System.lineSeparator(),
                 "window.Vaadin.Flow.jsDefinitions[\"" + JsCall.functionId(
                         ImportingJs.class.getMethod("init", String.class))
                         + "\"] = async function ($0) {",
-                "  const $modules = await Promise.all([import(\"Frontend/generated/jar-resources/addon.js\"), import(\"Frontend/project.js\"), import(\"@vaadin/tooltip\")]);",
-                "  return (async function (init, refresh, project, projectModule, tooltip) {",
+                "  const $modules = await Promise.all([import(\"Frontend/generated/jar-resources/addon.css?inline\"), import(\"Frontend/generated/jar-resources/addon.js\"), import(\"Frontend/project.js\"), import(\"@vaadin/tooltip\")]);",
+                "  return (async function (addonStyles, init, refresh, project, projectModule, tooltip) {",
                 "{", "init(this, project, projectModule, tooltip, $0);", "}",
-                "  }).call(this, $modules[0][\"init\"], $modules[0][\"refresh\"], $modules[1][\"default\"], $modules[1], $modules[2]);",
+                "  }).call(this, $modules[0][\"default\"], $modules[1][\"init\"], $modules[1][\"refresh\"], $modules[2][\"default\"], $modules[2], $modules[3]);",
                 "};");
         assertTrue(content.contains(function),
                 "the modules should be loaded by the function: " + content);
@@ -1509,8 +1515,8 @@ class TaskGenerateJsDefinitionsTest {
                 .readTree(Files.readString(idsFile.toPath()));
         // As the file imports them, which is what vite.generated.ts hashes
         assertEquals(
-                List.of("@vaadin/tooltip", "Frontend/addon.js",
-                        "Frontend/project.js"),
+                List.of("@vaadin/tooltip", "Frontend/addon.css",
+                        "Frontend/addon.js", "Frontend/project.js"),
                 JacksonUtils
                         .<JsonNode> stream((ArrayNode) written
                                 .get(TaskGenerateJsDefinitions.IMPORTS_KEY))
