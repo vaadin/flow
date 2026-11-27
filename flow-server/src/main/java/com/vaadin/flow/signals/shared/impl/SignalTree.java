@@ -257,6 +257,15 @@ public abstract class SignalTree implements Serializable {
      * snapshot. The observer is removed when invoked and needs to be registered
      * again if it's still relevant unless it returns <code>true</code>. It is
      * safe to register the observer again from within the callback.
+     * <p>
+     * If the current transaction shows an older version of the node than the
+     * submitted snapshot, e.g. because it provides repeatable reads and the
+     * node has been changed outside it, then the observer is instead added once
+     * that transaction has been finalized, see
+     * {@link Transaction#runAfterFinalize(Runnable)}. At that point, it is
+     * invoked right away with <code>immediate</code> set to <code>true</code>,
+     * in the context of the code that finalized the transaction, as if the node
+     * had changed at that moment.
      *
      * @param nodeId
      *            the id of the node to observe, not <code>null</code>
@@ -280,13 +289,19 @@ public abstract class SignalTree implements Serializable {
                 return observeAfterFinalize(transaction, nodeId, observer);
             }
 
-            List<TransientListener> list = observers.computeIfAbsent(nodeId,
-                    ignore -> new ArrayList<>());
-
-            list.add(observer);
-
-            return wrapWithLock(() -> list.remove(observer))::run;
+            return addObserver(nodeId, observer);
         }));
+    }
+
+    private Registration addObserver(Id nodeId, TransientListener observer) {
+        assert lock.isHeldByCurrentThread();
+
+        List<TransientListener> list = observers.computeIfAbsent(nodeId,
+                ignore -> new ArrayList<>());
+
+        list.add(observer);
+
+        return wrapWithLock(() -> list.remove(observer))::run;
     }
 
     /*
@@ -315,13 +330,22 @@ public abstract class SignalTree implements Serializable {
     }
 
     private Registration notifyDeferred(Id nodeId, TransientListener observer) {
-        boolean listenToNext = Objects
-                .requireNonNull(getWithLock(() -> observer.invoke(false)));
-        if (listenToNext) {
-            return observeNextChange(nodeId, observer);
-        }
-        return () -> {
-        };
+        Transaction transaction = Transaction.getCurrent();
+
+        // Hold the lock so that a change between notifying and adding the
+        // observer isn't missed
+        return Objects.requireNonNull(getWithLock(() -> {
+            if (isChangeHidden(transaction, nodeId)) {
+                return observeAfterFinalize(transaction, nodeId, observer);
+            }
+
+            // The change happened before the observer was added
+            if (observer.invoke(true)) {
+                return addObserver(nodeId, observer);
+            }
+            return () -> {
+            };
+        }));
     }
 
     /**

@@ -478,6 +478,29 @@ public class SharedValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void usageTracking_hiddenChangeRevertedBeforeTransactionEnds_listenerKeepsListening() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> {
+                signal.set("changed");
+                signal.set("initial");
+            });
+
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
+            });
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of(), notified);
+
+        signal.set("later");
+        assertEquals(List.of("later"), notified);
+    }
+
+    @Test
     void usageTracking_listenerRemovedAfterTransactionEnds_notNotifiedAgain() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<String> notified = new ArrayList<>();

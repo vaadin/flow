@@ -53,6 +53,36 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TransactionTest extends SignalTestBase {
 
     @Test
+    void finalizeTransaction_taskThrows_remainingTasksRunAndErrorReported() {
+        Transaction transaction = Transaction.createWriteThrough();
+        List<String> ran = new ArrayList<>();
+        List<Throwable> reported = new ArrayList<>();
+        RuntimeException failure = new RuntimeException("failure");
+
+        transaction.runAfterFinalize(() -> {
+            throw failure;
+        });
+        transaction.runAfterFinalize(() -> ran.add("second"));
+
+        Thread thread = Thread.currentThread();
+        Thread.UncaughtExceptionHandler oldHandler = thread
+                .getUncaughtExceptionHandler();
+        thread.setUncaughtExceptionHandler((t, e) -> reported.add(e));
+        try {
+            transaction.finalizeTransaction();
+        } finally {
+            thread.setUncaughtExceptionHandler(oldHandler);
+        }
+
+        assertEquals(List.of("second"), ran);
+        assertEquals(List.of(failure), reported);
+
+        // Tasks run only once
+        transaction.finalizeTransaction();
+        assertEquals(List.of("second"), ran);
+    }
+
+    @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 

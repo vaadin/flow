@@ -538,6 +538,8 @@ class ElementEffectTest {
 
         assertEquals(List.of("initial", "changed"), observed);
         assertEquals(List.of(false, true), backgroundChanges);
+        // Running the access tasks also ended the stale session snapshot
+        assertEquals("changed", signal.peek());
     }
 
     @Test
