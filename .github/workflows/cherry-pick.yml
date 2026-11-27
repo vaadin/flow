@@ -21,24 +21,13 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # Gated on the credential rather than on a repository name, per CONVENTIONS.md:
-  # a fork is never handed this repository's secrets and skips the job, and a fork
-  # owner who configures their own token gets the same workflow there. The probe
-  # exists because a job level if cannot read the secrets context.
-  has-token:
-    runs-on: ubuntu-latest
-    permissions: {}
-    outputs:
-      present: ${{ steps.probe.outputs.present }}
-    steps:
-      - id: probe
-        env:
-          TOKEN: ${{ secrets.CHERRY_PICK_TOKEN }}
-        run: echo "present=${TOKEN:+true}" >> "$GITHUB_OUTPUT"
-
+  # Gated on a repository variable rather than on a repository name, per
+  # CONVENTIONS.md. A repository that wants this sets CHERRY_PICK_ENABLED and is
+  # granted CHERRY_PICK_TOKEN; anywhere else the job is skipped before a runner
+  # is involved. The token cannot be the condition itself: a job level if cannot
+  # read the secrets context.
   cherry-pick:
-    needs: has-token
-    if: needs.has-token.outputs.present == 'true'
+    if: vars.CHERRY_PICK_ENABLED == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 180
     permissions:
