@@ -75,6 +75,24 @@ public class SpringSecurityPolicyIT {
     }
 
     @Test
+    public void bootstrapPageOfPathWithoutPolicyOfSpringSecurity_carriesNoPolicy()
+            throws Exception {
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            HttpResponse<String> response = fetch(client,
+                    "/" + SecurityConfig.PATH_WITHOUT_SPRING_SECURITY_POLICY);
+
+            assertEquals(200, response.statusCode());
+            // Where the policy applies is configured in Spring Security, and
+            // Vaadin does not send its own policy in place of it
+            assertEquals(List.of(), response.headers().allValues(HEADER));
+            assertTrue(
+                    Pattern.compile("<script[^>]* nonce=\"[^\"]+\"")
+                            .matcher(response.body()).find(),
+                    "No script with a nonce in: " + response.body());
+        }
+    }
+
+    @Test
     public void bootstrapPage_carriesTheOtherHeadersOfSpringSecurity()
             throws Exception {
         try (HttpClient client = HttpClient.newHttpClient()) {

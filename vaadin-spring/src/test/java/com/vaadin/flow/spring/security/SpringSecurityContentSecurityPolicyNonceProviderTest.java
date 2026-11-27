@@ -118,6 +118,21 @@ class SpringSecurityContentSecurityPolicyNonceProviderTest {
     }
 
     @Test
+    void policyInSpringSecurityForOtherPaths_noPolicyIsSent() throws Exception {
+        http.headers(headers -> headers.contentSecurityPolicy(policy -> policy
+                .policyDirectives("script-src 'nonce-{nonce}' 'strict-dynamic'")
+                .requestMatchers("/api/**")));
+
+        List<String> nonces = new ArrayList<>();
+        MockHttpServletResponse response = serve(nonces);
+
+        // Spring Security creates the nonce for every request, and decides
+        // where its policy applies
+        assertEquals(22, nonces.get(0).length(), nonces.get(0));
+        assertEquals(List.of(), response.getHeaders(HEADER));
+    }
+
+    @Test
     void noPolicyInSpringSecurity_noNonce() throws Exception {
         http.headers(Customizer.withDefaults());
 

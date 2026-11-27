@@ -20,6 +20,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
@@ -46,10 +48,20 @@ public class SecurityConfig {
             + "worker-src 'self'; object-src 'none'; base-uri 'self'; "
             + "form-action 'self'";
 
+    /**
+     * A path that the policy of Spring Security is not sent for. Spring
+     * Security decides where its policy applies, so a Vaadin page of this path
+     * is sent without a policy.
+     */
+    public static final String PATH_WITHOUT_SPRING_SECURITY_POLICY = "no-spring-security-policy";
+
     @Bean
     SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
-        http.headers(headers -> headers.contentSecurityPolicy(
-                csp -> csp.policyDirectives(SPRING_SECURITY_POLICY)));
+        http.headers(headers -> headers.contentSecurityPolicy(csp -> csp
+                .policyDirectives(SPRING_SECURITY_POLICY)
+                .requestMatcher(new NegatedRequestMatcher(
+                        PathPatternRequestMatcher.withDefaults().matcher(
+                                "/" + PATH_WITHOUT_SPRING_SECURITY_POLICY)))));
         http.with(vaadin(), cfg -> {
         });
         return http.build();
