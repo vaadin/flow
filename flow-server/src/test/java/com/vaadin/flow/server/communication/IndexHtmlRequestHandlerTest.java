@@ -588,6 +588,15 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("", initialUidlScript.attr("initial"));
     }
 
+    private static void assertInitialScriptWithEmptyUidl(
+            Element initialUidlScript) {
+        // window.Vaadin.Flow must exist before the ready script assigns to it
+        assertEquals("window.Vaadin = window.Vaadin || {};"
+                + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
+                + BootstrapHandler.READY_JS + "window.Vaadin.TypeScript= {};",
+                initialUidlScript.childNode(0).toString());
+    }
+
     @Test
     public void oldBrowserCheck_usesOnlySyntaxThatOldBrowsersParse()
             throws IOException {
@@ -628,9 +637,7 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
 
-        assertEquals(
-                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
-                initialUidlScript.childNode(0).toString());
+        assertInitialScriptWithEmptyUidl(initialUidlScript);
         assertEquals("", initialUidlScript.attr("initial"));
     }
 
@@ -702,9 +709,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
-        assertEquals(
-                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
-                initialUidlScript.childNode(0).toString());
+        assertInitialScriptWithEmptyUidl(initialUidlScript);
         assertEquals("", initialUidlScript.attr("initial"));
         assertNull(UI.getCurrent());
     }
