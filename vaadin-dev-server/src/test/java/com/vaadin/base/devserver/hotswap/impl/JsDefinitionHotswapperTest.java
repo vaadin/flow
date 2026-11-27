@@ -84,6 +84,13 @@ class JsDefinitionHotswapperTest {
     }
 
     @JsDefinition
+    @JsDefinitionImport(from = "./js-definition-hotswap-addon.js", exports = "greet")
+    interface JarImportingGreeterJs extends JsInvokers {
+        @JsExpression("greet(this, $0)")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
     interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
@@ -302,6 +309,25 @@ class JsDefinitionHotswapperTest {
         String generated = readGeneratedDefinitions();
         assertTrue(generated.contains("greet(this, $0)"), generated);
         assertTrue(generated.contains("import(\"Frontend/greeting.js\")"),
+                generated);
+    }
+
+    @Test
+    void jarImportingDefinitionChanged_frontendDevServerRunning_importsTheCopiedFile()
+            throws IOException {
+        writeGeneratedDefinitionsFor(JarImportingGreeterJs.class);
+        editGeneratedDefinitions("greet(this, $0)", "greet($0)");
+        withFrontendDevServer();
+
+        classesChanged(JarImportingGreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        // Found in META-INF/frontend on the class path of the application,
+        // as the build finds it
+        String generated = readGeneratedDefinitions();
+        assertTrue(generated.contains(
+                "import(\"Frontend/generated/jar-resources/js-definition-hotswap-addon.js\")"),
                 generated);
     }
 
