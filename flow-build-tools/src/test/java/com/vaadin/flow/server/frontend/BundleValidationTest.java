@@ -1185,7 +1185,7 @@ class BundleValidationTest {
     static Stream<Arguments> modesAndImportedFileContents() {
         // What the frontend file of the project, imported with a query, and
         // the one of a jar that a definition imports hold, when the bundle was
-        // built with the first. No project file at all is a deleted one.
+        // built with the first. No file at all is a deleted one.
         return modes().flatMap(mode -> Stream.of(
                 Arguments.of(mode, "export const project = 1;",
                         "export const addon = 1;", false),
@@ -1193,7 +1193,8 @@ class BundleValidationTest {
                         "export const addon = 1;", true),
                 Arguments.of(mode, "export const project = 1;",
                         "export const addon = 2;", true),
-                Arguments.of(mode, null, "export const addon = 1;", true)));
+                Arguments.of(mode, null, "export const addon = 1;", true),
+                Arguments.of(mode, "export const project = 1;", null, true)));
     }
 
     @ParameterizedTest
@@ -1206,18 +1207,23 @@ class BundleValidationTest {
         doReturn(Set.of(ImportingBundledJs.class)).when(finder)
                 .getAnnotatedClasses(JsDefinition.class);
         doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
-        // Found in a jar, so imported from where the build copies it
-        doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
-                .toURL()).when(finder)
-                .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
-                        + "/definition-addon.js");
+        // Found in a jar, so imported from where the build copies it. A jar
+        // that is gone takes the file off the class path too.
+        if (addonContent != null) {
+            doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
+                    .toURL()).when(finder)
+                    .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
+                            + "/definition-addon.js");
+        }
         File projectFile = new File(options.getFrontendDirectory(),
                 "definition-project.js");
         FileUtils.forceMkdir(projectFile.getParentFile());
         if (projectContent != null) {
             Files.writeString(projectFile.toPath(), projectContent);
         }
-        jarResources.put("definition-addon.js", addonContent);
+        if (addonContent != null) {
+            jarResources.put("definition-addon.js", addonContent);
+        }
 
         ObjectNode stats = getBasicStats();
         ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);

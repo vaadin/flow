@@ -291,6 +291,15 @@ class TaskGenerateJsDefinitionsTest {
     public static class NotADefinition {
     }
 
+    // An interface with imports that extends no marker interface. Not
+    // reported here: the definitions that extend it check its imports.
+    @JsDefinitionImport(from = "./project.js", namespace = "project")
+    @JsDefinitionImport(from = "./addon.js", namespace = "addon")
+    public interface ImportingMixin {
+        @JsExpression("project.run(this, addon)")
+        void run();
+    }
+
     @JsDefinitionImport(from = "./project.js", namespace = "project")
     @JsDefinitionImport(from = "./addon.js", namespace = "addon")
     public static class TwiceNotADefinition {
@@ -1527,12 +1536,13 @@ class TaskGenerateJsDefinitionsTest {
     void importOnATypeThatIsNotADefinition_isReported() {
         ClassFinder classFinder = mock(ClassFinder.class);
         when(classFinder.getAnnotatedClasses(JsDefinitionImport.class))
-                .thenReturn(Set.of(NotADefinition.class, ImportingJs.class));
+                .thenReturn(Set.of(NotADefinition.class, ImportingJs.class,
+                        ImportingMixin.class));
         // Found only through the container when annotated twice
         when(classFinder
                 .getAnnotatedClasses(JsDefinitionImport.Container.class))
-                .thenReturn(
-                        Set.of(TwiceNotADefinition.class, ImportingJs.class));
+                .thenReturn(Set.of(TwiceNotADefinition.class, ImportingJs.class,
+                        ImportingMixin.class));
         Options reportingOptions = new Options(mock(Lookup.class), classFinder,
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(false);

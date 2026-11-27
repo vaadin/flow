@@ -84,6 +84,13 @@ class JsDefinitionHotswapperTest {
     }
 
     @JsDefinition
+    @JsDefinitionImport(from = "./js-definition-hotswap-addon.js", exports = "greet")
+    interface JarImportingGreeterJs extends JsInvokers {
+        @JsExpression("greet(this, $0)")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
     interface CounterJs extends JsInvokers {
         @JsExpression("this.count = ($0 || 0) + 1")
         void count(Integer from);
@@ -110,6 +117,24 @@ class JsDefinitionHotswapperTest {
     interface ScrollableJs extends JsInvokers {
         @JsExpression("this.scrollTop = $0")
         void scrollTo(int top);
+    }
+
+    // Only extended, and imports what its JavaScript calls
+    @JsDefinitionImport(from = "./scroll.js", namespace = "scroll")
+    interface ImportingScrollableJs extends JsInvokers {
+        @JsExpression("scroll.to(this, $0)")
+        void scrollTo(int top);
+    }
+
+    // What ImportingScrollableJs is redefined to: only the import changes
+    @JsDefinitionImport(from = "./smooth-scroll.js", namespace = "scroll")
+    interface EditedImportingScrollableJs extends JsInvokers {
+        @JsExpression("scroll.to(this, $0)")
+        void scrollTo(int top);
+    }
+
+    @JsDefinition
+    interface ImportingScrollingListJs extends ImportingScrollableJs {
     }
 
     // What ScrollableJs is redefined to
@@ -284,6 +309,26 @@ class JsDefinitionHotswapperTest {
         String generated = readGeneratedDefinitions();
         assertTrue(generated.contains("greet(this, $0)"), generated);
         assertTrue(generated.contains("import(\"Frontend/greeting.js\")"),
+                generated);
+    }
+
+    @Test
+    void jarImportingDefinitionChanged_frontendDevServerRunning_importsTheCopiedFile()
+            throws IOException {
+        writeGeneratedDefinitionsFor(JarImportingGreeterJs.class);
+        editGeneratedDefinitions("greet(this, $0)", "greet($0)");
+        withFrontendDevServer();
+
+        classesChanged(JarImportingGreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        // Found in META-INF/frontend on the class path of the application,
+        // as the build finds it
+        String generated = readGeneratedDefinitions();
+        assertTrue(generated.contains("greet(this, $0)"), generated);
+        assertTrue(generated.contains(
+                "import(\"Frontend/generated/jar-resources/js-definition-hotswap-addon.js\")"),
                 generated);
     }
 
@@ -471,6 +516,57 @@ class JsDefinitionHotswapperTest {
         assertEquals(JsCall.functionId("this.scrollLeft = $0", 1, false),
                 new JsCall(definition, "scrollTo", List.of(1)).getFunctionId(),
                 "a call should name the function of the JavaScript the interface declares now");
+    }
+
+    @Test
+    void extendedInterfaceImportRedefinedInPlace_definitionsExtendingItImportTheNewModule()
+            throws IOException, NoSuchMethodException {
+        // Copies, so that the redefinition leaves the classes of the other
+        // cases alone, as above
+        Map<String, Class<?>> copies = new ByteBuddy()
+                .redefine(ImportingScrollableJs.class).make()
+                .include(new ByteBuddy()
+                        .redefine(ImportingScrollingListJs.class).make())
+                .load(new URLClassLoader(new URL[0],
+                        getClass().getClassLoader()),
+                        ClassLoadingStrategy.Default.CHILD_FIRST)
+                .getAllLoaded().values().stream()
+                .collect(Collectors.toMap(Class::getName, type -> type));
+        Class<?> parent = copies.get(ImportingScrollableJs.class.getName());
+        Class<?> definition = copies
+                .get(ImportingScrollingListJs.class.getName());
+        writeGeneratedDefinitionsFor(definition);
+        new JsCall(definition, "scrollTo", List.of(1)).getFunctionId();
+        withFrontendDevServer();
+
+        // Only the annotation of the interface changes, in place
+        ByteBuddyAgent.install();
+        new ByteBuddy().redefine(EditedImportingScrollableJs.class)
+                .name(ImportingScrollableJs.class.getName()).make()
+                .load(parent.getClassLoader(),
+                        ClassReloadingStrategy.fromInstalledAgent());
+        ReflectionCache.clearAll(parent);
+
+        Thread thread = Thread.currentThread();
+        ClassLoader contextClassLoader = thread.getContextClassLoader();
+        thread.setContextClassLoader(parent.getClassLoader());
+        try {
+            classesChanged(parent);
+        } finally {
+            thread.setContextClassLoader(contextClassLoader);
+        }
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        assertTrue(
+                readGeneratedDefinitions()
+                        .contains("import(\"Frontend/smooth-scroll.js\")"),
+                "the definition extending the interface should load the module it imports now");
+        assertEquals(
+                JsCall.functionId(EditedImportingScrollableJs.class
+                        .getMethod("scrollTo", int.class)),
+                new JsCall(definition, "scrollTo", List.of(1)).getFunctionId(),
+                "a call should name the function of the imports the interface declares now");
     }
 
     @Test

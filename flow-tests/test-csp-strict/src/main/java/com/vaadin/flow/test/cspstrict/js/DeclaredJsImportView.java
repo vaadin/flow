@@ -25,9 +25,11 @@ import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.router.Route;
 
 /**
- * Runs JavaScript that calls what a module exports, imported through
- * {@link JsDefinitionImport}: the module is in a chunk of the bundle that is
- * loaded the first time the definition is called.
+ * Runs JavaScript that calls functions exported by a module of the frontend
+ * folder and by a frontend resource (copied by the build like the frontend
+ * files of jars), both imported through {@link JsDefinitionImport}: the modules
+ * are in chunks of the bundle that are loaded the first time the definition is
+ * called.
  */
 @Route("declared-js-import")
 public class DeclaredJsImportView extends Div {
@@ -35,9 +37,10 @@ public class DeclaredJsImportView extends Div {
     @JsDefinition
     @JsDefinitionImport(from = "./js-definition-import.js", defaultExport = "describe", exports = "shout")
     @JsDefinitionImport(from = "./js-definition-import.js", namespace = "module")
+    @JsDefinitionImport(from = "./js-definition-import-addon.js", exports = "suffix")
     interface ImportingStatusJs extends JsInvokers {
 
-        @JsExpression("this.textContent = shout(describe($0)) + ' ' + (module.shout === shout);")
+        @JsExpression("this.textContent = suffix(shout(describe($0)) + ' ' + (module.shout === shout));")
         void setStatus(String status);
 
         // Hides an imported name. Only declared: a clash with the import
