@@ -58,6 +58,30 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void windowNameClearedByBrowser_componentReused() {
+        open();
+
+        final String componentId = getString(COMPONENT_ID);
+        final String notificationId = getString(NOTIFICATION_ID);
+
+        // Browsers clear window.name when the tab visits another site, for
+        // example a payment provider or a login service. The tab must still
+        // be recognized when it comes back.
+        ((JavascriptExecutor) getDriver()).executeScript("window.name = ''");
+
+        open();
+        final String newComponentId = getString(COMPONENT_ID);
+        final String newNotificationId = getString(NOTIFICATION_ID);
+        final int attachCount = getInt(ATTACHCOUNTER_ID);
+
+        Assert.assertEquals("Component contents expected identical",
+                componentId, newComponentId);
+        Assert.assertEquals("Notification contents expected identical",
+                notificationId, newNotificationId);
+        Assert.assertEquals("Expected two attaches", 2, attachCount);
+    }
+
+    @Test
     public void navigateToNonRefreshing_componentIsRecreated() {
         open();
 

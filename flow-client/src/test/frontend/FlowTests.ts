@@ -3,6 +3,7 @@ import { expect } from '@open-wc/testing';
 // API to test
 import { ConnectionState, ConnectionStateStore } from '../../main/frontend/ConnectionState';
 import { Flow, type NavigationParameters } from '../../main/frontend/Flow';
+import { browserTabIdentifierReady } from '../../main/frontend/BrowserTabIdentifier';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import '../../main/frontend/FlowBootstrap';
@@ -157,6 +158,20 @@ describe('Flow', () => {
 
     expect($wnd.Vaadin).not.to.be.undefined;
     expect($wnd.Vaadin.Flow).not.to.be.undefined;
+  });
+
+  it('should give the browser tab a window name', async () => {
+    const originalName = window.name;
+    window.name = '';
+    try {
+      new Flow();
+      await browserTabIdentifierReady();
+
+      expect(window.name).to.match(/^v-0\.\d+/);
+    } finally {
+      window.name = originalName;
+      sessionStorage.removeItem('vaadin.windowName');
+    }
   });
 
   it('should initialize a flow loading indicator', async () => {
