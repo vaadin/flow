@@ -45,6 +45,7 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -841,7 +842,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_sameUICurrent_notBackgroundChange() {
-        UI ui = mock(UI.class);
+        UI ui = new MockUI();
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -865,7 +866,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_noUICurrent_isBackgroundChange() {
-        UI ui = mock(UI.class);
+        UI ui = new MockUI();
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -889,8 +890,8 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_differentUICurrent_isBackgroundChange() {
-        UI uiA = mock(UI.class);
-        UI uiB = mock(UI.class);
+        UI uiA = new MockUI();
+        UI uiB = new MockUI();
 
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<Boolean> backgroundChangesA = new ArrayList<>();

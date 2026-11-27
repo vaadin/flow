@@ -273,7 +273,7 @@ public final class ElementEffect implements Serializable {
                 .error(new ErrorEvent(e, elem.getNode()));
 
         SerializableExecutor uiDispatcher = command -> {
-            if (UI.getCurrent() == ui) {
+            if (ui.getInternals().isCurrentAndLocked()) {
                 // Run immediately if on the same UI
                 command.run();
             } else {
@@ -286,7 +286,7 @@ public final class ElementEffect implements Serializable {
                             // UI.getCurrent() is already set. In that case
                             // run directly instead of ui.access() which
                             // would only enqueue without executing.
-                            if (UI.getCurrent() == ui) {
+                            if (ui.getInternals().isCurrentAndLocked()) {
                                 command.run();
                             } else {
                                 ui.access(command::run);

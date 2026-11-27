@@ -108,6 +108,33 @@ class VaadinServiceSignalsInitializationTest {
     }
 
     @Test
+    void resultNotifier_ownerUiCurrentButSessionUnlocked_taskRunWithLock()
+            throws InterruptedException {
+        var service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        var ui = new MockUI(session);
+        var dispatcher = SignalEnvironment.getCurrentResultNotifier();
+        session.unlock();
+        // Like after a request has released the session lock
+        assertSame(ui, UI.getCurrent());
+
+        AtomicBoolean lockedDuringRun = new AtomicBoolean();
+        CountDownLatch latch = new CountDownLatch(1);
+        dispatcher.execute(() -> {
+            lockedDuringRun.set(session.hasLock());
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(500, TimeUnit.MILLISECONDS),
+                "Expected task to be executed");
+        assertTrue(lockedDuringRun.get(),
+                "Expected task to run with the session lock held");
+    }
+
+    @Test
     void resultNotifier_ownerUiIsClosing_taskNotScheduled()
             throws InterruptedException {
         var service = new MockVaadinServletService();
