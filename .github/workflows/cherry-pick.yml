@@ -21,10 +21,13 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # Gated on a repository variable rather than on a repository name, per
+  # CONVENTIONS.md. A repository that wants this sets CHERRY_PICK_ENABLED and is
+  # granted CHERRY_PICK_TOKEN; anywhere else the job is skipped before a runner
+  # is involved. The token cannot be the condition itself: a job level if cannot
+  # read the secrets context.
   cherry-pick:
-    # Only in vaadin/flow: a copy of this repository that has the organization
-    # secrets would otherwise open cherry-pick pull requests of its own.
-    if: github.repository == 'vaadin/flow'
+    if: vars.CHERRY_PICK_ENABLED == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 180
     permissions:
