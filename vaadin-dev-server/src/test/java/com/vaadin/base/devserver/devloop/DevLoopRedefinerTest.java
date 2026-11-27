@@ -323,6 +323,40 @@ class DevLoopRedefinerTest {
                         .frontendDependencies(EditedScrollableJs.class));
     }
 
+    // Calls the method of the same name on the element
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    interface EditedPopoverJs extends JsInvokers {
+        void showPopover(String source);
+    }
+
+    interface PlainPopover {
+        void showPopover();
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersOfAMethodWithoutExpression() {
+        String imports = DevLoopRedefiner.frontendDependencies(PopoverJs.class);
+
+        assertTrue(
+                imports.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover();", 0, false)),
+                imports);
+        String edited = DevLoopRedefiner
+                .frontendDependencies(EditedPopoverJs.class);
+        assertTrue(
+                edited.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover($0);", 1, false)),
+                edited);
+        assertNotEquals(imports, edited);
+        // An interface that does not extend JsInvokers declares nothing, so
+        // editing it is no frontend change
+        assertEquals("",
+                DevLoopRedefiner.frontendDependencies(PlainPopover.class));
+    }
+
     @JsFunctionParameterNames({ "html", "item" })
     interface TemplateSnippet extends JsSnippet {
     }
