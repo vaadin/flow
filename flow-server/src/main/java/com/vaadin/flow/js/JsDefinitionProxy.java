@@ -410,7 +410,7 @@ public final class JsDefinitionProxy {
         if (imports.length == 0) {
             return;
         }
-        String declarer = importingType == definitionType
+        String declarer = (importingType == definitionType)
                 ? definitionType.getName()
                 : definitionType.getName() + " extends "
                         + importingType.getName() + ", which";

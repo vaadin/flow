@@ -136,8 +136,8 @@ public final class JsDefinitionImports implements Serializable {
                         + "{"
                         + module.bindings().stream()
                                 .map(binding -> binding.name() + "="
-                                        + (binding.export() == null ? "*"
-                                                : "." + binding.export()))
+                                        + ((binding.export() == null) ? "*"
+                                                : ("." + binding.export())))
                                 .collect(Collectors.joining(","))
                         + "}")
                 .collect(Collectors.joining());
