@@ -354,7 +354,8 @@ parameters. The constant is one of two things:
 
 Because an invocation carries only the id, an expression that runs again
 costs a reference, not its text. Declared JavaScript goes one step
-further and sends no JavaScript at all.
+further and sends no JavaScript code over the wire at all; the code ships in
+the frontend bundle.
 
 Parameters are encoded by `JacksonCodec.encodeWithTypeInfo`. Native JSON
 types travel as themselves; everything JSON has no representation for
