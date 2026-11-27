@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
@@ -109,6 +112,54 @@ public class SpringServlet extends VaadinServlet {
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         super.service(wrapRequest(request), response);
+        closeResponseAfterForward(request, response);
+    }
+
+    /**
+     * Closes the response at the end of a forward through the response the
+     * servlet was given, as the container ends the response once the forward
+     * returns anyway. Wrappers of filters earlier in the chain, such as the one
+     * Spring Security writes its headers with, only see the response being
+     * committed when it happens through them. Tomcat 11 by default
+     * ({@code suspendWrappedResponseAfterForward}) ends a forwarded response on
+     * the innermost response, past those wrappers, so their headers would be
+     * dropped. Does nothing for a request that was not forwarded or that
+     * started asynchronous processing.
+     *
+     * @param request
+     *            the request the servlet handled
+     * @param response
+     *            the response the servlet was given
+     */
+    static void closeResponseAfterForward(HttpServletRequest request,
+            HttpServletResponse response) {
+        if (request.getDispatcherType() != DispatcherType.FORWARD
+                || request.isAsyncStarted()) {
+            return;
+        }
+        try {
+            response.getOutputStream().close();
+        } catch (IllegalStateException e) {
+            getLogger().trace(
+                    "The forwarded response was written through the writer", e);
+            try {
+                response.getWriter().close();
+            } catch (IOException | IllegalStateException closeException) {
+                logIgnoredCloseFailure(closeException);
+            }
+        } catch (IOException e) {
+            logIgnoredCloseFailure(e);
+        }
+    }
+
+    private static void logIgnoredCloseFailure(Exception e) {
+        // The container ignores a failed close too, typically a client that
+        // went away
+        getLogger().debug("Unable to close the forwarded response", e);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(SpringServlet.class);
     }
 
     @Override
