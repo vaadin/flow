@@ -177,6 +177,16 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
+    void bindBeforeAttach_appliesValueRightAway() {
+        TestComponent component = new TestComponent();
+
+        ValueSignal<List<String>> signal = new ValueSignal<>(List.of("a"));
+        component.bindThemeNames(signal);
+
+        assertTrue(component.hasThemeName("a"));
+    }
+
+    @Test
     void detachAndReattach_reappliesCurrentValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);

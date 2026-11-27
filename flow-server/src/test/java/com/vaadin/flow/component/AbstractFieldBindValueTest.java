@@ -217,10 +217,9 @@ class AbstractFieldBindValueTest extends SignalsUnitTest {
             counter.incrementAndGet();
         });
 
-        // Both effects probe immediately at creation time
-        assertEquals(1, counter.get());
+        // The effect runs only once the input is attached
+        assertEquals(0, counter.get());
         UI.getCurrent().add(input);
-        // Nothing changed since probe, so no re-run on attach
         assertEquals(1, counter.get());
 
         input.setValue("bar");
