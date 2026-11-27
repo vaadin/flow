@@ -65,6 +65,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     private T pendingValueFromPresentation;
 
     private boolean valueSetFromSignal;
+    private boolean writeCallbackInProgress;
+    private boolean valueSetFromSignalDuringWrite;
 
     /**
      * Creates a new field support.
@@ -278,6 +280,17 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
+        if (valueSetFromSignal && writeCallbackInProgress) {
+            /*
+             * The write callback changed the signal and the binding effect
+             * applied the new signal value synchronously. The outer setValue
+             * fires a single event with the original old value once the
+             * callback has completed.
+             */
+            valueSetFromSignalDuringWrite = true;
+            return;
+        }
+
         if (!valueSetFromSignal) {
             Optional<SignalBindingFeature> featureOpt = getFeatureIfInitialized(
                     SignalBindingFeature.class);
@@ -285,17 +298,37 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
                 SignalBindingFeature feature = featureOpt.get();
                 if (component.isAttached()
                         && feature.hasBinding(SignalBindingFeature.VALUE)) {
-                    boolean fireEvent = feature.updateSignalByWriteCallback(
-                            SignalBindingFeature.VALUE, oldValue, newValue,
-                            valueEquals, revertedToValue -> {
-                                // revert component value to the signal's new
-                                // value
-                                bufferedValue = revertedToValue;
-                                applyValue(revertedToValue);
-                            });
-                    if (!fireEvent) {
-                        // no need to fire value change event when value is not
-                        // changed due to signal reversion
+                    boolean wasWriteCallbackInProgress = writeCallbackInProgress;
+                    boolean wasValueSetFromSignalDuringWrite = valueSetFromSignalDuringWrite;
+                    writeCallbackInProgress = true;
+                    valueSetFromSignalDuringWrite = false;
+                    try {
+                        feature.updateSignalByWriteCallback(
+                                SignalBindingFeature.VALUE, oldValue, newValue,
+                                valueEquals, revertedToValue -> {
+                                    // revert component value to the signal's
+                                    // new value
+                                    bufferedValue = revertedToValue;
+                                    applyValue(revertedToValue);
+                                });
+                    } catch (RuntimeException e) {
+                        // set by the nested setValue run by the binding effect
+                        // while the callback was running
+                        if (valueSetFromSignalDuringWrite // NOSONAR
+                                && !valueEquals.test(bufferedValue, oldValue)) {
+                            // the signal changed before the callback threw,
+                            // so the field shows a new value to report
+                            ComponentUtil.fireEvent(component,
+                                    createValueChange(oldValue, fromClient));
+                        }
+                        throw e;
+                    } finally {
+                        writeCallbackInProgress = wasWriteCallbackInProgress;
+                        valueSetFromSignalDuringWrite = wasValueSetFromSignalDuringWrite;
+                    }
+                    if (valueEquals.test(bufferedValue, oldValue)) {
+                        // no need to fire value change event when the signal
+                        // reverted the value back to the old value
                         return;
                     }
                 }
