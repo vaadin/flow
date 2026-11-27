@@ -40,10 +40,12 @@ export interface ApplicationConfiguration {
  * `window.Vaadin.Flow.clients[appId]`. The published keys are the ones the JSNI
  * blocks in ApplicationConnection.java define, so two of them (`getByNodeId`,
  * `addDomBindingListener`) differ from the engine method they call. The one
- * key beyond them is `events`, which the GWT engine does not publish.
+ * keys beyond them are `isTerminated` and `events`, which the GWT engine does
+ * not publish.
  */
 export interface ApplicationConnection {
   isActive(): boolean;
+  isTerminated(): boolean;
   getDomElementByNodeId(nodeId: number): Node | null;
   getNodeId(element: Element): number;
   addDomSetListener(nodeId: number, callback: () => void): void;

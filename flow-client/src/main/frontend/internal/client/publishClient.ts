@@ -52,6 +52,7 @@ export function publishClient(
 
   const client: Record<string, unknown> = {
     isActive: () => ac.isActive(),
+    isTerminated: () => ac.isTerminated(),
     getByNodeId: (nodeId: number) => ac.getDomElementByNodeId(nodeId),
     getNodeId: (element: Element) => ac.getNodeId(element),
     getUIId: () => ac.getUIId(),

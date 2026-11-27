@@ -29,10 +29,18 @@ import type { VaadinServerMessage } from './communication/VaadinServerMessage';
  *   parsed. The {@link VaadinServerMessage} in the detail then tracks how the
  *   client handles it. It covers both replies and messages the server pushes on
  *   its own.
+ * - `vaadin-ui-terminated`: the UI has stopped, for example after an "Internal
+ *   error" or "Session expired" reply or a communication error the client does
+ *   not recover from. A page script that waits for a reply from the server can
+ *   stop waiting, as the stopped UI answers nothing more. The stop is not
+ *   always final: an embedded web component resynchronizes the session after
+ *   "Session expired" and runs a new UI. The client's `isTerminated()` tells
+ *   whether the UI is stopped at a given moment.
  */
 export interface ClientEventMap {
   'vaadin-request': CustomEvent<VaadinRequest>;
   'vaadin-server-message': CustomEvent<VaadinServerMessage>;
+  'vaadin-ui-terminated': CustomEvent<null>;
 }
 
 /**
@@ -58,6 +66,6 @@ export interface ClientEventMap {
  *
  * Listeners run synchronously inside the engine's work: keep them cheap and do
  * not call back into the client from them. Heartbeats and the overall state of
- * the client are not covered.
+ * the client, apart from the UI stopping, are not covered.
  */
 export class ClientEvents extends TypedEventTarget<ClientEventMap> {}

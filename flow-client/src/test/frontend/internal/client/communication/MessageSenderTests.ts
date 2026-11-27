@@ -238,6 +238,25 @@ describe('MessageSender (class)', () => {
       }
     });
 
+    it('does not resend by the timer once the UI terminates', () => {
+      const clock = sinon.useFakeTimers();
+      try {
+        const context = makeRegistry();
+        const sender = new MessageSender(context.registry);
+        sender.send({ rpc: [] });
+
+        // E.g. an "Internal error" reply: it ends the request and stops the
+        // UI, but carries no client id that would stop the resend timer.
+        context.setActiveRequest(false);
+        context.terminate();
+        clock.tick(10 * (1000000 + 500));
+        expect(context.log.xhrSends).to.have.length(1);
+        expect(context.log.startRequests).to.equal(1);
+      } finally {
+        clock.restore();
+      }
+    });
+
     it('counts a WebSocket resend after a reconnection as the next attempt of the same request', () => {
       const context = makeRegistry();
       const pushed: unknown[] = [];

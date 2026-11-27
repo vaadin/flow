@@ -16,6 +16,8 @@ const flowRoot = window.document.body as any;
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 let server: MockXhrServer;
+// The event that stubServerRemoteFunction fails with an "Internal error", which stops the UI
+let failingEvent: string | undefined;
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
   {
@@ -133,6 +135,7 @@ describe('Flow', () => {
     // leaking a replaced function (e.g. console.error) into later cases.
     sinon.restore();
     server.remove();
+    failingEvent = undefined;
     delete $wnd.Vaadin;
     delete flowRoot.$;
     if (flowRoot.timers) {
@@ -410,6 +413,173 @@ describe('Flow', () => {
             });
         });
     });
+  });
+
+  it('should cancel a server navigation when the UI stops before the server answers it', async () => {
+    failingEvent = 'ui-navigate';
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    const cmd = { prevent: () => 'prevented' };
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: 'Foo' }, cmd))).to.equal('prevented');
+    // The error notification stays on screen
+    expect(loadPage.called).to.be.false;
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should keep navigating on the server when only an exported web component on the page stops', async () => {
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    let embeddedTerminated = false;
+    const embedded = {
+      // Busy until the main client is published, so that the router waits for it
+      isActive: () => !$wnd.Vaadin.Flow.clients.foobar,
+      isTerminated: () => embeddedTerminated,
+      sendEventMessage: () => {},
+      events: new EventTarget()
+    };
+    const flow = new Flow();
+    $wnd.Vaadin.Flow.clients.embedded = embedded;
+    const elem: any = await flow.serverSideRoutes[0].action({ pathname: 'Foo' });
+    const cmd = { prevent: () => 'prevented' };
+    // The view itself is not compared, as chai cannot print it when it differs
+    const shown = (result: unknown) => (result === elem ? 'view' : String(result));
+
+    // Stops while the navigation waits for the server
+    const navigation = elem.onBeforeEnter({ pathname: 'Foo' }, cmd);
+    embeddedTerminated = true;
+    embedded.events.dispatchEvent(new CustomEvent('vaadin-ui-terminated'));
+    expect(shown(await settledSoon(navigation))).to.equal('view');
+
+    // Has stopped before the next navigation starts
+    const leave = { prevent: () => 'prevented', continue: () => 'continued' };
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, leave))).to.equal('continued');
+  });
+
+  it('should load other routes as a new page when the UI stopped while the client started', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const { pathname, search } = window.location;
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname, search });
+    const cmd = { prevent: () => 'prevented' };
+
+    // The initial navigation to the page already loaded is cancelled, as
+    // loading it again could stop the same way
+    expect(await settledSoon(elem.onBeforeEnter({ pathname, search }, cmd))).to.equal('prevented');
+    expect(loadPage.called).to.be.false;
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    // Also when the browser already shows the target, as on back and forward
+    const navigation = { pathname: '/Foo', search: '?a=1', hash: '#b' };
+    window.history.pushState(null, '', '/Foo?a=1#b');
+    try {
+      expect(await settledSoon(elem.onBeforeEnter(navigation, cmd))).to.equal('prevented');
+    } finally {
+      window.history.replaceState(null, '', pathname + search);
+    }
+    expect(loadPage.calledOnceWith('/Foo?a=1#b')).to.be.true;
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should load the page on the app origin for the route paths that Flow.tsx passes when the UI stopped while starting', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const { pathname, search } = window.location;
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname, search });
+    const cmd = { prevent: () => 'prevented' };
+    // Flow.tsx enters a route with `basename + location.pathname`, and the
+    // basename is '/' for an app deployed at the root context path
+    const basename = '/';
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: basename + pathname, search }, cmd))).to.equal('prevented');
+    expect(loadPage.called).to.be.false;
+
+    // '//Foo' as a URL would be the host 'Foo'
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: basename + '/Foo', search: '?a=1' }, cmd))).to.equal(
+      'prevented'
+    );
+    expect(loadPage.args).to.deep.equal([['/Foo?a=1']]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should load the page under the context path when the UI stopped while starting', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const base = document.createElement('base');
+    base.href = '/app/';
+    document.head.prepend(base);
+    try {
+      const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: '/app/Bar' });
+      // Flow.tsx passes '/app/Foo' for an app at the context path '/app'
+      const cmd = { prevent: () => 'prevented' };
+      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/Foo' }, cmd))).to.equal('prevented');
+      // A colon in the first segment does not make it a URL scheme
+      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/user:42' }, cmd))).to.equal('prevented');
+    } finally {
+      base.remove();
+    }
+    expect(loadPage.args).to.deep.equal([['/app/Foo'], ['/app/user:42']]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should let a `server->client` navigation leave when the UI stops before the server answers it', async () => {
+    failingEvent = 'ui-leave-navigation';
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    await elem.onBeforeEnter({ pathname: 'Foo' }, {});
+    const cmd = { prevent: () => 'prevented', continue: () => 'continued' };
+
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, cmd))).to.equal('continued');
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+
+    // A later navigation leaves without waiting for the stopped UI
+    expect(await settledSoon(elem.onBeforeLeave({ pathname: 'Ipsum' }, cmd))).to.deep.equal({});
+    expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should load the page it was loaded from as a new page when the UI stops after it started', async () => {
+    failingEvent = 'ui-leave-navigation';
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    await elem.onBeforeEnter({ pathname: 'Foo' }, {});
+    await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, { prevent: () => 'prevented', continue: () => {} }));
+
+    // The UI started, so loading the page again cannot loop on a failing start
+    const { pathname, search } = window.location;
+    expect(await settledSoon(elem.onBeforeEnter({ pathname, search }, { prevent: () => 'prevented' }))).to.equal(
+      'prevented'
+    );
+    expect(loadPage.args).to.deep.equal([[pathname + search]]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
   it('onBeforeEnter should handle forwardTo `server->client` navigation', () => {
@@ -692,6 +862,15 @@ describe('Flow', () => {
   });
 });
 
+// The meta of an "Internal error" reply, which stops the UI
+const internalErrorMeta =
+  '{"appError":{"caption":"Internal error","url":null,"message":"Please notify the administrator.","details":null,"querySelector":null}}';
+
+// What the promise resolves to, or 'pending' if it does not settle soon
+function settledSoon<T>(promise: Promise<T>): Promise<T | 'pending'> {
+  return Promise.race([promise, new Promise<'pending'>((resolve) => setTimeout(() => resolve('pending'), 500))]);
+}
+
 function stubServerRemoteFunction(
   id: string,
   cancel: boolean = false,
@@ -739,7 +918,15 @@ function stubServerRemoteFunction(
     const payload = JSON.parse(req.body);
     if (payload.rpc && payload.rpc[0].type === 'event') {
       const rpc = payload.rpc[0];
-      if (rpc.event === 'ui-navigate') {
+      if (rpc.event === failingEvent) {
+        // Like VaadinService.handleExceptionDuringRequest: no client id
+        req.respond(
+          200,
+          { 'content-type': 'application/json' },
+          `{"changes":{},"resources":{},"locales":{},"meta":${internalErrorMeta},"syncId":-1}`
+        );
+        return;
+      } else if (rpc.event === 'ui-navigate') {
         handlers.connectClient(rpc.data.route);
       } else if (rpc.event === 'ui-leave-navigation') {
         handlers.leaveNavigation();

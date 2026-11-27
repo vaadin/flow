@@ -9,7 +9,7 @@ import { DefaultConnectionStateHandler } from '../../../../main/frontend/interna
 import { DefaultRegistry } from '../../../../main/frontend/internal/client/DefaultRegistry';
 import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { MessageSender } from '../../../../main/frontend/internal/client/communication/MessageSender';
-import { UILifecycle } from '../../../../main/frontend/internal/client/UILifecycle';
+import { UILifecycle, UIState } from '../../../../main/frontend/internal/client/UILifecycle';
 
 function makeRegistry(): DefaultRegistry {
   const config = new ApplicationConfiguration();
@@ -59,5 +59,36 @@ describe('DefaultRegistry', () => {
     registry.reset();
     expect(registry.getUILifecycle()).to.not.equal(lifecycleBefore); // resettable -> new instance
     expect(registry.getApplicationConfiguration()).to.equal(config); // final -> same instance
+  });
+
+  it('reports the connection terminated only while the current UI lifecycle is stopped', () => {
+    const registry = makeRegistry();
+    const connection = new ApplicationConnection(registry);
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    expect(connection.isTerminated()).to.be.false;
+
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(connection.isTerminated()).to.be.true;
+
+    // E.g. an exported web component resynchronizing its session runs a new UI.
+    registry.reset();
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    expect(connection.isTerminated()).to.be.false;
+  });
+
+  it('announces on its client events when a UI lifecycle, also one created by a reset, stops', () => {
+    const registry = makeRegistry();
+    let terminations = 0;
+    registry.getClientEvents().addEventListener('vaadin-ui-terminated', () => terminations++);
+
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(terminations).to.equal(1);
+
+    // E.g. an exported web component resynchronizing its session.
+    registry.reset();
+    registry.getUILifecycle().setState(UIState.RUNNING);
+    registry.getUILifecycle().setState(UIState.TERMINATED);
+    expect(terminations).to.equal(2);
   });
 });

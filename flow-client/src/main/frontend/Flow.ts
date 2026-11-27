@@ -97,8 +97,20 @@ export class Flow {
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
 
+  // Settles the server round trip in progress when the UI stops, as no answer
+  // will come for it.
+  private settleRoundTrip?: () => void;
+
   private baseRegex = /^\//;
   private appShellTitle: string;
+
+  // The URL this page was loaded from. Not loaded again when the UI stopped
+  // before it answered a navigation: it may have stopped while starting, and
+  // loading the page again could loop.
+  private readonly loadedUrl = window.location.pathname + window.location.search;
+
+  // Set once the server has answered a navigation, i.e. the UI has started
+  private navigationAnswered = false;
 
   private navigation: string = '';
 
@@ -234,17 +246,29 @@ export class Flow {
   private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const { connectionState } = $wnd.Vaadin;
-    if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
+    if (
+      this.pathname === ctx.pathname ||
+      !this.isFlowClientLoaded() ||
+      connectionState.offline ||
+      this.isUiTerminated()
+    ) {
       return Promise.resolve({});
     }
     // 'server -> client'
     return new Promise((resolve) => {
       this.loadingStarted();
       // The callback to run from server side to cancel navigation
-      this.container.serverConnected = (cancel) => {
+      const serverConnected = (cancel: boolean) => {
+        this.settleRoundTrip = undefined;
         resolve(cmd && cancel ? cmd.prevent() : cmd?.continue?.());
         this.loadingFinished();
       };
+      this.container.serverConnected = (cancel) => {
+        this.navigationAnswered = true;
+        serverConnected(cancel);
+      };
+      // A stopped UI cannot keep the view, so let the navigation leave it
+      this.settleRoundTrip = () => serverConnected(false);
 
       // Call server side to check whether we can leave the view
       sendEvent('ui-leave-navigation', { route: this.getFlowRoutePath(ctx), query: this.getFlowRouteQuery(ctx) });
@@ -258,7 +282,8 @@ export class Flow {
       return new Promise((resolve) => {
         this.loadingStarted();
         // The callback to run from server side once the view is ready
-        this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
+        const serverConnected = (cancel: boolean, redirectContext?: NavigationParameters) => {
+          this.settleRoundTrip = undefined;
           if (cmd && cancel) {
             resolve(cmd.prevent());
           } else if (cmd && cmd.redirect && redirectContext) {
@@ -270,10 +295,28 @@ export class Flow {
           }
           this.loadingFinished();
         };
+        this.container.serverConnected = (cancel, redirectContext) => {
+          this.navigationAnswered = true;
+          serverConnected(cancel, redirectContext);
+        };
 
         this.container.serverPaused = () => {
           this.loadingFinished();
         };
+
+        if (this.isUiTerminated()) {
+          // A stopped UI cannot show the route, so load the target as a new
+          // page, which starts a new UI
+          serverConnected(true);
+          const target = this.getPageUrl(ctx);
+          if (this.navigationAnswered || target.pathname + target.search !== this.loadedUrl) {
+            this.loadPage(target.pathname + target.search + target.hash);
+          }
+          return;
+        }
+        // Cancel the navigation if the UI stops before the server answers,
+        // which keeps the error notification of the stop on screen
+        this.settleRoundTrip = () => serverConnected(true);
 
         // Call server side to navigate to the given route
         sendEvent('ui-navigate', {
@@ -299,6 +342,17 @@ export class Flow {
     // literal slashes (path separators) and encoded slashes (%2F, data).
     return context.pathname.replace(this.baseRegex, '');
   }
+
+  // The URL of the page that shows the given route. Resolved from the route
+  // against the base URL, as callers prefix the path differently: Flow.tsx
+  // passes '//foo' at the root context path, which as a URL is another host.
+  // The './' keeps a route like 'user:42' from being read as a URL scheme.
+  private getPageUrl(context: NavigationParameters): URL {
+    const route = this.getFlowRoutePath(context).replace(/^\/+/, '');
+    const hash = (context as { hash?: string }).hash ?? '';
+    return new URL(`./${route}${context.search ?? ''}${hash}`, document.baseURI);
+  }
+
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
     return (context.search && context.search.substring(1)) || '';
   }
@@ -416,6 +470,8 @@ export class Flow {
         const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
+          // A UI that stopped before this point is seen by isUiTerminated()
+          this.getUiClient()?.events?.addEventListener('vaadin-ui-terminated', () => this.settleRoundTrip?.());
           resolve();
         }
       }, 5);
@@ -547,5 +603,24 @@ export class Flow {
 
   private isFlowClientLoaded(): boolean {
     return this.response !== undefined;
+  }
+
+  // Loads the given URL as a new page.
+  private loadPage(url: string): void {
+    window.location.assign(url);
+  }
+
+  // The client of the UI this router navigates in. Exported web components on
+  // the same page have clients of their own, which do not answer navigations.
+  private getUiClient(): any {
+    const appId = this.response?.appConfig.appId;
+    // Published under the application id without its window-name suffix
+    return appId === undefined ? undefined : $wnd.Vaadin.Flow.clients[appId.replace(/-\d+$/, '')];
+  }
+
+  // Whether the UI has stopped, e.g. after an "Internal error": the server
+  // answers no more navigations.
+  private isUiTerminated(): boolean {
+    return this.getUiClient()?.isTerminated?.() === true;
   }
 }

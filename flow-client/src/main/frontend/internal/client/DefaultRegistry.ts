@@ -75,7 +75,7 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.URIResolver, new URIResolver(this));
     this.set(TOKEN.DependencyLoader, new DependencyLoader(this));
     this.set(TOKEN.SystemErrorHandler, new SystemErrorHandler(this));
-    this.setResettable(TOKEN.UILifecycle, () => new UILifecycle());
+    this.setResettable(TOKEN.UILifecycle, () => new UILifecycle(this.getClientEvents()));
     this.set(TOKEN.StateTree, new StateTree(this));
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(this));
     this.set(TOKEN.MessageHandler, new MessageHandler(this));
