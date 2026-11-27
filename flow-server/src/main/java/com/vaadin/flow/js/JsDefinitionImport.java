@@ -93,7 +93,10 @@ import com.vaadin.flow.component.dependency.JsModule;
  * asynchronous and can not wait for a module to load, and an interface
  * annotated with {@link JsStringFallback} stands in for JavaScript that names
  * nothing of a module, so both are refused, as is an annotation that names
- * nothing.
+ * nothing. The imports are given only to the methods the annotated interface
+ * declares itself, so an interface that declares no method of its own, such as
+ * a definition that only inherits its methods, is refused too: annotate the
+ * interface that declares the methods instead.
  *
  * @see JsDefinition
  * @see JsInvokers

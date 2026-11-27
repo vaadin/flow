@@ -575,10 +575,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Set<String> imports = new TreeSet<>();
         for (RenderedFunction function : functions) {
             // Without a query, such as ?inline, as the file names it
-            function.imports().stream()
-                    .map(path -> path.contains("?")
-                            ? path.substring(0, path.lastIndexOf('?'))
-                            : path)
+            function.imports().stream().map(FrontendModuleResolver::stripQuery)
                     .forEach(imports::add);
             lines.addAll(Arrays
                     .asList(function.text().split(System.lineSeparator())));

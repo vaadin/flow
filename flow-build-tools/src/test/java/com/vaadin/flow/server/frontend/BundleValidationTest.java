@@ -1268,6 +1268,39 @@ class BundleValidationTest {
                 "a bundle that carries the function should not be rebuilt for an import it hashes no file for");
     }
 
+    @ParameterizedTest
+    @MethodSource("modes")
+    void fileImportedByADefinitionAndTheApplication_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // The definition check runs first and the check of the imports of the
+        // application still needs the hash of the file afterwards
+        setupMode(mode);
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
+        doReturn(Set.of(ImportingAppModuleJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
+                BundleValidationUtil.calculateHash("Some codes"));
+        String render = JsCall
+                .functionId(ImportingAppModuleJs.class.getMethod("render"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(render);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY).put(
+                render, ImportingAppModuleJs.class.getName() + ".render/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "an unchanged file imported both ways should not make the bundle be rebuilt");
+    }
+
     static Stream<Arguments> reachedDefinitions() {
         // The bundle carries the function of AlsoBundledJs only, so it is
         // rebuilt only when BundledJs is reached
@@ -3288,6 +3321,13 @@ class BundleValidationTest {
     interface UnhashedImportsJs extends JsInvokers {
         @JsExpression("probe.apply(this, styles)")
         void apply();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./views/lit-view.ts", namespace = "view")
+    interface ImportingAppModuleJs extends JsInvokers {
+        @JsExpression("view.render(this)")
+        void render();
     }
 
     @JsDefinition

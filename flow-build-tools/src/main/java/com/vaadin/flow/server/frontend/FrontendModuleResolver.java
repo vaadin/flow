@@ -132,16 +132,30 @@ class FrontendModuleResolver {
      * @return the path to import the module by, not <code>null</code>
      */
     String resolveImport(String modulePath) {
-        int queryStart = modulePath.lastIndexOf('?');
-        String query = queryStart < 0 ? "" : modulePath.substring(queryStart);
-        String resolved = resolveResource(
-                modulePath.substring(0, modulePath.length() - query.length()));
+        String path = stripQuery(modulePath);
+        String query = modulePath.substring(path.length());
+        String resolved = resolveResource(path);
         if (resolved.startsWith("./")) {
             return FRONTEND_FOLDER_ALIAS
                     + STARTING_DOT_SLASH.matcher(resolved).replaceFirst("")
                     + query;
         }
         return toValidBrowserImport(resolved) + query;
+    }
+
+    /**
+     * Gets the given import path without its query, such as {@code ?inline},
+     * which is not part of the name of the file.
+     *
+     * @param importPath
+     *            the path, not <code>null</code>
+     * @return the path up to its first {@code ?}, or the path when it has no
+     *         query
+     */
+    static String stripQuery(String importPath) {
+        int queryStart = importPath.indexOf('?');
+        return queryStart < 0 ? importPath
+                : importPath.substring(0, queryStart);
     }
 
     private boolean hasMetaInfResource(String resource) {
