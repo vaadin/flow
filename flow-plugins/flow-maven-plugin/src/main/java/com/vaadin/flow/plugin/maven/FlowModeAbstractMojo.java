@@ -290,6 +290,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean npmExcludeWebComponents;
 
     /**
+     * Whether npm packages may be declared with an exotic version, such as a
+     * tarball URL or a git repository, rather than a registry version or a
+     * local path.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
+    private boolean npmAllowExoticVersions;
+
+    /**
      * Parameter for adding file extensions to handle when generating bundles.
      * Hashes are calculated for these files as part of detecting if a new
      * bundle should be generated.
@@ -790,6 +799,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isNpmAllowExoticVersions() {
+        return npmAllowExoticVersions;
     }
 
     @Override

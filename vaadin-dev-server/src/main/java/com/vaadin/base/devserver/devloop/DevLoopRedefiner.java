@@ -69,7 +69,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinitionProxy;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.server.VaadinService;
@@ -1463,14 +1462,17 @@ final class DevLoopRedefiner {
         // edited expression or a method added or removed only reaches the
         // browser through a restart that regenerates the file and rebuilds the
         // bundle. What identifies a function is what it runs, so that is what
-        // the fingerprint is made of: renaming a method changes nothing the
-        // browser has, and editing what it declares changes everything. Any
+        // the fingerprint is made of: renaming a method annotated with
+        // @JsExpression changes nothing the browser has, and editing what it
+        // declares changes everything. Renaming a method without the
+        // annotation edits what it declares, as it calls the method of the
+        // same name on the element. Any
         // interface counts, not only a definition: an interface that is only
         // extended by one does not need @JsDefinition, and its methods are
         // generated as part of every definition that extends it.
         if (type.isInterface()) {
             for (Method method : ReflectTools.getCurrentPublicMethods(type)) {
-                if (method.isAnnotationPresent(JsExpression.class)) {
+                if (JsCall.declaredExpression(method) != null) {
                     imports.add("jsdefinition:" + fingerprintOf(method));
                 }
             }
