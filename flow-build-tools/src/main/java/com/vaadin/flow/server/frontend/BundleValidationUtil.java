@@ -1177,10 +1177,7 @@ public final class BundleValidationUtil {
             if (!importPath.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)) {
                 continue;
             }
-            // A query, such as ?inline, is not part of the file name
-            String path = importPath.contains("?")
-                    ? importPath.substring(0, importPath.indexOf('?'))
-                    : importPath;
+            String path = importPath;
             boolean inJar = path.contains(resourcePath);
             String key = inJar
                     ? path.substring(

@@ -1183,15 +1183,17 @@ class BundleValidationTest {
     }
 
     static Stream<Arguments> modesAndImportedFileContents() {
-        // What the frontend file of the project and the one of a jar that a
-        // definition imports hold, when the bundle was built with the first
+        // What the frontend file of the project, imported with a query, and
+        // the one of a jar that a definition imports hold, when the bundle was
+        // built with the first. No project file at all is a deleted one.
         return modes().flatMap(mode -> Stream.of(
                 Arguments.of(mode, "export const project = 1;",
                         "export const addon = 1;", false),
                 Arguments.of(mode, "export const project = 2;",
                         "export const addon = 1;", true),
                 Arguments.of(mode, "export const project = 1;",
-                        "export const addon = 2;", true)));
+                        "export const addon = 2;", true),
+                Arguments.of(mode, null, "export const addon = 1;", true)));
     }
 
     @ParameterizedTest
@@ -1212,7 +1214,9 @@ class BundleValidationTest {
         File projectFile = new File(options.getFrontendDirectory(),
                 "definition-project.js");
         FileUtils.forceMkdir(projectFile.getParentFile());
-        Files.writeString(projectFile.toPath(), projectContent);
+        if (projectContent != null) {
+            Files.writeString(projectFile.toPath(), projectContent);
+        }
         jarResources.put("definition-addon.js", addonContent);
 
         ObjectNode stats = getBasicStats();
@@ -3271,7 +3275,7 @@ class BundleValidationTest {
     }
 
     @JsDefinition
-    @JsDefinitionImport(from = "./definition-project.js", namespace = "project")
+    @JsDefinitionImport(from = "./definition-project.js?raw", defaultExport = "project")
     @JsDefinitionImport(from = "./definition-addon.js", namespace = "addon")
     interface ImportingBundledJs extends JsInvokers {
         @JsExpression("addon.focus(this, project)")

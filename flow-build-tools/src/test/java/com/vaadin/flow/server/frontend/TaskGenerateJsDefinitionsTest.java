@@ -297,13 +297,6 @@ class TaskGenerateJsDefinitionsTest {
 
     @JsDefinition
     @JsDefinitionImport(from = "./project.js", namespace = "project")
-    public interface ShadowingImportJs extends JsInvokers {
-        @JsExpression("const project = this.project; project.refresh();")
-        void refresh();
-    }
-
-    @JsDefinition
-    @JsDefinitionImport(from = "./project.js", namespace = "project")
     public interface ImportingElementMethodJs extends JsInvokers {
         void refresh(String value);
     }
@@ -1498,19 +1491,6 @@ class TaskGenerateJsDefinitionsTest {
                 "return this.refresh($0);", "}",
                 "  }).call(this, $modules[0]);", "};");
         assertTrue(content.contains(function), content);
-    }
-
-    @Test
-    void importingExpression_declaringAnImportedName_hidesIt() {
-        String content = TaskGenerateJsDefinitions
-                .renderFileContent(List.of(ShadowingImportJs.class), false);
-
-        // A const of the same name as a parameter in the function body itself
-        // would not parse, which breaks every function of the file
-        assertTrue(content.contains(String.join(System.lineSeparator(),
-                "  return (async function (project) {", "{",
-                "const project = this.project; project.refresh();", "}")),
-                content);
     }
 
     @Test

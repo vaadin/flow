@@ -39,6 +39,11 @@ public class DeclaredJsImportView extends Div {
 
         @JsExpression("this.textContent = shout(describe($0)) + ' ' + (module.shout === shout);")
         void setStatus(String status);
+
+        // Hides an imported name. Only declared: a clash with the import
+        // would stop the whole file of definitions from parsing.
+        @JsExpression("const module = this; module.dataset.shadowed = 'true';")
+        void markShadowed();
     }
 
     public DeclaredJsImportView() {

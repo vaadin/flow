@@ -210,7 +210,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            the file registers no names
      * @param imports
      *            the paths of the modules that the functions import, as the
-     *            file imports them, sorted; empty when they import nothing
+     *            file imports them but without a query, sorted; empty when they
+     *            import nothing
      */
     record Rendered(String content, Map<String, String> functionIds,
             Map<String, List<String>> names, List<String> imports) {
@@ -573,7 +574,12 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Map<String, List<String>> names = new LinkedHashMap<>();
         Set<String> imports = new TreeSet<>();
         for (RenderedFunction function : functions) {
-            imports.addAll(function.imports());
+            // Without a query, such as ?inline, as the file names it
+            function.imports().stream()
+                    .map(path -> path.contains("?")
+                            ? path.substring(0, path.lastIndexOf('?'))
+                            : path)
+                    .forEach(imports::add);
             lines.addAll(Arrays
                     .asList(function.text().split(System.lineSeparator())));
             // The identifier is a hash of the JavaScript, so a function
