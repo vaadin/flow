@@ -12,7 +12,6 @@ carries:
 | Response | Policy |
 |---|---|
 | A bootstrap page | The policy of Spring Security, with the nonce that every script of the page has. |
-| A bootstrap page of a path the policy of Spring Security is not sent for | The policy of Vaadin, with the nonce that every script of the page has. |
 | A file of the production bundle, `VAADIN/build/*.js` | The policy of Spring Security. |
 | A download served by a `DownloadHandler` | The policy of Spring Security. |
 | A response that Spring Security writes itself, such as a 403 | The policy of Spring Security. |

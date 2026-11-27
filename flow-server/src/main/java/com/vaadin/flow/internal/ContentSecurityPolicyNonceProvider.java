@@ -18,9 +18,7 @@ package com.vaadin.flow.internal;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ContentSecurityPolicy;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
 
 /**
  * Provides the Content Security Policy nonce of a request when something other
@@ -28,13 +26,12 @@ import com.vaadin.flow.server.VaadinResponse;
  * <p>
  * In the strict mode, Vaadin asks the implementation it finds through
  * {@link Lookup} for the nonce of each index HTML request. When there is one,
- * Vaadin puts that nonce on the scripts of the page and does not send its own
- * policy: the policy that allows the nonce is sent by whoever created it.
- * Vaadin still hands over the policy it would have sent, as the policy to fall
- * back to if no policy that allows the nonce is sent after all.
+ * Vaadin puts that nonce on the scripts of the page and sends no policy of its
+ * own: the policy that allows the nonce is sent by whoever created it.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
+@FunctionalInterface
 public interface ContentSecurityPolicyNonceProvider {
 
     /**
@@ -48,20 +45,4 @@ public interface ContentSecurityPolicyNonceProvider {
      */
     @Nullable
     String findNonce(VaadinRequest request);
-
-    /**
-     * Sets the policy to send with a response if no policy that allows the
-     * nonce of the request is sent with it, so that a page in the strict mode
-     * is never left without one. Called in production mode for a request this
-     * provider found a nonce for, before the page is written.
-     *
-     * @param request
-     *            the request the page is written for, not null
-     * @param response
-     *            the response the page is written to, not null
-     * @param policy
-     *            the policy of Vaadin for the nonce of the request, not null
-     */
-    void setFallbackPolicy(VaadinRequest request, VaadinResponse response,
-            ContentSecurityPolicy policy);
 }

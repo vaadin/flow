@@ -30,8 +30,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -132,23 +130,6 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     public SpringSecurityContentSecurityPolicyNonceProvider springSecurityContentSecurityPolicyNonceProvider() {
         return new SpringSecurityContentSecurityPolicyNonceProvider();
-    }
-
-    /**
-     * Adds the provider of the nonce of Spring Security as a header writer to
-     * the security filter chains, so that it can send the policy of Vaadin with
-     * a page that Spring Security sends no policy for. Spring Security applies
-     * the customizer to the {@link HttpSecurity} it provides.
-     *
-     * @param nonceProvider
-     *            the provider of the nonce of Spring Security
-     * @return the customizer that adds the header writer
-     */
-    @Bean
-    public Customizer<HttpSecurity> contentSecurityPolicyFallbackCustomizer(
-            SpringSecurityContentSecurityPolicyNonceProvider nonceProvider) {
-        return http -> http
-                .headers(headers -> headers.addHeaderWriter(nonceProvider));
     }
 
     /**

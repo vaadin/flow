@@ -18,16 +18,13 @@ package com.vaadin.flow.test.cspstrict.springsecurity;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * A view anyone can open, so that its bootstrap page can be fetched without
- * logging in. It also has a path that the policy of Spring Security does not
- * apply to.
+ * logging in.
  */
 @Route("")
-@RouteAlias(SecurityConfig.PATH_WITHOUT_SPRING_SECURITY_POLICY)
 @AnonymousAllowed
 public class PublicView extends Div {
 

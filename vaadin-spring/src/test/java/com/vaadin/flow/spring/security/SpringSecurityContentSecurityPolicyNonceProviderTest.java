@@ -39,7 +39,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizedUrl;
-import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -50,18 +49,13 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.vaadin.flow.internal.ContentSecurityPolicyNonceProvider;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
-import com.vaadin.flow.server.ContentSecurityPolicy;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -87,9 +81,6 @@ class SpringSecurityContentSecurityPolicyNonceProviderTest {
 
     @Autowired
     private ContentSecurityPolicyNonceProvider nonceProvider;
-
-    @Autowired
-    private Customizer<HttpSecurity> httpSecurityCustomizer;
 
     @MockitoBean
     private EndpointRequestUtil endpointRequestUtil;
@@ -127,61 +118,6 @@ class SpringSecurityContentSecurityPolicyNonceProviderTest {
     }
 
     @Test
-    void policyInSpringSecurityForOtherPaths_policyOfVaadinIsSent()
-            throws Exception {
-        http.headers(headers -> headers.contentSecurityPolicy(policy -> policy
-                .policyDirectives("script-src 'nonce-{nonce}' 'strict-dynamic'")
-                .requestMatchers("/api/**")));
-
-        List<String> nonces = new ArrayList<>();
-        MockHttpServletResponse response = serve(nonces);
-
-        // Spring Security creates the nonce for every request
-        assertEquals(22, nonces.get(0).length(), nonces.get(0));
-        assertEquals(List.of("script-src 'nonce-" + nonces.get(0) + "'"),
-                response.getHeaders(HEADER));
-    }
-
-    @Test
-    void policyInSpringSecurityWithoutNonce_policyOfVaadinIsAdded()
-            throws Exception {
-        http.headers(headers -> headers.contentSecurityPolicy(
-                policy -> policy.policyDirectives("frame-ancestors 'none'")));
-
-        List<String> nonces = new ArrayList<>();
-        MockHttpServletResponse response = serve(nonces);
-
-        assertEquals(
-                List.of("frame-ancestors 'none'",
-                        "script-src 'nonce-" + nonces.get(0) + "'"),
-                response.getHeaders(HEADER));
-    }
-
-    @Test
-    void headersWrittenAtTheStartOfTheRequest_policyOfVaadinIsAdded()
-            throws Exception {
-        http.headers(headers -> headers.contentSecurityPolicy(
-                policy -> policy.policyDirectives("frame-ancestors 'none'"))
-                .withObjectPostProcessor(
-                        new ObjectPostProcessor<HeaderWriterFilter>() {
-                            @Override
-                            public <O extends HeaderWriterFilter> O postProcess(
-                                    O filter) {
-                                filter.setShouldWriteHeadersEagerly(true);
-                                return filter;
-                            }
-                        }));
-
-        List<String> nonces = new ArrayList<>();
-        MockHttpServletResponse response = serve(nonces);
-
-        assertEquals(
-                List.of("frame-ancestors 'none'",
-                        "script-src 'nonce-" + nonces.get(0) + "'"),
-                response.getHeaders(HEADER));
-    }
-
-    @Test
     void noPolicyInSpringSecurity_noNonce() throws Exception {
         http.headers(Customizer.withDefaults());
 
@@ -194,14 +130,10 @@ class SpringSecurityContentSecurityPolicyNonceProviderTest {
 
     /**
      * Sends a request through the security filter chain to a servlet that asks
-     * for the nonce of the request and hands over its own policy for it, as
-     * Vaadin does when it creates a page.
+     * for the nonce of the request, as Vaadin does when it creates a page.
      */
     private MockHttpServletResponse serve(List<String> nonces)
             throws Exception {
-        // Spring Security applies the customizers to the HttpSecurity it
-        // provides, which this test creates itself
-        httpSecurityCustomizer.customize(http);
         List<Filter> filters = http
                 .with(VaadinSecurityConfigurer.vaadin(),
                         vaadin -> vaadin.anyRequest(AuthorizedUrl::permitAll))
@@ -213,20 +145,7 @@ class SpringSecurityContentSecurityPolicyNonceProviderTest {
                 VaadinRequest vaadinRequest = mock(VaadinRequest.class);
                 when(vaadinRequest.getAttribute(anyString())).thenAnswer(
                         call -> request.getAttribute(call.getArgument(0)));
-                String nonce = nonceProvider.findNonce(vaadinRequest);
-                nonces.add(nonce);
-                if (nonce != null) {
-                    doAnswer(call -> {
-                        request.setAttribute(call.getArgument(0),
-                                call.getArgument(1));
-                        return null;
-                    }).when(vaadinRequest).setAttribute(anyString(), any());
-                    nonceProvider.setFallbackPolicy(vaadinRequest,
-                            new VaadinServletResponse(response,
-                                    mock(VaadinServletService.class)),
-                            new ContentSecurityPolicy().setDirective(
-                                    "script-src", "'nonce-" + nonce + "'"));
-                }
+                nonces.add(nonceProvider.findNonce(vaadinRequest));
             }
         };
         MockHttpServletResponse response = new MockHttpServletResponse();

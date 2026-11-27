@@ -68,7 +68,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ContentSecurityPolicy;
 import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -325,9 +324,7 @@ public class IndexHtmlRequestHandlerTest {
         // The provider of the nonce may have written its policy already
         when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
-        ContentSecurityPolicyNonceProvider provider = mock(
-                ContentSecurityPolicyNonceProvider.class);
-        when(provider.findNonce(any())).thenReturn("provided-nonce");
+        ContentSecurityPolicyNonceProvider provider = request -> "provided-nonce";
         when(context.getAttribute(Lookup.class)
                 .lookup(ContentSecurityPolicyNonceProvider.class))
                 .thenReturn(provider);
@@ -343,14 +340,6 @@ public class IndexHtmlRequestHandlerTest {
 
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
-        // The policy of Vaadin is handed over for the case that the provider
-        // sends none for the response
-        ArgumentCaptor<ContentSecurityPolicy> fallback = ArgumentCaptor
-                .forClass(ContentSecurityPolicy.class);
-        verify(provider).setFallbackPolicy(any(), eq(response),
-                fallback.capture());
-        assertEquals(List.of("'nonce-provided-nonce'", "'strict-dynamic'"),
-                fallback.getValue().getSources("script-src"));
         assertEquals("provided-nonce",
                 responses.get(0).getContentSecurityPolicyNonce());
         assertNull(responses.get(0).getContentSecurityPolicy());
