@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.server.Constants;
@@ -1178,6 +1180,125 @@ class BundleValidationTest {
         Mockito.verify(logger, Mockito.times(expectedNeedsBuild ? 1 : 0)).info(
                 Mockito.contains("the bundle does not carry"),
                 Mockito.eq(BundledJs.class.getName()));
+    }
+
+    static Stream<Arguments> modesAndImportedFileContents() {
+        // What the frontend file of the project, imported with a query, and
+        // the one of a jar that a definition imports hold, when the bundle was
+        // built with the first. No project file at all is a deleted one.
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 1;", false),
+                Arguments.of(mode, "export const project = 2;",
+                        "export const addon = 1;", true),
+                Arguments.of(mode, "export const project = 1;",
+                        "export const addon = 2;", true),
+                Arguments.of(mode, null, "export const addon = 1;", true)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndImportedFileContents")
+    void fileImportedByADefinitionChanged_bundleRebuild(Mode mode,
+            String projectContent, String addonContent,
+            boolean expectedNeedsBuild)
+            throws IOException, NoSuchMethodException {
+        setupMode(mode);
+        doReturn(Set.of(ImportingBundledJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        // Found in a jar, so imported from where the build copies it
+        doReturn(new File(temporaryFolder, "definition-addon.js").toURI()
+                .toURL()).when(finder)
+                .getResource(Constants.RESOURCES_FRONTEND_DEFAULT
+                        + "/definition-addon.js");
+        File projectFile = new File(options.getFrontendDirectory(),
+                "definition-project.js");
+        FileUtils.forceMkdir(projectFile.getParentFile());
+        if (projectContent != null) {
+            Files.writeString(projectFile.toPath(), projectContent);
+        }
+        jarResources.put("definition-addon.js", addonContent);
+
+        ObjectNode stats = getBasicStats();
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        hashes.put("definition-project.js", BundleValidationUtil
+                .calculateHash("export const project = 1;"));
+        hashes.put("definition-addon.js",
+                BundleValidationUtil.calculateHash("export const addon = 1;"));
+        String focus = JsCall
+                .functionId(ImportingBundledJs.class.getMethod("focus"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(focus);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(focus, ImportingBundledJs.class.getName() + ".focus/0");
+        setupFrontendUtilsMock(stats);
+
+        assertEquals(expectedNeedsBuild,
+                BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a changed file that a definition imports should make the bundle be rebuilt");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void importsTheBundleHashesNoFileFor_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // Vite builds both, but the stats hash neither under the path it is
+        // imported by: one has a query, the other no extension
+        setupMode(mode);
+        doReturn(Set.of(UnhashedImportsJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        File frontend = options.getFrontendDirectory();
+        FileUtils.forceMkdir(frontend);
+        Files.writeString(new File(frontend, "definition-styles.css").toPath(),
+                "p {}");
+        Files.writeString(new File(frontend, "definition-probe.js").toPath(),
+                "export const apply = () => {};");
+
+        ObjectNode stats = getBasicStats();
+        String apply = JsCall
+                .functionId(UnhashedImportsJs.class.getMethod("apply"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(apply);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY)
+                .put(apply, UnhashedImportsJs.class.getName() + ".apply/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a bundle that carries the function should not be rebuilt for an import it hashes no file for");
+    }
+
+    @ParameterizedTest
+    @MethodSource("modes")
+    void fileImportedByADefinitionAndTheApplication_noBundleRebuild(Mode mode)
+            throws IOException, NoSuchMethodException {
+        // The definition check runs first and the check of the imports of the
+        // application still needs the hash of the file afterwards
+        setupMode(mode);
+        createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
+        createProjectFrontendFileStub();
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
+        doReturn(Set.of(ImportingAppModuleJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+
+        ObjectNode stats = getBasicStats();
+        ((ArrayNode) stats.get(BUNDLE_IMPORTS))
+                .add("Frontend/views/lit-view.ts");
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put("views/lit-view.ts",
+                BundleValidationUtil.calculateHash("Some codes"));
+        String render = JsCall
+                .functionId(ImportingAppModuleJs.class.getMethod("render"));
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
+                .add(render);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY).put(
+                render, ImportingAppModuleJs.class.getName() + ".render/0");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "an unchanged file imported both ways should not make the bundle be rebuilt");
     }
 
     static Stream<Arguments> reachedDefinitions() {
@@ -3184,6 +3305,29 @@ class BundleValidationTest {
                         ? new File(temporaryFolder, q.getArgument(0).toString())
                                 .toURI().toURL()
                         : null);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-project.js?raw", defaultExport = "project")
+    @JsDefinitionImport(from = "./definition-addon.js", namespace = "addon")
+    interface ImportingBundledJs extends JsInvokers {
+        @JsExpression("addon.focus(this, project)")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-styles.css?inline", defaultExport = "styles")
+    @JsDefinitionImport(from = "./definition-probe", namespace = "probe")
+    interface UnhashedImportsJs extends JsInvokers {
+        @JsExpression("probe.apply(this, styles)")
+        void apply();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./views/lit-view.ts", namespace = "view")
+    interface ImportingAppModuleJs extends JsInvokers {
+        @JsExpression("view.render(this)")
+        void render();
     }
 
     @JsDefinition

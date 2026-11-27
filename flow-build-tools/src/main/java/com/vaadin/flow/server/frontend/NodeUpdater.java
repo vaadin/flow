@@ -142,7 +142,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 options.isReactEnabled()
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents(),
-                new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
+                new VersionsJsonFilter(getPackageJson(), DEPENDENCIES,
+                        options.isNpmAllowExoticVersions()));
     }
 
     /**

@@ -43,6 +43,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionImport;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
@@ -55,6 +56,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskGenerateJsDefinitions;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.shared.Registration;
@@ -71,6 +73,13 @@ class JsDefinitionHotswapperTest {
     @JsDefinition
     interface GreeterJs extends JsInvokers {
         @JsExpression("window.alert($0); this.focus()")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./greeting.js", exports = "greet")
+    interface ImportingGreeterJs extends JsInvokers {
+        @JsExpression("greet(this, $0)")
         void showGreeting(String greeting);
     }
 
@@ -199,8 +208,9 @@ class JsDefinitionHotswapperTest {
      * hotswapper looks for it, which is what a browser would be running.
      */
     private void writeGeneratedDefinitionsFor(Class<?> definition) {
-        Options options = new Options(mock(Lookup.class), null, null)
-                .withFrontendDirectory(frontendFolder);
+        Options options = new Options(mock(Lookup.class),
+                new ClassFinder.DefaultClassFinder(getClass().getClassLoader()),
+                null).withFrontendDirectory(frontendFolder);
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(definition));
     }
@@ -257,6 +267,24 @@ class JsDefinitionHotswapperTest {
                 readGeneratedDefinitions()
                         .contains("window.alert($0); this.focus()"),
                 "and what the browser reloads is what the interface declares now");
+    }
+
+    @Test
+    void importingDefinitionChanged_frontendDevServerRunning_appliedWithItsImports()
+            throws IOException {
+        writeGeneratedDefinitionsFor(ImportingGreeterJs.class);
+        editGeneratedDefinitions("greet(this, $0)", "greet($0)");
+        withFrontendDevServer();
+
+        classesChanged(ImportingGreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                "the module of the import resolves as the build resolves it: "
+                        + hotswapper.reported);
+        String generated = readGeneratedDefinitions();
+        assertTrue(generated.contains("greet(this, $0)"), generated);
+        assertTrue(generated.contains("import(\"Frontend/greeting.js\")"),
+                generated);
     }
 
     @Test

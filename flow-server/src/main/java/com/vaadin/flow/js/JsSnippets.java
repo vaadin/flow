@@ -26,10 +26,12 @@ import com.vaadin.flow.dom.Element;
  * the client by what the returned value is passed to. An implementation is
  * obtained from {@link #of(Class)}.
  * <p>
- * Like an interface that extends {@link JsInvokers}, the interface is annotated
- * with {@link JsDefinition}, which is what makes it findable during the build.
- * An interface can not extend both marker interfaces. See {@link JsDefinition}
- * for how a definition that extends another interface is declared.
+ * Like with {@link JsInvokers}, an interface that is passed to
+ * {@link #of(Class)} must itself be annotated with {@link JsDefinition}, which
+ * is what makes it findable during the build. Annotations on interfaces are not
+ * inherited. An interface can not extend both marker interfaces. See
+ * {@link JsDefinition} for how a definition that extends another interface is
+ * declared.
  * <p>
  * A snippet is not bound to an element, which is why the implementation comes
  * from here rather than from {@link Element#executeJs(Class)}. It holds no

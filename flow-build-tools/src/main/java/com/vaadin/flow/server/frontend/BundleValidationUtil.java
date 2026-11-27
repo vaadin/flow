@@ -1093,6 +1093,10 @@ public final class BundleValidationUtil {
                 + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
         TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
                 options).render();
+        if (definitionImportsChanged(options, frontendHashes,
+                rendered.imports())) {
+            return true;
+        }
 
         JsonNode bundledIds = statsJson
                 .get(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
@@ -1154,6 +1158,65 @@ public final class BundleValidationUtil {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Checks whether a frontend file that a JavaScript definition imports, of
+     * the project or of a jar, is not what the bundle was built with. The files
+     * are hashed in the stats under the same keys as the imports of the
+     * application. They stay in the hashes, as a file can also be one of those
+     * imports, which are checked later. An npm package is not hashed, as for
+     * those imports, and neither is a file the stats have no hash for under the
+     * path it is imported by.
+     */
+    private static boolean definitionImportsChanged(Options options,
+            JsonNode frontendHashes, List<String> imports) {
+        String resourcePath = "generated/jar-resources/";
+        List<String> faultyContent = new ArrayList<>();
+        for (String importPath : imports) {
+            if (!importPath.startsWith(FrontendUtils.FRONTEND_FOLDER_ALIAS)) {
+                continue;
+            }
+            String path = importPath;
+            boolean inJar = path.contains(resourcePath);
+            String key = inJar
+                    ? path.substring(
+                            path.indexOf(resourcePath) + resourcePath.length())
+                    : path.substring(
+                            FrontendUtils.FRONTEND_FOLDER_ALIAS.length());
+            if (!frontendHashes.has(key)) {
+                // A file the bundle hashes under another name, such as one
+                // imported without its extension, or does not hash at all.
+                // Whether the bundle carries the import at all is told by the
+                // identifiers of the functions, which hash the imports.
+                continue;
+            }
+            String content = inJar
+                    ? FrontendBuildUtils.getJarResourceString(key,
+                            options.getClassFinder())
+                    : readFrontendFile(
+                            new File(options.getFrontendDirectory(), key));
+            if (content == null) {
+                getLogger().info("No file found for '{}'", key);
+                return true;
+            }
+            compareFrontendHashes(frontendHashes, faultyContent, key, content);
+        }
+        if (!faultyContent.isEmpty()) {
+            logChangedFiles(faultyContent,
+                    "Detected changed content for frontend files that JavaScript definitions import:");
+            return true;
+        }
+        return false;
+    }
+
+    private static String readFrontendFile(File file) {
+        try {
+            return file.isFile() ? Files.readString(file.toPath()) : null;
+        } catch (IOException e) {
+            getLogger().debug("Could not read {}", file, e);
+            return null;
+        }
     }
 
     private static Map<String, String> getRemainingImports(

@@ -254,6 +254,17 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
         .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
         .withGradleVersion(gradleVersion)
 
+    /**
+     * The `--init-script` arguments for the init scripts the outer build was
+     * started with, which the `functionalTest` task passes on. CI uses one to
+     * read Maven Central through a mirror.
+     */
+    private val initScriptArgs: List<String> =
+        (System.getProperty("functionalTest.initScripts") ?: "")
+            .split(File.pathSeparator)
+            .filter { it.isNotBlank() }
+            .flatMap { listOf("--init-script", it) }
+
     override fun toString(): String = "TestProject(dir=$dir)"
 
     /**
@@ -289,7 +300,7 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
 
         println("$dir/./gradlew ${args.joinToString(" ")}")
         val result: BuildResult = createGradleRunner(debug)
-            .withArguments(args.toList() + "--stacktrace" + "--info")
+            .withArguments(args.toList() + initScriptArgs + "--stacktrace" + "--info")
             .build()
 
         if (checkTasksSuccessful) {
@@ -309,7 +320,7 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
     fun buildAndFail(vararg args: String): BuildResult {
         println("$dir/./gradlew ${args.joinToString(" ")}")
         return createGradleRunner(false)
-                .withArguments(args.toList() + "--stacktrace" + "--info")
+                .withArguments(args.toList() + initScriptArgs + "--stacktrace" + "--info")
                 .buildAndFail()
     }
 

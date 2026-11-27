@@ -256,6 +256,12 @@ function statsExtracterPlugin(): PluginOption {
       );
       const generatedImports = Array.from(generatedImportsSet).sort();
 
+      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string>; imports?: string[] } =
+        existsSync(jsDefinitionIdsFile) ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' })) : {};
+      // The modules that JavaScript definitions import are frontend files of
+      // the bundle too, so their content is hashed as for the imports above
+      const hashedImports = generatedImports.concat(jsDefinitionIds.imports ?? []);
+
       const frontendFiles: Record<string, string> = {};
       frontendFiles['index.html'] = createHash('sha256').update(customIndexData.replace(/\r\n/g, '\n'), 'utf8').digest('hex');
 
@@ -294,7 +300,7 @@ function statsExtracterPlugin(): PluginOption {
         });
 
       // collects frontend resources from the JARs
-      generatedImports
+      hashedImports
         .filter((line: string) => line.includes('generated/jar-resources'))
         .forEach((line: string) => {
           let filename = line.substring(line.indexOf('generated'));
@@ -311,7 +317,7 @@ function statsExtracterPlugin(): PluginOption {
       // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/
       // and files already in frontendFiles.
       let frontendFolderAlias = "Frontend";
-      generatedImports
+      hashedImports
         .filter((line: string) => line.startsWith(frontendFolderAlias + '/'))
         .filter((line: string) => !line.startsWith(frontendFolderAlias + '/generated/'))
         .filter((line: string) => !line.startsWith(frontendFolderAlias + '/themes/'))
@@ -361,11 +367,6 @@ function statsExtracterPlugin(): PluginOption {
       // writes them next to the file it generates, with the names that a
       // development bundle gives them. Without the list, the build compares
       // the whole file instead.
-      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string> } = existsSync(
-        jsDefinitionIdsFile
-      )
-        ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' }))
-        : {};
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');

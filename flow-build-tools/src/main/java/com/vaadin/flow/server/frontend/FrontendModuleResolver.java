@@ -116,6 +116,48 @@ class FrontendModuleResolver {
         return jsImport;
     }
 
+    /**
+     * Resolves the path of a module to the path a generated file imports it by,
+     * wherever that file is: a file of the frontend folder or of a jar, which
+     * is named with a path starting with {@code ./}, is imported through the
+     * {@value FrontendUtils#FRONTEND_FOLDER_ALIAS} alias, and an npm package as
+     * it is. Unlike {@link #toValidBrowserImport(String)}, a path starting with
+     * {@code ./} is resolved even before the file is there, since the frontend
+     * files of jars are copied after some files that import them are generated.
+     * A query, such as {@code ?inline}, is kept on the resolved path, but not
+     * used to find the file.
+     *
+     * @param modulePath
+     *            the path as it is declared, not <code>null</code>
+     * @return the path to import the module by, not <code>null</code>
+     */
+    String resolveImport(String modulePath) {
+        String path = stripQuery(modulePath);
+        String query = modulePath.substring(path.length());
+        String resolved = resolveResource(path);
+        if (resolved.startsWith("./")) {
+            return FRONTEND_FOLDER_ALIAS
+                    + STARTING_DOT_SLASH.matcher(resolved).replaceFirst("")
+                    + query;
+        }
+        return toValidBrowserImport(resolved) + query;
+    }
+
+    /**
+     * Gets the given import path without its query, such as {@code ?inline},
+     * which is not part of the name of the file.
+     *
+     * @param importPath
+     *            the path, not <code>null</code>
+     * @return the path up to its first {@code ?}, or the path when it has no
+     *         query
+     */
+    static String stripQuery(String importPath) {
+        int queryStart = importPath.indexOf('?');
+        return queryStart < 0 ? importPath
+                : importPath.substring(0, queryStart);
+    }
+
     private boolean hasMetaInfResource(String resource) {
         return classFinder.getResource(
                 RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
