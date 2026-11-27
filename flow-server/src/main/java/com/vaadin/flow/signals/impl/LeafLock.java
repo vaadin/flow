@@ -26,11 +26,13 @@ import java.util.stream.Collectors;
  * state in signal-reactivity building blocks such as effects, cached signals
  * and usage trackers.
  * <p>
- * These building blocks are notified from within a {@code SignalTree} while the
- * tree lock is held (through {@code notifyObservers}), and they also call back
- * into signal trees while updating their own state. If such a component held
- * its own lock while calling into a tree, two threads acquiring the component
- * lock and the tree lock in opposite orders would form an ABBA deadlock.
+ * These building blocks can be used by code that holds a {@code SignalTree}
+ * lock, and they also call back into signal trees while updating their own
+ * state. Tree observers are notified only after the notifying thread has
+ * released all tree locks, but other callers may still hold one. If such a
+ * component held its own lock while calling into a tree, two threads acquiring
+ * the component lock and the tree lock in opposite orders would form an ABBA
+ * deadlock.
  * <p>
  * The invariant that avoids this is: <em>a leaf lock is a leaf</em> -- never
  * acquire a signal-tree lock while holding one. This class makes that invariant
