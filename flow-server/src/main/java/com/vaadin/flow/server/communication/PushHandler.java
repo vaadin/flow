@@ -34,6 +34,7 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
+import org.atmosphere.cpr.FrameworkConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -662,6 +663,16 @@ public class PushHandler {
                 getLogger().debug(
                         "sendNotificationAndDisconnect called for resource no longer in scope");
                 return;
+            }
+            if (resource.transport() == TRANSPORT.SSE
+                    && !resource.isSuspended()) {
+                // Atmosphere's SSE interceptor frames writes as events only on
+                // a suspended resource, or when this attribute is set, as it
+                // is for the handshake of a new connection. EventSource ignores
+                // anything that is not framed.
+                resource.getRequest().setAttribute(
+                        FrameworkConfig.CALLBACK_JAVASCRIPT_PROTOCOL,
+                        Boolean.TRUE);
             }
             resource.getResponse()
                     .setContentType(JsonConstants.JSON_CONTENT_TYPE);
