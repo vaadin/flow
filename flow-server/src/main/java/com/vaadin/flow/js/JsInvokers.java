@@ -38,14 +38,15 @@ import com.vaadin.flow.dom.Element;
  * {@link JsCall#declaredExpression(java.lang.reflect.Method)} for which methods
  * call the element method.
  * <p>
- * The interface that extends this one must also be annotated with
- * {@link JsDefinition}; this marker interface is not annotated itself and the
- * annotation is not inherited. The annotation is what makes the interface
- * findable during the build: its JavaScript is collected into the generated
- * bundle, so the client never has to build a function from a string. That is
- * what keeps a server-initiated call compatible with a content security policy
- * that does not allow <code>unsafe-eval</code>. See {@link JsDefinition} for
- * how a definition that extends another interface is declared.
+ * An interface that is passed to {@link Element#executeJs(Class)} or
+ * {@link Page#executeJs(Class)} must itself be annotated with
+ * {@link JsDefinition}, since annotations on interfaces are not inherited. The
+ * annotation is what makes the interface findable during the build: its
+ * JavaScript is collected into the generated bundle, so the client never has to
+ * build a function from a string. That is what keeps a server-initiated call
+ * compatible with a content security policy that does not allow
+ * <code>unsafe-eval</code>. See {@link JsDefinition} for how a definition that
+ * extends another interface is declared.
  * <p>
  * An interface whose methods only answer with {@link JsSnippet snippets}
  * extends {@link JsSnippets} instead. An interface can not extend both. Both

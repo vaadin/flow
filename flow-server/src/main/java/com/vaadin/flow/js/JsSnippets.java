@@ -26,10 +26,10 @@ import com.vaadin.flow.dom.Element;
  * the client by what the returned value is passed to. An implementation is
  * obtained from {@link #of(Class)}.
  * <p>
- * Like an interface that extends {@link JsInvokers}, the interface must be
- * annotated with {@link JsDefinition}, which is what makes it findable during
- * the build. This marker interface is not annotated itself, and the annotation
- * is not inherited. An interface can not extend both marker interfaces. See
+ * Like with {@link JsInvokers}, an interface that is passed to
+ * {@link #of(Class)} must itself be annotated with {@link JsDefinition}, which
+ * is what makes it findable during the build. Annotations on interfaces are not
+ * inherited. An interface can not extend both marker interfaces. See
  * {@link JsDefinition} for how a definition that extends another interface is
  * declared.
  * <p>
