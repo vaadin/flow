@@ -19,14 +19,18 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.invoker.InvocationRequest;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -92,6 +96,21 @@ class GenerateMavenBOMMojoTest {
         assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
         assertTrue(Files.exists(Paths.get(bomFilename)));
+    }
+
+    @Test
+    void createInvocationRequest_inheritsSessionConfiguration()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "session",
+                InvocationRequestBuilderTest.session(
+                        new DefaultMavenExecutionRequest().setOffline(true),
+                        new Properties()));
+
+        InvocationRequest request = mojo.createInvocationRequest();
+
+        assertTrue(request.isOffline());
+        assertEquals("json",
+                request.getProperties().getProperty("outputFormat"));
     }
 
 }
