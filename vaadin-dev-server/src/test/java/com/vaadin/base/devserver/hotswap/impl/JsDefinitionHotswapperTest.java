@@ -370,8 +370,7 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
-    void extendedInterfaceRedefinedInPlace_definitionsExtendingItSeeTheNewJavaScript()
-            throws IOException {
+    void extendedInterfaceRedefinedInPlace_definitionsExtendingItSeeTheNewJavaScript() {
         // Copies, so that the redefinition leaves the classes of the other
         // cases alone. Defined without a code source, so a coverage agent does
         // not add members that the redefinition would then remove.
