@@ -44,6 +44,7 @@ import static com.vaadin.flow.component.internal.PendingJavaScriptInvocationUtil
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,23 +56,7 @@ class PendingJavaScriptInvocationUtilTest {
     }
 
     @Test
-    void invocationsBelowTheThreshold_noWarningLogged() {
-        MockUI ui = new MockUI();
-        UIInternals internals = ui.getInternals();
-        StateNode node = attachedNode(ui);
-
-        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 2);
-
-        scheduleInvocation(node);
-
-        assertEquals(WARNING_THRESHOLD - 1,
-                internals.addUndeliveredJsInvocations(0));
-        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
-                "no warning should have been logged below the threshold");
-    }
-
-    @Test
-    void invocationsReachingTheThreshold_warningLogged() {
+    void scheduleInvocationReachingTheThreshold_noWarningLogged() {
         MockUI ui = new MockUI();
         UIInternals internals = ui.getInternals();
         StateNode node = attachedNode(ui);
@@ -80,10 +65,63 @@ class PendingJavaScriptInvocationUtilTest {
 
         scheduleInvocation(node);
 
-        assertEquals(WARNING_THRESHOLD,
-                internals.addUndeliveredJsInvocations(0));
+        assertEquals(WARNING_THRESHOLD, count(ui));
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "scheduling should not log, since invocations scheduled while holding the lock are sent when it is released");
+    }
+
+    @Test
+    void checkUndeliveredInvocationsBelowTheThreshold_noWarningLogged() {
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD - 1);
+
+        internals.checkUndeliveredJavaScriptInvocations();
+
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "no warning should have been logged below the threshold");
+    }
+
+    @Test
+    void checkUndeliveredInvocationsAtTheThreshold_warningLogged() {
+        MockUI ui = new MockUI();
+        UIInternals internals = ui.getInternals();
+        internals.addUndeliveredJsInvocations(WARNING_THRESHOLD);
+
+        internals.checkUndeliveredJavaScriptInvocations();
+
         assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
-                "the warning should have been logged when reaching the threshold");
+                "the warning should have been logged at the threshold");
+    }
+
+    @Test
+    void findNewestUndeliveredInvocation_newestSent_newestRetainedOneFound() {
+        MockUI ui = new MockUI();
+        TestComponent invisible = new TestComponent();
+        ui.add(invisible);
+        invisible.setVisible(false);
+        StateNode invisibleNode = invisible.getElement().getNode();
+        PendingJavaScriptInvocation older = createInvocation(invisibleNode);
+        PendingJavaScriptInvocation retained = createInvocation(invisibleNode);
+        ui.getInternals().addJavaScriptInvocation(older);
+        ui.getInternals().addJavaScriptInvocation(retained);
+
+        ui.getPage().executeJs("this.foo = $0", "bar");
+        assertEquals("this.foo = $0",
+                ui.getInternals().findNewestUndeliveredJsInvocation()
+                        .getInvocation().getExpression(),
+                "the most recently counted invocation should be the newest");
+
+        ui.dumpPendingJsInvocations();
+
+        assertEquals(retained,
+                ui.getInternals().findNewestUndeliveredJsInvocation(),
+                "once the newest one is sent, the newest one retained in the queue should be found");
+
+        ui.remove(invisible);
+
+        assertNull(ui.getInternals().findNewestUndeliveredJsInvocation(),
+                "nothing should be found once no invocation is waiting");
     }
 
     @Test
@@ -265,6 +303,15 @@ class PendingJavaScriptInvocationUtilTest {
                         + message);
         assertTrue(message.contains("logged once per UI"),
                 "the message should tell that it is not repeated: " + message);
+    }
+
+    @Test
+    void warningMessage_noNewestInvocation_noInvocationDescribed() {
+        String message = buildWarningMessage(null, 1000);
+
+        assertTrue(message.startsWith(
+                "1000 JavaScript invocations scheduled for this UI have not been sent to the browser yet. Undelivered"),
+                message);
     }
 
     @Test

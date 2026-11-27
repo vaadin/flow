@@ -196,6 +196,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         }
         if (countedIn.getSession() != null) {
             countedIn.addUndeliveredJsInvocations(-1);
+            countedIn.undeliveredJsInvocationUncounted(this);
         }
         // A closed UI has no session to lock and its count is discarded with
         // it, so there is nothing to update for one

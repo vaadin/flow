@@ -21,12 +21,16 @@ import java.util.EventObject;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 
 /**
  * {@link ReentrantLock} used for Vaadin session locking that notifies the
  * owning {@link VaadinService}'s {@link SessionLockListener}s around the
- * outermost lock acquisition and release.
+ * outermost lock acquisition and release, and checks on every outermost
+ * acquisition whether JavaScript invocations are piling up in the UIs of the
+ * session.
  * <p>
  * Both the request-handling lock path
  * ({@link VaadinService#lockSession(WrappedSession)}) and
@@ -199,7 +203,8 @@ class InstrumentedReentrantLock extends ReentrantLock {
     /*
      * Locking is hot enough that the events are only built, and the times only
      * measured, when somebody is there to receive them: an application that
-     * observes nothing pays for nothing.
+     * observes nothing pays for nothing. The check for undelivered JavaScript
+     * invocations always runs, but only reads a counter per UI.
      */
 
     private void lockAcquired(boolean fireRequested, boolean timeWait,
@@ -216,6 +221,32 @@ class InstrumentedReentrantLock extends ReentrantLock {
                     .fireEvent(new SessionLockAcquiredEvent(currentService,
                             getSession(),
                             Duration.ofNanos(acquiredAt - requestedAt)));
+        }
+        checkUndeliveredJavaScriptInvocations();
+    }
+
+    /*
+     * A request sends everything it scheduled in its response, so counting
+     * while invocations are scheduled warns about any large view built in one
+     * request. Invocations from earlier holds that are still unsent when the
+     * lock is taken again are the ones that may keep piling up.
+     */
+    private void checkUndeliveredJavaScriptInvocations() {
+        VaadinSession currentSession = getSession();
+        if (currentSession == null
+                || currentSession.getLockInstance() != this) {
+            return;
+        }
+        try {
+            for (UI ui : currentSession.getUIs()) {
+                ui.getInternals().checkUndeliveredJavaScriptInvocations();
+            }
+        } catch (RuntimeException e) {
+            // The lock is already held, so failing here would leave it
+            // locked. A check that only backs a warning is not worth that
+            LoggerFactory.getLogger(InstrumentedReentrantLock.class).debug(
+                    "Failed to check for undelivered JavaScript invocations",
+                    e);
         }
     }
 
