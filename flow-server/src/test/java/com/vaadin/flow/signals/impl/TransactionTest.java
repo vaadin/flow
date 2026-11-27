@@ -97,6 +97,22 @@ class TransactionTest extends SignalTestBase {
     }
 
     @Test
+    void runInTransaction_finalizeTaskThrows_exceptionPropagated() {
+        RuntimeException finalizeFailure = new RuntimeException("finalize");
+        Transaction outer = Transaction.getCurrent();
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> Transaction.runInTransaction(() -> {
+                    Transaction.getCurrent().runAfterFinalize(() -> {
+                        throw finalizeFailure;
+                    });
+                }));
+
+        assertSame(finalizeFailure, thrown);
+        assertSame(outer, Transaction.getCurrent());
+    }
+
+    @Test
     void runAfterFinalize_removedBeforeFinalize_notRun() {
         Transaction transaction = Transaction.createWriteThrough();
         List<String> ran = new ArrayList<>();
