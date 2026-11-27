@@ -104,6 +104,11 @@ export class Flow {
   private baseRegex = /^\//;
   private appShellTitle: string;
 
+  // The URL this page was loaded from, which is not loaded again when the UI
+  // has stopped: its UI may have stopped while starting, and loading it again
+  // could loop.
+  private readonly loadedUrl = window.location.pathname + window.location.search;
+
   private navigation: string = '';
 
   constructor(config?: FlowConfig) {
@@ -292,12 +297,11 @@ export class Flow {
 
         if (this.isUiTerminated()) {
           // A stopped UI cannot show the route, so load the target as a new
-          // page, which starts a new UI. Not the page already loaded: its UI
-          // may have stopped while starting, and loading it again could loop.
+          // page, which starts a new UI
           serverConnected(true);
           const target = ctx.pathname + (ctx.search ?? '');
-          if (target !== window.location.pathname + window.location.search) {
-            this.loadPage(target);
+          if (target !== this.loadedUrl) {
+            this.loadPage(target + ((ctx as { hash?: string }).hash ?? ''));
           }
           return;
         }

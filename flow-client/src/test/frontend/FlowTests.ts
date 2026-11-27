@@ -479,8 +479,15 @@ describe('Flow', () => {
     expect(loadPage.called).to.be.false;
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
 
-    expect(await settledSoon(elem.onBeforeEnter({ pathname: '/Foo', search: '?a=1' }, cmd))).to.equal('prevented');
-    expect(loadPage.calledOnceWith('/Foo?a=1')).to.be.true;
+    // Also when the browser already shows the target, as on back and forward
+    const navigation = { pathname: '/Foo', search: '?a=1', hash: '#b' };
+    window.history.pushState(null, '', '/Foo?a=1#b');
+    try {
+      expect(await settledSoon(elem.onBeforeEnter(navigation, cmd))).to.equal('prevented');
+    } finally {
+      window.history.replaceState(null, '', pathname + search);
+    }
+    expect(loadPage.calledOnceWith('/Foo?a=1#b')).to.be.true;
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
