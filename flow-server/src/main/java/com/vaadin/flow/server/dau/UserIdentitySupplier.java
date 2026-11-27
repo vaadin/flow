@@ -34,8 +34,8 @@ import com.vaadin.flow.function.SerializableFunction;
  * {@literal null}.
  * <p>
  * Called when a request starts, without holding the session lock. Use
- * {@link com.vaadin.flow.server.VaadinSession#access(com.vaadin.flow.server.Command)}
- * to reach the state of the session in the {@link UserIdentityContext}.
+ * {@link com.vaadin.flow.server.VaadinSession#accessSynchronously(com.vaadin.flow.server.Command)}
+ * to read the state of the session in the {@link UserIdentityContext}.
  *
  * @since 24.5
  */
