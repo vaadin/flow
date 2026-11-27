@@ -88,8 +88,11 @@ public @interface PWA {
      * Defaults to (relative) {@literal icons/icon.png} with default
      * configuration that is {@literal webapp/manifest.webmanifest}
      * <p>
-     * If the specified icon file is not found, the default one will be used.
-     * The file is also used to create different sizes of icon.
+     * If the specified icon file is not found, a default icon is generated: the
+     * initials of the {@link #name() name} on a square in the
+     * {@link #themeColor() theme color}, or in blue when the theme color is the
+     * default white. The file, or the generated icon, is also used to create
+     * different sizes of icon.
      *
      * @return path to the application icon file
      */
@@ -135,7 +138,9 @@ public @interface PWA {
      * Theme color of the application.
      *
      * The theme color sets the color of the application's tool bar and
-     * application's color in the task switcher.
+     * application's color in the task switcher. When no {@link #iconPath() icon
+     * file} is found, it is also the background color of the generated default
+     * icon.
      *
      * @return theme color of the application
      */
