@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.RecordComponent;
@@ -3089,8 +3090,12 @@ public class Binder<BEAN> implements Serializable {
             values.forEach(value -> value.ifOk(convertedValues::add));
 
             try {
-                record = beanType.cast(beanType.getDeclaredConstructors()[0]
-                        .newInstance(convertedValues.toArray()));
+                Constructor<?> constructor = beanType
+                        .getDeclaredConstructors()[0];
+                // the record type does not need to be public
+                constructor.trySetAccessible();
+                record = beanType.cast(
+                        constructor.newInstance(convertedValues.toArray()));
             } catch (Exception e) {
                 throw ReflectTools.convertInstantiationException(e, beanType);
             }

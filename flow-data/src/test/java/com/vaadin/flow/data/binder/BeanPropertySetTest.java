@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -41,11 +42,13 @@ import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.Country;
 import com.vaadin.flow.tests.data.bean.FatherAndSon;
+import com.vaadin.flow.tests.data.bean.NonPublicBeans;
 import com.vaadin.flow.tests.data.bean.Sex;
 import com.vaadin.flow.tests.server.ClassesSerializableUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -549,5 +552,45 @@ class BeanPropertySetTest {
         assertEquals("something", defs.get(3).getName());
         assertEquals(String.class, defs.get(3).getType());
 
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void nonPublicBeanClass_getterAndSetterWork() {
+        Object bean = NonPublicBeans.newBeanWithChild();
+        PropertySet<Object> set = BeanPropertySet
+                .get((Class) NonPublicBeans.BEAN_TYPE);
+
+        PropertyDefinition<Object, Object> name = (PropertyDefinition) set
+                .getProperty("name").get();
+        name.getSetter().get().accept(bean, "parent");
+        assertEquals("parent", name.getGetter().apply(bean));
+
+        PropertyDefinition<Object, Object> childName = (PropertyDefinition) set
+                .getProperty("child.name").get();
+        childName.getSetter().get().accept(bean, "child");
+        assertEquals("child", childName.getGetter().apply(bean));
+        assertEquals("parent", name.getGetter().apply(bean));
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void beanClassInPackageNotOpened_getterFailsWithHint() {
+        // the JDK's Path implementation lives in a package that is neither
+        // exported nor opened, so its accessors cannot be made accessible
+        Path bean = Path.of("file.txt");
+        PropertySet<Object> set = BeanPropertySet.get((Class) bean.getClass());
+        ValueProvider<Object, ?> getter = set.getProperty("fileName").get()
+                .getGetter();
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> getter.apply(bean));
+        assertEquals(String.format(
+                "Unable to access 'getFileName' of '%s'. Its module does not "
+                        + "open the package '%s' to Vaadin. Make the class "
+                        + "public, or open the package in module-info.java.",
+                bean.getClass().getName(), bean.getClass().getPackageName()),
+                exception.getMessage());
+        assertInstanceOf(IllegalAccessException.class, exception.getCause());
     }
 }
