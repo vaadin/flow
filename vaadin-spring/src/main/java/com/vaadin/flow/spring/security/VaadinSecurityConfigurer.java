@@ -39,6 +39,7 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
@@ -56,6 +57,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
@@ -759,6 +761,11 @@ public final class VaadinSecurityConfigurer
             http.sessionManagement(this::customizeSessionManagement);
         }
 
+        if (!alreadyInitializedOnce
+                && http.getConfigurer(HeadersConfigurer.class) != null) {
+            http.headers(this::customizeHeaders);
+        }
+
         // The init method might be called multiple times if the configurer is
         // added during initialization of another configurer. This flag allows
         // tracking whether initialization has already happened once to avoid
@@ -961,6 +968,22 @@ public final class VaadinSecurityConfigurer
             configurer.ignoringRequestMatchers(PathPatternRequestMatcher
                     .withDefaults().matcher(formLoginPage));
         }
+    }
+
+    // Lets Vaadin read the Content Security Policy configured in Spring
+    // Security, to merge it into the policy of its own pages in strict mode
+    private void customizeHeaders(HeadersConfigurer<HttpSecurity> configurer) {
+        var captureFilter = new SpringSecurityContentSecurityPolicyInitializer.HeaderCaptureFilter();
+        configurer.withObjectPostProcessor(
+                new ObjectPostProcessor<HeaderWriterFilter>() {
+                    @Override
+                    public <O extends HeaderWriterFilter> O postProcess(
+                            O filter) {
+                        captureFilter.setHeaderWriterFilter(filter);
+                        return filter;
+                    }
+                });
+        getBuilder().addFilterAfter(captureFilter, HeaderWriterFilter.class);
     }
 
     private void customizeLogout(LogoutConfigurer<HttpSecurity> configurer) {

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -305,7 +307,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static void applyContentSecurityPolicy(
             IndexHtmlResponse indexHtmlResponse) {
         VaadinResponse response = indexHtmlResponse.getVaadinResponse();
-        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)
+                && !isMergedContentSecurityPolicy(indexHtmlResponse)) {
             // Sending the page without Vaadin's policy would silently drop
             // the protection the strict mode promises
             throw new IllegalStateException(String.format(
@@ -330,6 +333,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .attr("nonce", nonce);
         response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
                 policy.toHeaderValue());
+    }
+
+    // A header that a listener has merged into the policy is replaced by the
+    // merged policy, so nothing of it is lost
+    private static boolean isMergedContentSecurityPolicy(
+            IndexHtmlResponse indexHtmlResponse) {
+        if (indexHtmlResponse
+                .getVaadinResponse() instanceof HttpServletResponse response) {
+            return response.getHeaders(CONTENT_SECURITY_POLICY_HEADER).stream()
+                    .allMatch(
+                            indexHtmlResponse::hasMergedContentSecurityPolicy);
+        }
+        return false;
     }
 
     private void initializeFeatureFlags(Document indexDocument,

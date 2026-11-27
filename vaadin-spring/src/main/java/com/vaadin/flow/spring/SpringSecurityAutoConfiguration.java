@@ -53,6 +53,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.SpringSecurityContentSecurityPolicyInitializer;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
@@ -116,6 +117,17 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     public VaadinDefaultRequestCache vaadinDefaultRequestCache() {
         return new VaadinDefaultRequestCache();
+    }
+
+    /**
+     * Merges the Content Security Policy configured in Spring Security into the
+     * policy of Vaadin pages in the strict mode.
+     *
+     * @return the initializer that registers the merging
+     */
+    @Bean
+    public SpringSecurityContentSecurityPolicyInitializer springSecurityContentSecurityPolicyInitializer() {
+        return new SpringSecurityContentSecurityPolicyInitializer();
     }
 
     /**
