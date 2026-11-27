@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -83,6 +84,8 @@ public class RequestUtil {
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
+
+    private VaadinRolePrefixHolder rolePrefixHolder;
 
     private WebIconsRequestMatcher webIconsRequestMatcher;
 
@@ -250,11 +253,51 @@ public class RequestUtil {
         }
     }
 
+    /**
+     * Gets the authorities that grant access to the Hilla route of the request.
+     * <p>
+     * The route declares role names, like {@code @RolesAllowed} does, so they
+     * are prefixed with the role prefix in the same way as
+     * {@link HttpServletRequest#isUserInRole(String)} does in Spring Security.
+     * This keeps the check consistent with the filtering of the client-side
+     * routes, which uses {@code isUserInRole}.
+     */
     private Set<String> getHillaAllowedAuthorities(HttpServletRequest request) {
-        if (fileRouterRequestUtil != null) {
-            return fileRouterRequestUtil.getAllowedAuthorities(request);
+        if (fileRouterRequestUtil == null) {
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
+        var roles = fileRouterRequestUtil.getAllowedAuthorities(request);
+        if (roles.isEmpty()) {
+            return roles;
+        }
+        var rolePrefix = getRolePrefix(request);
+        if (rolePrefix == null || rolePrefix.isEmpty()) {
+            return roles;
+        }
+        return roles.stream().map(role -> role.startsWith(rolePrefix) ? role
+                : (rolePrefix + role)).collect(Collectors.toSet());
+    }
+
+    @Autowired(required = false)
+    void setRolePrefixHolder(VaadinRolePrefixHolder rolePrefixHolder) {
+        this.rolePrefixHolder = rolePrefixHolder;
+    }
+
+    private String getRolePrefix(HttpServletRequest request) {
+        if (rolePrefixHolder == null) {
+            return "ROLE_";
+        }
+        if (!rolePrefixHolder.isSet()) {
+            // A prefix configured only on the filter chain is not known
+            // before a Vaadin request has run, but the request being
+            // authorized already carries it
+            rolePrefixHolder.resetRolePrefixFromServletRequest(request);
+        }
+        if (rolePrefixHolder.isSet()) {
+            return rolePrefixHolder.getRolePrefix();
+        }
+        // The default of SecurityContextHolderAwareRequestWrapper
+        return "ROLE_";
     }
 
     /**
