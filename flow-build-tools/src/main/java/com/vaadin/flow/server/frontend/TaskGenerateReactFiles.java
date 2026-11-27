@@ -104,7 +104,9 @@ public class TaskGenerateReactFiles
 
     private static final String FLOW_TSX = "Flow.tsx";
     private static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
-    private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
+    // In a package of flow-react, not next to the other templates: those are
+    // in a package of flow-server, and two modules cannot share a package
+    private static final String REACT_ADAPTER_TEMPLATE = "com/vaadin/flow/component/react/ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     private static final String LAYOUTS_JSON = "layouts.json";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
@@ -176,8 +178,8 @@ public class TaskGenerateReactFiles
                     getVaadinReactTsContent(routesTsx.exists()));
             writeLayoutsJson(
                     options.getClassFinder().getAnnotatedClasses(Layout.class));
-            if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
-                String reactAdapterContent = getFileContent(
+            if (resourceAvailable(REACT_ADAPTER_TEMPLATE)) {
+                String reactAdapterContent = getResourceContent(
                         REACT_ADAPTER_TEMPLATE);
                 reactAdapterContent = reactAdapterContent.replace(
                         "{{VAADIN_VERSION}}", Version.getFullVersion());
@@ -322,9 +324,9 @@ public class TaskGenerateReactFiles
                                 + FrontendUtils.ROUTES_JS);
     }
 
-    private boolean fileAvailable(String fileName) {
+    private boolean resourceAvailable(String resourcePath) {
         return options.getClassFinder().getClassLoader()
-                .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
+                .getResource(resourcePath) != null;
     }
 
     private boolean missingServerRouteImport(String routesContent) {
@@ -353,13 +355,14 @@ public class TaskGenerateReactFiles
     }
 
     protected String getFileContent(String fileName) throws IOException {
-        String indexTemplate;
-        try (InputStream indexTsStream = options.getClassFinder()
-                .getClassLoader()
-                .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
-            indexTemplate = StringUtil.toUTF8String(indexTsStream);
+        return getResourceContent(CLASS_PACKAGE.formatted(fileName));
+    }
+
+    private String getResourceContent(String resourcePath) throws IOException {
+        try (InputStream stream = options.getClassFinder().getClassLoader()
+                .getResourceAsStream(resourcePath)) {
+            return StringUtil.toUTF8String(stream);
         }
-        return indexTemplate;
     }
 
     private Logger log() {

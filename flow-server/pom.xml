@@ -29,19 +29,13 @@
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
-            service -->
+            service. The annotations jar, unlike osgi.cmpn, declares a module
+            name. -->
 
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>osgi.cmpn</artifactId>
-      <version>${osgi.compendium.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.core</artifactId>
-      <version>${osgi.core.version}</version>
+      <artifactId>org.osgi.service.component.annotations</artifactId>
+      <version>${osgi.component.annotations.version}</version>
       <scope>provided</scope>
     </dependency>
 

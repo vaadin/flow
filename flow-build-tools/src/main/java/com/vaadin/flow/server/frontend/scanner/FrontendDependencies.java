@@ -200,7 +200,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 visitEntryPoint(entryPoints.get(entryPointClass.getName()));
             }
             if (finder.getResource(
-                    "com/vaadin/flow/server/frontend/ReactAdapter.template") != null
+                    "com/vaadin/flow/component/react/ReactAdapter.template") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactAdapterComponent")) {
                 Class<Object> entryPointClass = finder.loadClass(
