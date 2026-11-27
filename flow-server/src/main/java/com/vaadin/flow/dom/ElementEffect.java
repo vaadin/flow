@@ -274,7 +274,7 @@ public final class ElementEffect implements Serializable {
 
         SerializableExecutor uiDispatcher = command -> {
             if (ui.getInternals().isCurrentAndLocked()) {
-                // Run immediately if on the same UI
+                // Run immediately if on the same UI with its session locked
                 command.run();
             } else {
                 SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
@@ -283,7 +283,7 @@ public final class ElementEffect implements Serializable {
                         if (effect != null) {
                             // In test environments, the effect dispatcher
                             // may run tasks on the test thread where
-                            // UI.getCurrent() is already set. In that case
+                            // the UI is current and locked. In that case
                             // run directly instead of ui.access() which
                             // would only enqueue without executing.
                             if (ui.getInternals().isCurrentAndLocked()) {
