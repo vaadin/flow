@@ -109,6 +109,17 @@ class JsDefinitionHotswapperTest {
         void scrollTo(int top);
     }
 
+    // Only extended, and declares JavaScript without @JsExpression
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    @JsDefinition
+    interface PopoverMenuJs extends PopoverJs {
+        @JsExpression("this.scrollTop = 0")
+        void scrollToTop();
+    }
+
     @JsDefinition
     interface ScrollingListJs extends ScrollableJs {
         @JsExpression("this.scrollTop = this.scrollHeight")
@@ -367,6 +378,22 @@ class JsDefinitionHotswapperTest {
         } finally {
             registration.remove();
         }
+    }
+
+    @Test
+    void extendedInterfaceWithoutExpressions_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(PopoverMenuJs.class);
+        // What the file holds when the extended interface declared another
+        // method than it does now
+        editGeneratedDefinitions("return this.showPopover();",
+                "return this.hidePopover();");
+
+        classesChanged(PopoverJs.class);
+
+        assertEquals(List.of(PopoverMenuJs.class.getName()),
+                hotswapper.reported,
+                "a method without @JsExpression declares JavaScript too");
     }
 
     @Test

@@ -22,10 +22,21 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Marks an interface whose methods declare, with {@link JsExpression}, the
- * JavaScript they run when they are called. An implementation is obtained from
- * {@link Element#executeJs(Class)} or {@link Page#executeJs(Class)}, and
- * calling a method of it schedules the declared JavaScript to run on the
- * client.
+ * JavaScript they run when they are called. A method without the annotation
+ * calls the method of the same name on the element. An implementation is
+ * obtained from {@link Element#executeJs(Class)} or
+ * {@link Page#executeJs(Class)}, and calling a method of it schedules the
+ * declared JavaScript to run on the client.
+ * <p>
+ * A call through {@link Page#executeJs(Class)} runs on no element, so it can
+ * not call a method on one. An interface that has a method without
+ * {@link JsExpression} that calls the method of the same name on the element,
+ * declared in the interface itself or inherited from another interface that
+ * extends {@link JsInvokers}, can only be used with
+ * {@link Element#executeJs(Class)}: {@link Page#executeJs(Class)} throws an
+ * {@link IllegalArgumentException} for it. See
+ * {@link JsCall#declaredExpression(java.lang.reflect.Method)} for which methods
+ * call the element method.
  * <p>
  * The interface is also annotated with {@link JsDefinition}, which is what
  * makes it findable during the build: its JavaScript is collected into the
@@ -45,6 +56,9 @@ import com.vaadin.flow.dom.Element;
  *
  *     &#64;JsExpression("this.scrollTop = $0;")
  *     void scrollTo(int top);
+ *
+ *     // Runs this.scrollIntoView($0) on the element
+ *     void scrollIntoView(JsonNode options);
  * }
  *
  * element.executeJs(ScrollJs.class).scrollTo(100);

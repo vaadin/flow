@@ -179,9 +179,10 @@ class TaskGenerateJsDefinitionsTest {
         void count(Integer from);
     }
 
+    // Calls the method of the same name on the element
     @JsDefinition
-    public interface NothingJs extends JsInvokers {
-        void notDeclared();
+    public interface PopoverJs extends JsInvokers {
+        void showPopover(String source, Object... options);
     }
 
     @JsDefinition
@@ -268,7 +269,7 @@ class TaskGenerateJsDefinitionsTest {
         frontendFolder.mkdirs();
         options = new Options(mock(Lookup.class),
                 new DefaultClassFinder(
-                        Set.of(GreeterJs.class, NothingJs.class)),
+                        Set.of(GreeterJs.class, PopoverJs.class)),
                 null).withFrontendDirectory(frontendFolder)
                 .withProductionMode(false);
         task = new TaskGenerateJsDefinitions(options);
@@ -889,15 +890,18 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
-    void definitionWithoutDeclaredJavaScript_isNotRegistered()
+    void definitionOfMethodsWithoutExpression_registersCallsOfTheElementMethods()
             throws ExecutionFailedException {
         task.execute();
         String content = task.getFileContent();
 
-        assertEquals(2,
-                content.split("window.Vaadin.Flow.jsDefinitions\\[\"",
-                        -1).length - 1,
-                "only the two methods that declare JavaScript should be registered: "
+        String expression = "return this.showPopover($0, ...$1);";
+        assertTrue(
+                content.contains("window.Vaadin.Flow.jsDefinitions[\""
+                        + JsCall.functionId(expression, 2, true)
+                        + "\"] = async function ($0, ...$1) {"
+                        + System.lineSeparator() + expression),
+                "a method without @JsExpression should call the method of the same name, with the variadic tail spread: "
                         + content);
     }
 
@@ -1273,7 +1277,7 @@ class TaskGenerateJsDefinitionsTest {
         File resources = new File(temporaryFolder, "resources");
 
         boolean affected = TaskGenerateJsDefinitions
-                .updateStringFallbacks(resources, Set.of(NothingJs.class));
+                .updateStringFallbacks(resources, Set.of(PopoverJs.class));
 
         assertFalse(affected);
         assertFalse(new File(resources, Constants.JS_STRING_FALLBACKS_FILE)
