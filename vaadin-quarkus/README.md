@@ -13,8 +13,9 @@ earlier Vaadin versions:
 * `1.1` for Vaadin 23 and Quarkus 2
 
 The minimum supported Quarkus version is the one this branch's `quarkus.version`
-property names in the root POM — currently 3.33 (LTS). Vaadin 25.0 raised it
-from 3.27 because Flow depends on Jackson 3.1.x and Jackson Annotations 2.21.x.
+property names in the root POM — currently 3.40 (LTS), 3.40.2 or newer.
+Vaadin 25.4 raised it from 3.33, the previous LTS. Vaadin 25.0 raised it from
+3.27 because Flow depends on Jackson 3.1.x and Jackson Annotations 2.21.x.
 
 The module is split the way a Quarkus extension has to be:
 
@@ -28,9 +29,9 @@ The integration tests live in `flow-tests/vaadin-quarkus-tests`.
 To try the extension out, start from
 https://github.com/vaadin/base-starter-flow-quarkus/.
 
-## Native image builds starting with Quarkus 3.33.3.3
+## Native image builds need Quarkus 3.40.2 or newer
 
-Starting with Quarkus 3.33.3.3, the native image build of a Vaadin
+From Quarkus 3.33.3.3 up to 3.40.1.x, the native image build of a Vaadin
 application fails while it analyses the application, with:
 
 ```
@@ -39,26 +40,14 @@ Error: Class initialization of io.vertx.core.json.Json failed.
 Caused by: java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/util/ByteArrayBuilder
 ```
 
-The Quarkus Undertow extension checks whether Jackson is on the classpath.
-When it isn't, the extension defers the initialization of the Vert.x JSON
-classes to run time. The check only looks at the artifact name `jackson-core`,
-which Jackson 3, used by Vaadin, shares with Jackson 2. Quarkus therefore
-mistakes Jackson 3 for Jackson 2 and initializes the Vert.x JSON classes at
-build time, which requires Jackson 2. Before 3.33.3.3, another dependency
-happened to bring Jackson 2 in, which hid the problem. This is a Quarkus bug,
-tracked in
-[quarkusio/quarkus#56989](https://github.com/quarkusio/quarkus/issues/56989).
-
-Until a Quarkus release with the fix is out, either stay on Quarkus 3.33.3.2 or
-earlier, or add Jackson 2 core to the application. The Quarkus BOM manages
-its version:
-
-```xml
-<dependency>
-  <groupId>com.fasterxml.jackson.core</groupId>
-  <artifactId>jackson-core</artifactId>
-</dependency>
-```
+The Quarkus Undertow extension mistook Jackson 3, used by Vaadin, for
+Jackson 2 because both share the artifact name `jackson-core`, and so
+initialized the Vert.x JSON classes at build time, which requires Jackson 2.
+This was
+[quarkusio/quarkus#56989](https://github.com/quarkusio/quarkus/issues/56989),
+fixed in Quarkus 3.40.2. Applications that build native images need Quarkus
+3.40.2 or newer; there is no need to add Jackson 2 to the application any
+more.
 
 ## devUI URL
 
