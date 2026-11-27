@@ -34,6 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
@@ -45,7 +46,6 @@ import com.vaadin.flow.signals.shared.SharedListSignal;
 import com.vaadin.flow.signals.shared.SharedMapSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignal;
 import com.vaadin.flow.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EffectTest extends SignalTestBase {
 
@@ -842,7 +843,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_sameUICurrent_notBackgroundChange() {
-        UI ui = new MockUI();
+        UI ui = createLockedUI();
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -866,7 +867,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_noUICurrent_isBackgroundChange() {
-        UI ui = new MockUI();
+        UI ui = createLockedUI();
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -890,8 +891,8 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_differentUICurrent_isBackgroundChange() {
-        UI uiA = new MockUI();
-        UI uiB = new MockUI();
+        UI uiA = createLockedUI();
+        UI uiB = createLockedUI();
 
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<Boolean> backgroundChangesA = new ArrayList<>();
@@ -1472,6 +1473,19 @@ class EffectTest extends SignalTestBase {
         runPending(dispatchQueue);
         assertTrue(runCount.get() > beforeB,
                 "effect did not react to signalB; it kept a stale dependency set");
+    }
+
+    /**
+     * Creates a UI whose session reports the lock as held by the current
+     * thread, without a VaadinService behind it so that no Vaadin signal
+     * environment gets registered.
+     */
+    private static UI createLockedUI() {
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.hasLock()).thenReturn(true);
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        return ui;
     }
 
     private static void await(CountDownLatch latch) {
