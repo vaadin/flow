@@ -56,8 +56,13 @@ jobs:
     #
     # The label has to be present for both event types, and a `labeled` event
     # for some other label must not start a build of its own.
+    #
+    # Only in vaadin/flow: a copy of this repository that has the organization
+    # secrets would otherwise deploy its own build to the shared snapshot
+    # repository.
     if: >-
-      !github.event.pull_request.head.repo.fork
+      github.repository == 'vaadin/flow'
+      && !github.event.pull_request.head.repo.fork
       && contains(github.event.pull_request.labels.*.name, 'snapshot build')
       && (github.event.action != 'labeled' || github.event.label.name == 'snapshot build')
     timeout-minutes: 90
