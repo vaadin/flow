@@ -270,9 +270,14 @@ public abstract class AsynchronousSignalTree extends SignalTree {
             public void publishChanges() {
                 assert hasLock();
 
+                /*
+                 * Queue before notifying so that a change committed by an
+                 * observer is submitted after this one rather than before it
+                 */
+                queuedCommands.addAll(changes.getCommands());
+
                 notifyObservers(oldSnapshot, newSnapshot);
 
-                queuedCommands.addAll(changes.getCommands());
                 if (inFlightCommandIds.isEmpty()) {
                     submitQueuedCommands();
                 }

@@ -222,6 +222,26 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
     }
 
     @Test
+    void applyChange_observerCommits_submittedInApplyOrder() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.commitSingleCommand(second);
+            return false;
+        });
+        tree.commitSingleCommand(first);
+
+        assertEquals(List.of(List.of(first, second)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
     void submit_throws_batchSubmittedWithNextChange() {
         AsyncTestTree tree = new AsyncTestTree();
         SignalCommand first = TestUtil.writeRootValueCommand("first");
