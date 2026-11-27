@@ -15,14 +15,32 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.chrome.ChromeOptions;
 
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 
 /**
- * The tests are in the superclass.
+ * The tests are in the superclass. The view keeps the default long-polling
+ * fallback, so this also checks that push did not fall back.
  */
 @Category(IgnoreOSGi.class)
 public class PushWSUpdateDivIT extends AbstractUpdateDivIT {
 
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
+
+    @Override
+    @Test
+    public void pushUpdatesEmbeddedWebComponent() {
+        super.pushUpdatesEmbeddedWebComponent();
+
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET_XHR);
+    }
 }

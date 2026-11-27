@@ -15,12 +15,33 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.chrome.ChromeOptions;
 
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.PushConnectionTracker;
 
+/**
+ * The view keeps the default long-polling fallback, so this also checks that
+ * push did not fall back.
+ */
 @Category({ PushTests.class, IgnoreOSGi.class })
 public class BasicPushIT extends AbstractClientServerCounterIT {
 
+    @Override
+    protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
+        PushConnectionTracker.enable(chromeOptions);
+    }
+
+    @Override
+    @Test
+    public void testServerInitiatedCommunication() throws InterruptedException {
+        super.testServerInitiatedCommunication();
+
+        new PushConnectionTracker(getDriver())
+                .assertOnlyTransport(Transport.WEBSOCKET_XHR);
+    }
 }

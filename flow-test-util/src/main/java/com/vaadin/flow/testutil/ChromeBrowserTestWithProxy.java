@@ -28,6 +28,7 @@ public abstract class ChromeBrowserTestWithProxy
     private static AtomicInteger availablePort = new AtomicInteger(2000);
     private SimpleProxy proxySession;
     private Integer proxyPort = null;
+    private boolean proxyPortBound;
 
     private String rootUrl;
 
@@ -92,8 +93,16 @@ public abstract class ChromeBrowserTestWithProxy
             // connections at the same time
             try {
                 createProxy(getProxyPort());
+                proxyPortBound = true;
                 break;
             } catch (IOException e) {
+                if (!proxyPortBound) {
+                    // The port counter is per JVM, so a test in another
+                    // failsafe fork may hold the same port: try the next one.
+                    // Once bound, the browser uses this port, so a reconnect
+                    // has to rebind the same one.
+                    proxyPort = null;
+                }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException exception) {
