@@ -61,8 +61,8 @@ import com.vaadin.flow.component.dependency.JsModule;
  * <p>
  * {@link #from()} is resolved the way {@link JsModule#value()} is: a path
  * starting with <code>./</code> names a file in the frontend folder of the
- * project or in <code>META-INF/resources/frontend</code> of a jar, and any
- * other path names an npm package or a file in one.
+ * project or in <code>META-INF/frontend</code> of a jar, and any other path
+ * names an npm package or a file in one.
  * <p>
  * The imports belong to the interface they are declared on. A method inherited
  * from another interface sees the imports of the interface that declares it,
