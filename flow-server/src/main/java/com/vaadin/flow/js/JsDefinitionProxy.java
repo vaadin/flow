@@ -412,8 +412,8 @@ public final class JsDefinitionProxy {
         }
         String declarer = (importingType == definitionType)
                 ? definitionType.getName()
-                : definitionType.getName() + " extends "
-                        + importingType.getName() + ", which";
+                : (definitionType.getName() + " extends "
+                        + importingType.getName() + ", which");
         if (snippets) {
             throw new IllegalArgumentException(declarer
                     + " is annotated with @JsDefinitionImport, which only"
