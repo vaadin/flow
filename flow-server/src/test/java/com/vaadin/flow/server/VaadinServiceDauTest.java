@@ -26,6 +26,8 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import com.vaadin.flow.di.Lookup;
@@ -151,8 +153,10 @@ public class VaadinServiceDauTest {
         assertSame(providedIdentitySupplier, userIdentitySupplier);
     }
 
-    @Test
-    public void sessionOnRequestStartWrapper_sessionExists_delegateRunsWithCurrentSessionWithoutLock() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    public void sessionOnRequestStartWrapper_delegateRunsWithRequestSessionWithoutLock(
+            boolean hasSession) {
         MockVaadinServletService service = new MockVaadinServletService();
         MockVaadinSession session = new MockVaadinSession(service);
         WrappedSession wrappedSession = mock(WrappedSession.class);
@@ -160,7 +164,8 @@ public class VaadinServiceDauTest {
         doReturn(session).when(requestService).loadSession(wrappedSession);
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getService()).thenReturn(requestService);
-        when(request.getWrappedSession(false)).thenReturn(wrappedSession);
+        when(request.getWrappedSession(false))
+                .thenReturn(hasSession ? wrappedSession : null);
 
         List<VaadinSession> currentInStart = new ArrayList<>();
         List<Boolean> lockedInStart = new ArrayList<>();
@@ -179,7 +184,9 @@ public class VaadinServiceDauTest {
             new VaadinService.VaadinSessionOnRequestStartInterceptorWrapper(
                     delegate).requestStart(request, null);
 
-            assertEquals(List.of(session), currentInStart);
+            // Without a session, the current instances are left as they are
+            assertEquals(List.of(hasSession ? session : previous),
+                    currentInStart);
             assertEquals(List.of(false), lockedInStart);
             assertSame(previous, VaadinSession.getCurrent());
         } finally {
