@@ -24,6 +24,7 @@ env:
   _REF_NAME: ${{ github.ref_name }}
   _MERGE_GROUP_SHA: ${{ github.event.merge_group.head_sha }}
   _MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+  _MERGE_GROUP_BASE_REF: ${{ github.event.merge_group.base_ref }}
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
@@ -1191,9 +1192,17 @@ jobs:
         #
         # Pull requests are analyzed in pull-request mode; pushes to a
         # tracked branch (e.g. 25.2, 24.10) are analyzed as that branch.
+        #
+        # A merge group is analyzed as the branch it merges into. Pushes to
+        # main do not run this workflow, so the merge queue is the only run
+        # that can update the analysis of main. Left to detect the branch on
+        # its own, the scanner files the analysis under the temporary
+        # gh-readonly-queue/... branch, and main is never updated.
         run: |
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             SCOPE="-Dsonar.branch.name=$GITHUB_REF_NAME"
+          elif [ "$GITHUB_EVENT_NAME" = "merge_group" ]; then
+            SCOPE="-Dsonar.branch.name=${_MERGE_GROUP_BASE_REF#refs/heads/}"
           else
             SCOPE="-Dsonar.pullrequest.key=$_PR_NUMBER \
               -Dsonar.pullrequest.base=$_BASE_REF \
