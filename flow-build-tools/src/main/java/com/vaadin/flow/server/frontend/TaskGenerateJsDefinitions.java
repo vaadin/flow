@@ -62,7 +62,6 @@ import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsDefinitionProxy.Kind;
-import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
@@ -902,7 +901,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * one function per method that declares JavaScript, registered under the
      * identifier of that function, which is what the server sends. The name of
      * the interface and of the method are not in it, so a browser is not told
-     * what declared the JavaScript it runs.
+     * what declared the JavaScript it runs. The exception is a method without
+     * {@code @JsExpression}, whose JavaScript is a call of the method of the
+     * same name on the element, so its name is in the function.
      * <p>
      * Package private: whether a file carries what an interface declares is
      * answered by {@link #findMissingFromGeneratedFile(Options, Collection)},
@@ -945,7 +946,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         // Not getMethods(), whose inherited methods keep the annotations they
         // had before the interface declaring them was hotswapped
         for (Method method : ReflectTools.getCurrentPublicMethods(definition)) {
-            if (method.isAnnotationPresent(JsExpression.class)) {
+            if (JsCall.declaredExpression(method) != null) {
                 methods.add(method);
             }
         }
@@ -966,8 +967,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                             : "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            String expression = method.getAnnotation(JsExpression.class)
-                    .value();
+            String expression = JsCall.declaredExpression(method);
             List<String> function = new ArrayList<>();
             if (snippets) {
                 // A snippet is evaluated by what it is passed to, which may

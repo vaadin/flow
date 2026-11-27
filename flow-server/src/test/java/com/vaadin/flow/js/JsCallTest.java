@@ -37,6 +37,7 @@ import com.vaadin.flow.js.internal.JsWithExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,7 +48,9 @@ class JsCallTest {
         @JsExpression("window.alert($0)")
         void showGreeting(String greeting);
 
-        void undeclared();
+        void focus();
+
+        void whisper(String greeting, Object... names);
 
         @JsExpression("this.ambiguous($0)")
         void ambiguous(String value);
@@ -71,8 +74,13 @@ class JsCallTest {
         }
 
         @Override
-        public void undeclared() {
+        public void focus() {
             throw new UnsupportedOperationException("nothing to do here");
+        }
+
+        @Override
+        public void whisper(String greeting, Object... names) {
+            // Only the declaration is used, to resolve the call
         }
 
         @Override
@@ -167,9 +175,55 @@ class JsCallTest {
                 .asList(call("showGreeting", "Hello").parametersFor(null)));
     }
 
+    // Does not extend JsInvokers, so a method without @JsExpression declares
+    // nothing even when a definition mixes it in
+    interface UndeclaredMixin {
+        void undeclared();
+    }
+
+    @JsDefinition
+    interface UndeclaredJs extends JsInvokers, UndeclaredMixin {
+    }
+
+    @Test
+    void getExpression_methodWithoutExpression_callsTheElementMethod() {
+        JsCall focus = call("focus");
+        assertEquals("return this.focus();", focus.getExpression());
+        assertEquals(JsCall.functionId("return this.focus();", 0, false),
+                focus.getFunctionId());
+
+        // The variadic tail is spread, as the generated function collects it
+        // into a rest parameter
+        JsCall whisper = call("whisper", "Hello", new Object[] { "Ada" });
+        assertEquals("return this.whisper($0, ...$1);",
+                whisper.getExpression());
+        assertEquals(
+                JsCall.functionId("return this.whisper($0, ...$1);", 2, true),
+                whisper.getFunctionId());
+    }
+
+    interface JavaImplementedJs extends JsInvokers {
+        default void twice() {
+        }
+
+        static void helper() {
+        }
+    }
+
+    @Test
+    void declaredExpression_defaultOrStaticMethod_declaresNothing()
+            throws NoSuchMethodException {
+        // Implemented in Java, so not a call of a method on the element
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("twice")));
+        assertNull(JsCall.declaredExpression(
+                JavaImplementedJs.class.getMethod("helper")));
+    }
+
     @Test
     void getExpression_methodWithoutDeclaredJavaScript_throws() {
-        JsCall undeclared = call("undeclared");
+        JsCall undeclared = new JsCall(UndeclaredJs.class, "undeclared",
+                List.of());
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, undeclared::getExpression);
 
@@ -272,7 +326,7 @@ class JsCallTest {
     void invokeOn_implementationThrows_theFailureReachesTheCaller() {
         UnsupportedOperationException exception = assertThrows(
                 UnsupportedOperationException.class,
-                () -> call("undeclared").invokeOn(new Greeter()));
+                () -> call("focus").invokeOn(new Greeter()));
 
         assertEquals("nothing to do here", exception.getMessage(),
                 "what the implementation threw should not be wrapped");
