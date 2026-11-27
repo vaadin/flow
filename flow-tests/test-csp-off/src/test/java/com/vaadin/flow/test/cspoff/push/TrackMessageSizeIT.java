@@ -28,7 +28,9 @@ public class TrackMessageSizeIT extends AbstractCspOffIT {
     @BrowserTest
     public void runTests() {
         open();
+        // The cases run once vaadinPush.js has been imported
+        waitUntil(driver -> !findElement(By.id("logId")).getText().isEmpty());
         Assertions.assertEquals("All tests run",
-                this.findElement(By.id("logId")).getText());
+                findElement(By.id("logId")).getText());
     }
 }

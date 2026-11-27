@@ -14,6 +14,5 @@
  * the License.
  */
 
-// Stub
-window.vaadinPush = window.vaadinPush || {};
-window.vaadinPush.isStub = true;
+// Stub of the atmosphere.js module
+export const isStub = true;

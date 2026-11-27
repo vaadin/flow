@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.test.cspoff.push;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -29,41 +24,64 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
+/**
+ * Feeds length-prefixed chunks through the message parsing of the bundled
+ * atmosphere.js client and checks the messages it reassembles.
+ */
 @Route("track-message-size")
 public class TrackMessageSizeView extends Div {
 
     public static final String LOG_ELEMENT_ID = "logId";
 
-    private Element logElement;
+    private static final String TEST_METHOD = """
+            function testSequence(atmosphere, expected, data) {
+                var protocol = new atmosphere.AtmosphereProtocol();
+                var request = {trackMessageLength: true, messageDelimiter: '|'};
+                var messages = [];
+                for (var i = 0; i < data.length; i++) {
+                    var result = protocol.processMessage(data[i], request);
+                    if (result) {
+                        messages = messages.concat(result.messages);
+                    }
+                }
+                if (JSON.stringify(expected) != JSON.stringify(messages)) {
+                    console.error('Expected', expected, 'but got', messages, 'for', data);
+                    $0.innerHTML = 'Test failed, see javascript console for details.';
+                }
+            }
+            """;
 
-    private String testMethod = "function testSequence(expected, data) {\n"
-            + "    var request = {trackMessageLength: true, messageDelimiter: '|'};\n"
-            + "    _request = {trackMessageLength: true, messageDelimiter: '|'};\n"
-            + "    _handleProtocol = function(a,message) {return message;};"
-            + "    var response = {partialMessage: ''};\n"
-            + "    var messages = [];\n"
-            + "    for (var i = 0; i < data.length; i++) {\n"
-            + "        if (!_trackMessageSize(data[i], request, response))\n"
-            + "            messages = messages.concat(response.messages);\n"
-            + "    }\n"
-            + "    if (JSON.stringify(expected) != JSON.stringify(messages)) {\n"
-            + "        if (console && typeof console.error == 'function') console.error('Expected', expected, 'but got', messages, 'for', data);\n"
-            + "        $0.innerHTML = 'Test failed, see javascript console for details.';\n"
-            + "    }" + "}\n";
+    private static final String TEST_CASES = """
+            function runTests(atmosphere) {
+                testSequence(atmosphere, ['a', 'b'], ['1|a1|b', '']);
+                testSequence(atmosphere, ['a', 'b'], ['1|a1|', 'b']);
+                testSequence(atmosphere, ['a', 'b'], ['1|a1', '|b']);
+                testSequence(atmosphere, ['a', 'b'], ['1|a', '1|b']);
+                testSequence(atmosphere, ['a', 'b'], ['1|a', '', '1|b']);
+                testSequence(atmosphere, ['a|', '|b'], ['2|a|2||b']);
+                testSequence(atmosphere, ['a|', 'b'], ['2|a|', '', '1|b']);
+                testSequence(atmosphere, ['a|', 'b'], ['2|a|', '1|b']);
+                testSequence(atmosphere, ['a|', 'b'], ['2|a|1', '|b']);
+                testSequence(atmosphere, ['a|', 'b'], ['2|a|1|', 'b']);
+                testSequence(atmosphere, [' ', 'b'], ['1| 1|b']);
+                testSequence(atmosphere, [' ', 'b'], ['1| ','1|b']);
+                testSequence(atmosphere, [' ', 'b'], ['1|',' 1|b']);
+                if ($0.innerHTML === '') {
+                    $0.innerHTML = 'All tests run';
+                }
+            }
+            // vaadinPush.js is the atmosphere.js ES module
+            import(new URL('VAADIN/static/push/vaadinPush.js', document.baseURI).href)
+                .then(runTests);
+            """;
 
     public TrackMessageSizeView() {
-
-        logElement = ElementFactory.createDiv().setAttribute("id",
+        Element logElement = ElementFactory.createDiv().setAttribute("id",
                 LOG_ELEMENT_ID);
         getElement().appendChild(logElement);
 
-        String methodImplementation = findMethodImplementation();
-
-        logElement.getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJs(
-                        methodImplementation + testMethod + buildTestCase(),
-                        logElement));
-
+        logElement.getNode().runWhenAttached(ui -> ui.getPage()
+                .executeJs(TEST_METHOD + TEST_CASES, logElement));
     }
 
     @Override
@@ -72,72 +90,6 @@ public class TrackMessageSizeView extends Div {
         UI ui = attachEvent.getUI();
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         ui.getPushConfiguration().setTransport(Transport.LONG_POLLING);
-    }
-
-    private String buildTestCase() {
-        // Could maybe express the cases in java and generate JS?
-        return "testSequence(['a', 'b'], ['1|a1|b', '']);\n"
-                + "testSequence(['a', 'b'], ['1|a1|', 'b']);\n"
-                + "testSequence(['a', 'b'], ['1|a1', '|b']);\n"
-                + "testSequence(['a', 'b'], ['1|a', '1|b']);\n"
-                + "testSequence(['a', 'b'], ['1|a', '', '1|b']);\n"
-                + "testSequence(['a|', '|b'], ['2|a|2||b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|', '', '1|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|', '1|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|1', '|b']);\n"
-                + "testSequence(['a|', 'b'], ['2|a|1|', 'b']);\n"
-                + "testSequence([' ', 'b'], ['1| 1|b']);\n"
-                + "testSequence([' ', 'b'], ['1| ','1|b']);\n"
-                + "testSequence([' ', 'b'], ['1|',' 1|b']);\n"
-                + "if($0.innerHTML === '') { \n"
-                + "    $0.innerHTML = 'All tests run'; " + "}\n";
-    }
-
-    private String findMethodImplementation() {
-        // Read from the flow-push JAR: the URL of the current request is not
-        // the page URL when the view is created during a UIDL request
-        String jsPath = "/META-INF/resources/VAADIN/static/push/vaadinPush.js";
-
-        String content = getFileContent(jsPath);
-
-        if (content == null) {
-            log("Can't find " + jsPath);
-            return null;
-        }
-
-        // Find the function inside the script content
-        int startIndex = content.indexOf("function _trackMessageSize");
-        if (startIndex == -1) {
-            log("function not found");
-            return null;
-        }
-
-        // Assumes there's a /** comment before the next function
-        int endIndex = content.indexOf("/**", startIndex);
-        if (endIndex == -1) {
-            log("End of function not found");
-            return null;
-        }
-
-        content = content.substring(startIndex, endIndex);
-        content = content.replaceAll("jQuery", "jQueryVaadin");
-        return content;
-
-    }
-
-    private String getFileContent(String resource) {
-        try (InputStream in = TrackMessageSizeView.class
-                .getResourceAsStream(resource)) {
-            return in != null
-                    ? new String(in.readAllBytes(), StandardCharsets.UTF_8)
-                    : null;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public void log(String log) {
-        logElement.setText(log);
     }
 
 }
