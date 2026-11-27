@@ -57,6 +57,7 @@ import com.vaadin.flow.server.ContentSecurityPolicyMode;
 import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -354,6 +355,47 @@ class JsStringFallbacksTest {
     }
 
     @Test
+    void developmentMode_listWrittenToProject_readInsteadOfClassPathCopy(
+            @TempDir File project) throws IOException {
+        // As when the application runs from a packaged jar: the class path
+        // has another list than the one development mode wrote to the project
+        MockDeploymentConfiguration configuration = setup
+                .getDeploymentConfiguration();
+        configuration.setProductionMode(false);
+        configuration.setProjectFolder(project);
+        configuration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        writeProjectList(project,
+                "[\"" + FocusFallbacks.class.getName() + "\"]");
+
+        ui.getElement().executeJs("this.focus()");
+
+        assertEquals(FocusFallbacks.class,
+                ui.onlyScheduledJsCall().definitionType());
+        Element element = ui.getElement();
+        assertThrows(ContentSecurityPolicyViolationException.class,
+                () -> element.executeJs("return this.scrollTop"));
+    }
+
+    @Test
+    void productionMode_listInProject_classPathListRead(@TempDir File project)
+            throws IOException {
+        MockDeploymentConfiguration configuration = setup
+                .getDeploymentConfiguration();
+        configuration.setProductionMode(true);
+        configuration.setProjectFolder(project);
+        configuration
+                .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
+        writeProjectList(project,
+                "[\"" + FocusFallbacks.class.getName() + "\"]");
+
+        ui.getElement().executeJs("return this.scrollTop");
+
+        assertEquals(AddonFallbacks.class,
+                ui.onlyScheduledJsCall().definitionType());
+    }
+
+    @Test
     void strict_matchingFunctionBody_usesDeclaredFunction() {
         setup.getDeploymentConfiguration()
                 .setContentSecurityPolicyMode(ContentSecurityPolicyMode.STRICT);
@@ -526,6 +568,18 @@ class JsStringFallbacksTest {
      * Gives the service a class loader that finds the list the build writes,
      * with the given content.
      */
+    /**
+     * Writes a list where development mode writes it in a Maven project.
+     */
+    private static void writeProjectList(File project, String json)
+            throws IOException {
+        File list = new File(project,
+                "target/classes/" + Constants.VAADIN_SERVLET_RESOURCES
+                        + Constants.JS_STRING_FALLBACKS_FILE);
+        list.getParentFile().mkdirs();
+        Files.writeString(list.toPath(), json);
+    }
+
     private void listFallbacks(String json) throws IOException {
         File list = new File(resources, Constants.VAADIN_SERVLET_RESOURCES
                 + Constants.JS_STRING_FALLBACKS_FILE);

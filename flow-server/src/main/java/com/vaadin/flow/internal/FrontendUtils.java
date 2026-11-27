@@ -823,6 +823,33 @@ public class FrontendUtils {
     }
 
     /**
+     * Gets the folder that the development mode build writes the files to that
+     * the server reads, such as the list of {@code @JsStringFallback}
+     * interfaces. It is in the folder the build tool puts resources into,
+     * {@code target/classes} for Maven and {@code build/resources/main} for
+     * Gradle.
+     * <p>
+     * That folder is on the class path when the application runs from the
+     * project, but not when it runs from a packaged jar, so a file written
+     * there while the application runs is read from this folder rather than
+     * from the class path.
+     *
+     * @param configuration
+     *            the configuration of the application, not <code>null</code>
+     * @return the folder, not <code>null</code>
+     */
+    public static File getServletResourceOutputDirectory(
+            AbstractConfiguration configuration) {
+        File resources = configuration.getOutputResourceFolder();
+        if (resources == null) {
+            // No project folder to find it in: the Maven layout, relative to
+            // where the application runs
+            resources = new File(configuration.getBuildFolder(), "classes");
+        }
+        return new File(resources, Constants.VAADIN_SERVLET_RESOURCES);
+    }
+
+    /**
      * Get relative path from a source path to a target path in Unix form. All
      * the Windows' path separator will be replaced.
      *
