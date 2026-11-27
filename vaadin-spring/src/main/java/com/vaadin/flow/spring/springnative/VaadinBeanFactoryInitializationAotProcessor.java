@@ -43,6 +43,9 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -66,6 +69,9 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.auth.MenuAccessControl;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.VaadinServletContextInitializer;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 
 /**
  * Bean factory initialization AOT processor for Vaadin applications.
@@ -161,12 +167,44 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, pkg, WebComponentExporter.class);
                 registerSubTypes(hints, pkg, I18NProvider.class);
                 registerSubTypes(hints, pkg, MenuAccessControl.class);
-
-                for (var c : getJsDefinitionTypes(pkg)) {
-                    registerJsDefinition(hints, c);
-                }
             }
+            registerJsDefinitions(hints, beanFactory);
         };
+    }
+
+    /**
+     * Registers the JavaScript definitions that development mode finds, with
+     * the same scan: the whole class path, without what it never scans and what
+     * {@code vaadin.blocked-packages} blocks, or, when
+     * {@code vaadin.allowed-packages} is set, only the allowed packages besides
+     * the ones of Vaadin and of the application. So a definition of an add-on
+     * outside the packages of the application is registered too. Each
+     * definition is implemented with a proxy, which the native image has only
+     * when it is registered.
+     */
+    private void registerJsDefinitions(RuntimeHints hints,
+            ConfigurableListableBeanFactory beanFactory) {
+        ConfigurableEnvironment environment = beanFactory
+                .getBean(ConfigurableEnvironment.class);
+        Collection<String> packages;
+        ResourceLoader resourceLoader;
+        if (VaadinConfigurationProperties.getAllowedPackages(environment)
+                .isEmpty()) {
+            // The empty package is the root of the class path
+            packages = List.of("");
+            resourceLoader = VaadinServletContextInitializer
+                    .createClassPathScanLoader(new DefaultResourceLoader(),
+                            environment);
+        } else {
+            packages = AotScanPackages.getPackagesToScan(beanFactory);
+            resourceLoader = new FilterableResourceResolver(
+                    new DefaultResourceLoader());
+        }
+        for (String pkg : packages) {
+            for (var c : getJsDefinitionTypes(pkg, resourceLoader)) {
+                registerJsDefinition(hints, c);
+            }
+        }
     }
 
     private void registerSubTypes(RuntimeHints hints, String pkg,
@@ -571,7 +609,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
     }
 
     // Visible for testing
-    Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+    Collection<Class<?>> getJsDefinitionTypes(String basePackage,
+            ResourceLoader resourceLoader) {
         // A JavaScript definition is an interface, which the scanner leaves
         // out by default as it only accepts what can be instantiated
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -585,6 +624,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
                         && beanDefinition.getMetadata().isIndependent();
             }
         };
+        scanner.setResourceLoader(resourceLoader);
         scanner.addIncludeFilter(new AnnotationTypeFilter(JsDefinition.class));
 
         return loadCandidates(scanner, basePackage);
