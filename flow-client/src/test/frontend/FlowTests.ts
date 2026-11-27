@@ -492,6 +492,60 @@ describe('Flow', () => {
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
+  it('should load the page on the app origin for the route paths that Flow.tsx passes when the UI stopped while starting', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const { pathname, search } = window.location;
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname, search });
+    const cmd = { prevent: () => 'prevented' };
+    // Flow.tsx enters a route with `basename + location.pathname`, and the
+    // basename is '/' for an app deployed at the root context path
+    const basename = '/';
+
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: basename + pathname, search }, cmd))).to.equal('prevented');
+    expect(loadPage.called).to.be.false;
+
+    // '//Foo' as a URL would be the host 'Foo'
+    expect(await settledSoon(elem.onBeforeEnter({ pathname: basename + '/Foo', search: '?a=1' }, cmd))).to.equal(
+      'prevented'
+    );
+    expect(loadPage.args).to.deep.equal([['/Foo?a=1']]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
+  it('should load the page under the context path when the UI stopped while starting', async () => {
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    server.addHandler('GET', /^.*\?v-r=init.*/, (req) => {
+      req.respond(
+        200,
+        { 'content-type': 'application/json' },
+        createInitResponse('foobar-12345').replace('"timings": [],', `"timings": [], "meta": ${internalErrorMeta},`)
+      );
+    });
+    const base = document.createElement('base');
+    base.href = '/app/';
+    document.head.prepend(base);
+    try {
+      const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: '/app/Bar' });
+      // Flow.tsx passes '/app/Foo' for an app at the context path '/app'
+      expect(await settledSoon(elem.onBeforeEnter({ pathname: '/app/Foo' }, { prevent: () => 'prevented' }))).to.equal(
+        'prevented'
+      );
+    } finally {
+      base.remove();
+    }
+    expect(loadPage.args).to.deep.equal([['/app/Foo']]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
   it('should let a `server->client` navigation leave when the UI stops before the server answers it', async () => {
     failingEvent = 'ui-leave-navigation';
     stubServerRemoteFunction('foobar-12345');
