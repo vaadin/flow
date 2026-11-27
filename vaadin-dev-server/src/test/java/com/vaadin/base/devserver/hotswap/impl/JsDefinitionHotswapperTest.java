@@ -326,6 +326,7 @@ class JsDefinitionHotswapperTest {
         // Found in META-INF/frontend on the class path of the application,
         // as the build finds it
         String generated = readGeneratedDefinitions();
+        assertTrue(generated.contains("greet(this, $0)"), generated);
         assertTrue(generated.contains(
                 "import(\"Frontend/generated/jar-resources/js-definition-hotswap-addon.js\")"),
                 generated);
