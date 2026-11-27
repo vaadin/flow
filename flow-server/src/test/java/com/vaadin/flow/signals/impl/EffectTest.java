@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -36,6 +37,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
+import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.TestUtil;
@@ -711,8 +713,9 @@ class EffectTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override
@@ -755,8 +758,9 @@ class EffectTest extends SignalTestBase {
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override
@@ -797,14 +801,54 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void sharedSignal_concurrentWriteBetweenValueAndUsage_effectRerun() {
+        AtomicReference<SharedValueSignal<String>> self = new AtomicReference<>();
+        AtomicBoolean injectWrite = new AtomicBoolean(false);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial") {
+            @Override
+            protected @Nullable String extractValue(@Nullable Data data) {
+                @Nullable
+                String value = super.extractValue(data);
+                if (injectWrite.compareAndSet(true, false)) {
+                    // Simulate another thread writing right after the value
+                    // has been read but before the usage is created
+                    Thread writer = new Thread(
+                            () -> self.get().set("concurrent"));
+                    writer.start();
+                    try {
+                        writer.join();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return value;
+            }
+        };
+        self.set(signal);
+
+        List<String> seen = new ArrayList<>();
+        injectWrite.set(true);
+        Signal.unboundEffect(() -> seen.add(signal.get()));
+
+        assertEquals("concurrent", signal.peek());
+        // The re-run starts while the first run is still in progress, so the
+        // order of the recorded values is not significant
+        assertEquals(2, seen.size(), "Effect should run twice, saw " + seen);
+        assertTrue(seen.containsAll(List.of("initial", "concurrent")),
+                "Effect should re-run for the concurrent write, saw " + seen);
+    }
+
+    @Test
     void infiniteLoopDetection_concurrentSignalWrite_notDetectedAsLoop() {
         TestExecutor dispatcher = useTestEffectDispatcher();
         List<String> invocations = new ArrayList<>();
 
         SharedValueSignal<String> signal = new SharedValueSignal<>("signal") {
             @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
+            protected Usage createUsage(Transaction transaction,
+                    @Nullable Data data) {
+                Usage usage = super.createUsage(transaction, data);
 
                 return new Usage() {
                     @Override
