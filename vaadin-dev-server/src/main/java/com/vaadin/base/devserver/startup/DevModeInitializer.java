@@ -80,6 +80,7 @@ import static com.vaadin.flow.server.InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_ALLOW_EXOTIC_VERSIONS;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
@@ -317,6 +318,9 @@ public class DevModeInitializer implements Serializable {
         boolean npmExcludeWebComponents = config
                 .getBooleanProperty(NPM_EXCLUDE_WEB_COMPONENTS, false);
 
+        boolean npmAllowExoticVersions = config
+                .getBooleanProperty(NPM_ALLOW_EXOTIC_VERSIONS, false);
+
         // Left as null when not configured, so that the value configured for
         // the package manager itself is used instead of being overridden
         String minimumFrontendPackageAge = config
@@ -347,6 +351,7 @@ public class DevModeInitializer implements Serializable {
                         getFrontendExtraFileExtensions(config))
                 .withReact(reactEnable)
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
+                .withNpmAllowExoticVersions(npmAllowExoticVersions)
                 .withMinimumFrontendPackageAgeDays(
                         minimumFrontendPackageAgeDays)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
