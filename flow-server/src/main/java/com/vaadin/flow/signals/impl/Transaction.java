@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -333,6 +334,7 @@ public abstract class Transaction implements Serializable {
 
         Transaction inner = transactionType.create(outer);
         currentTransaction.set(inner);
+        RuntimeException failure = null;
         try {
             T value = transactionTask.supply();
             TransactionOperation<T> op = new TransactionOperation<>(value);
@@ -343,6 +345,7 @@ public abstract class Transaction implements Serializable {
         } catch (RuntimeException e) {
             inner.rollback();
 
+            failure = e;
             throw e;
         } finally {
             if (previousThreadLocal == null) {
@@ -350,7 +353,20 @@ public abstract class Transaction implements Serializable {
             } else {
                 currentTransaction.set(previousThreadLocal);
             }
-            inner.finalizeTransaction();
+            finalizeAfterRun(inner, failure);
+        }
+    }
+
+    private static void finalizeAfterRun(Transaction transaction,
+            @Nullable RuntimeException failure) {
+        try {
+            transaction.finalizeTransaction();
+        } catch (RuntimeException e) {
+            if (failure == null) {
+                throw e;
+            }
+            // Don't hide the exception from the transaction task
+            failure.addSuppressed(e);
         }
     }
 
@@ -514,13 +530,24 @@ public abstract class Transaction implements Serializable {
      *
      * @param task
      *            the task to run, not <code>null</code>
+     * @return a registration that can be used to remove the task before it has
+     *         been run, not <code>null</code>
      */
-    public void runAfterFinalize(Runnable task) {
+    public Registration runAfterFinalize(Runnable task) {
         Objects.requireNonNull(task, "Task cannot be null");
-        if (finalizeTasks == null) {
-            finalizeTasks = new ArrayList<>();
+        synchronized (this) {
+            if (finalizeTasks == null) {
+                finalizeTasks = new ArrayList<>();
+            }
+            finalizeTasks.add(task);
         }
-        finalizeTasks.add(task);
+        return () -> {
+            synchronized (this) {
+                if (finalizeTasks != null) {
+                    finalizeTasks.remove(task);
+                }
+            }
+        };
     }
 
     /**
@@ -531,25 +558,37 @@ public abstract class Transaction implements Serializable {
      * the thread. The caller must make sure that this transaction isn't the
      * current transaction while the tasks run.
      * <p>
-     * An exception from a task is passed to the uncaught exception handler of
-     * the current thread so that the remaining tasks still run and the caller
-     * can complete finalizing the transaction.
+     * All tasks are run even if some of them throw. The first exception is then
+     * rethrown, with any later ones added as suppressed exceptions, so that the
+     * caller can handle it after doing any necessary cleanup in a
+     * <code>finally</code> block.
      */
     public void finalizeTransaction() {
-        List<Runnable> tasks = finalizeTasks;
-        if (tasks == null) {
-            return;
-        }
-        finalizeTasks = null;
-        for (Runnable task : tasks) {
+        RuntimeException failure = null;
+        Runnable task;
+        while ((task = pollFinalizeTask()) != null) {
             try {
                 task.run();
             } catch (Exception e) {
-                Thread thread = Thread.currentThread();
-                thread.getUncaughtExceptionHandler().uncaughtException(thread,
-                        e);
+                if (failure == null) {
+                    failure = e instanceof RuntimeException runtimeException
+                            ? runtimeException
+                            : new IllegalStateException(e);
+                } else {
+                    failure.addSuppressed(e);
+                }
             }
         }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private synchronized @Nullable Runnable pollFinalizeTask() {
+        if (finalizeTasks == null || finalizeTasks.isEmpty()) {
+            return null;
+        }
+        return finalizeTasks.remove(0);
     }
 
     /**

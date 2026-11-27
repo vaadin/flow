@@ -280,28 +280,38 @@ public abstract class SignalTree implements Serializable {
         assert nodeId != null;
         assert observer != null;
 
+        return observe(nodeId, observer, false);
+    }
+
+    /*
+     * Adds the observer, or defers it if the current transaction hides a change
+     * to the node. A deferred observer is notified right away once it is added,
+     * since the change happened before that. The tree lock is held so that a
+     * change between notifying and adding the observer isn't missed.
+     */
+    private Registration observe(Id nodeId, TransientListener observer,
+            boolean notifyNow) {
         Transaction transaction = Transaction.getCurrent();
 
         return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
-            if (isChangeHidden(transaction, nodeId)) {
+            if (hasHiddenChange(transaction, nodeId)) {
                 return observeAfterFinalize(transaction, nodeId, observer);
             }
 
-            return addObserver(nodeId, observer);
+            if (notifyNow && !observer.invoke(true)) {
+                return () -> {
+                };
+            }
+
+            List<TransientListener> list = observers.computeIfAbsent(nodeId,
+                    ignore -> new ArrayList<>());
+
+            list.add(observer);
+
+            return wrapWithLock(() -> list.remove(observer))::run;
         }));
-    }
-
-    private Registration addObserver(Id nodeId, TransientListener observer) {
-        assert lock.isHeldByCurrentThread();
-
-        List<TransientListener> list = observers.computeIfAbsent(nodeId,
-                ignore -> new ArrayList<>());
-
-        list.add(observer);
-
-        return wrapWithLock(() -> list.remove(observer))::run;
     }
 
     /*
@@ -310,84 +320,43 @@ public abstract class SignalTree implements Serializable {
      * has changed it. An observer added now would only learn about later
      * changes and thus never about that one.
      */
-    private boolean isChangeHidden(Transaction transaction, Id nodeId) {
+    private boolean hasHiddenChange(Transaction transaction, Id nodeId) {
         return !transaction.read(this).data(nodeId)
                 .equals(submitted().data(nodeId));
     }
 
     /*
-     * Notifies the observer once the transaction has been finalized, in the
-     * context that finalized it, as if the change had happened at that moment.
-     * If an outer transaction still hides the change, the observer is deferred
-     * again until that one is finalized.
+     * Adds the observer once the transaction has been finalized, in the context
+     * that finalized it, and notifies it as if the change had happened at that
+     * moment. If an outer transaction still hides the change, the observer is
+     * deferred again until that one is finalized.
      */
     private Registration observeAfterFinalize(Transaction transaction,
             Id nodeId, TransientListener observer) {
-        DeferredRegistration registration = new DeferredRegistration();
-        transaction.runAfterFinalize(() -> registration
-                .resolve(() -> notifyDeferred(nodeId, observer)));
-        return registration;
+        assert lock.isHeldByCurrentThread();
+
+        DeferredObserver deferred = new DeferredObserver();
+        deferred.registration = transaction
+                .runAfterFinalize(() -> runWithLock(() -> {
+                    if (!deferred.removed) {
+                        deferred.registration = observe(nodeId, observer, true);
+                    }
+                }));
+        return wrapWithLock(() -> {
+            deferred.removed = true;
+            deferred.registration.remove();
+        })::run;
     }
 
-    private Registration notifyDeferred(Id nodeId, TransientListener observer) {
-        Transaction transaction = Transaction.getCurrent();
-
-        // Hold the lock so that a change between notifying and adding the
-        // observer isn't missed
-        return Objects.requireNonNull(getWithLock(() -> {
-            if (isChangeHidden(transaction, nodeId)) {
-                return observeAfterFinalize(transaction, nodeId, observer);
-            }
-
-            // The change happened before the observer was added
-            if (observer.invoke(true)) {
-                return addObserver(nodeId, observer);
-            }
-            return () -> {
-            };
-        }));
-    }
-
-    /**
-     * A registration for an observer that is added later, from another context.
-     * Removing it before the observer has been added prevents adding it.
+    /*
+     * The current registration of a deferred observer: the finalize task until
+     * the transaction has been finalized and then the observer in the tree.
+     * Guarded by the tree lock.
      */
-    private static class DeferredRegistration implements Registration {
-        private @Nullable Registration registration;
+    private static class DeferredObserver implements Serializable {
+        private Registration registration = () -> {
+        };
         private boolean removed = false;
-
-        void resolve(ValueSupplier<Registration> listen) {
-            synchronized (this) {
-                if (removed) {
-                    return;
-                }
-            }
-            // Listen without holding the monitor since it locks the tree
-            Registration newRegistration = listen.supply();
-            boolean removeNow;
-            synchronized (this) {
-                removeNow = removed;
-                if (!removeNow) {
-                    registration = newRegistration;
-                }
-            }
-            if (removeNow) {
-                newRegistration.remove();
-            }
-        }
-
-        @Override
-        public void remove() {
-            Registration toRemove;
-            synchronized (this) {
-                removed = true;
-                toRemove = registration;
-                registration = null;
-            }
-            if (toRemove != null) {
-                toRemove.remove();
-            }
-        }
     }
 
     /**

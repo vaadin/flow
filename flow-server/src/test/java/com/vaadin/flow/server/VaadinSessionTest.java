@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +56,7 @@ import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -359,6 +362,32 @@ class VaadinSessionTest {
                                                     // we need to run the
                                                     // pending task ourselves
         assertTrue(detachCalled.get());
+    }
+
+    @Test
+    void clearSessionScopedTransaction_finalizeTaskThrows_errorHandledAndTransactionCleared() {
+        MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
+        List<Throwable> handled = new ArrayList<>();
+        RuntimeException failure = new RuntimeException("failure");
+
+        vaadinSession.lock();
+        try {
+            vaadinSession.setErrorHandler(
+                    event -> handled.add(event.getThrowable()));
+            Transaction transaction = vaadinSession
+                    .getOrCreateSessionScopedTransaction();
+            transaction.runAfterFinalize(() -> {
+                throw failure;
+            });
+
+            vaadinSession.clearSessionScopedTransaction();
+
+            assertEquals(List.of(failure), handled);
+            assertNotSame(transaction,
+                    vaadinSession.getOrCreateSessionScopedTransaction());
+        } finally {
+            vaadinSession.unlock();
+        }
     }
 
     @Test

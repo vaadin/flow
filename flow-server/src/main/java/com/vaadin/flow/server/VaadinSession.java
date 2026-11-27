@@ -762,7 +762,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * returning an old value after another thread changed a shared signal are
      * thus notified as if that change had been made by another thread at this
      * moment. An effect of a UI in this session then queues an access task that
-     * is run before the lock is released.
+     * is run before the lock is released. An exception from a deferred listener
+     * is passed to the error handler of this session.
      * <p>
      * The session lock must be held when calling this method.
      */
@@ -779,6 +780,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         CurrentInstance.setCurrent(this);
         try {
             Transaction.runWithoutTransaction(transaction::finalizeTransaction);
+        } catch (RuntimeException e) {
+            getErrorHandler().error(new ErrorEvent(e));
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(oldInstances);
