@@ -2769,6 +2769,10 @@ public abstract class VaadinService implements Serializable {
     public void runPendingAccessTasks(VaadinSession session) {
         session.checkHasLock();
 
+        // Signal listeners deferred by the session-scoped transaction may queue
+        // access tasks to run below when it is finalized
+        session.clearSessionScopedTransaction();
+
         if (session.getPendingAccessQueue().isEmpty()) {
             return;
         }
@@ -2779,8 +2783,7 @@ public abstract class VaadinService implements Serializable {
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
                 .getInstances();
         try {
-            while ((pendingAccess = session.getPendingAccessQueue()
-                    .poll()) != null) {
+            while ((pendingAccess = pollPendingAccess(session)) != null) {
                 if (!pendingAccess.isCancelled()) {
                     CurrentInstance.clearAll();
                     CurrentInstance.setCurrent(session);
@@ -2805,6 +2808,20 @@ public abstract class VaadinService implements Serializable {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(oldInstances);
         }
+    }
+
+    /*
+     * Polls the next pending access task. When the queue is empty, the
+     * session-scoped transaction of the last task is first cleared, since
+     * signal listeners that it has deferred may queue more tasks.
+     */
+    private static FutureAccess pollPendingAccess(VaadinSession session) {
+        FutureAccess next = session.getPendingAccessQueue().poll();
+        if (next == null) {
+            session.clearSessionScopedTransaction();
+            next = session.getPendingAccessQueue().poll();
+        }
+        return next;
     }
 
     /**

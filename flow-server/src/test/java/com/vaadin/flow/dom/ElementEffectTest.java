@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -504,6 +506,260 @@ class ElementEffectTest {
         assertEquals(List.of("initial", "external"), observed,
                 "Effect re-run must observe the fresh signal value, not the "
                         + "stale value cached in the session transaction");
+    }
+
+    @Test
+    void effect_sharedSignalUpdatedOutsideSessionTransactionBeforeAttach_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        Signal.effect(component, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+
+        // Another thread changes the signal while the session transaction
+        // still caches "initial", and the component is attached afterwards
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+        ui.add(component);
+
+        // Run the access tasks the way the UIDL writer does before writing
+        // the response, with the session still locked
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
+        // Running the access tasks also ended the stale session snapshot
+        assertEquals("changed", signal.peek());
+    }
+
+    @Test
+    void effect_detachedComponentReadsHiddenSharedSignalChange_reRunsAfterAttach() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        // Primes the session transaction's repeatable read with "initial"
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        Signal.effect(component, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+        assertEquals(List.of("initial"), observed);
+
+        ui.add(component);
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
+    }
+
+    @Test
+    void effect_createdAfterSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        // Primes the session transaction's repeatable read with "initial"
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        List<Boolean> backgroundChanges = new ArrayList<>();
+        Signal.effect(ui, ctx -> {
+            observed.add(signal.get());
+            backgroundChanges.add(ctx.isBackgroundChange());
+        });
+        assertEquals(List.of("initial"), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+        assertEquals(List.of(false, true), backgroundChanges);
+
+        // A later change made by the UI itself is not a background change
+        UI.setCurrent(ui);
+        signal.set("again");
+
+        assertEquals(List.of("initial", "changed", "again"), observed);
+        assertEquals(List.of(false, true, false), backgroundChanges);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void effect_readsComputedOfSharedSignalUpdatedOutsideSessionTransaction_reRunsBeforeResponse(
+            boolean otherThreadReadsComputed) {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        Signal<Integer> length = Signal.computed(() -> signal.get().length());
+        // Primes the session transaction with the cached value 7
+        length.peek();
+        // Another thread changes the signal and possibly caches the new
+        // value 8
+        Signal.runWithoutTransaction(() -> {
+            signal.set("changed!");
+            if (otherThreadReadsComputed) {
+                length.peek();
+            }
+        });
+
+        List<Integer> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(length.get()));
+        assertEquals(List.of(7), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of(7, 8), observed);
+    }
+
+    @Test
+    void effect_sharedSignalChangedWhileOtherUIOfLockedSessionIsCurrent_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+        var otherUI = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        UI.setCurrent(ui);
+        Signal.effect(ui, () -> observed.add(signal.get()));
+
+        UI.setCurrent(otherUI);
+        signal.set("changed");
+        assertEquals(List.of("initial"), observed);
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_createdInAccessTaskAfterHiddenSharedSignalChange_reRunsBeforeResponse() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        ui.access(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("changed"));
+            Signal.effect(ui, () -> observed.add(signal.get()));
+        });
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_hiddenSharedSignalChangeDeferredInAccessTask_releasedWhenNextTaskStarts() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        List<String> seenByNextTask = new ArrayList<>();
+        ui.access(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("changed"));
+            Signal.effect(ui, () -> observed.add(signal.get()));
+        });
+        // The listener is released when this task clears the transaction,
+        // so the effect re-runs in an access queued before this one ends
+        ui.access(() -> seenByNextTask.addAll(observed));
+
+        service.runPendingAccessTasks(session);
+
+        assertEquals(List.of("initial"), seenByNextTask);
+        assertEquals(List.of("initial", "changed"), observed);
+    }
+
+    @Test
+    void effect_uiDetachedBeforeHiddenSharedSignalChangeReleased_doesNotReRun() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        signal.peek();
+        Signal.runWithoutTransaction(() -> signal.set("changed"));
+
+        List<String> observed = new ArrayList<>();
+        TestComponent component = new TestComponent();
+        ui.add(component);
+        Signal.effect(component, () -> observed.add(signal.get()));
+        session.removeUI(ui);
+
+        assertDoesNotThrow(() -> service.runPendingAccessTasks(session));
+        assertEquals(List.of("initial"), observed);
+    }
+
+    @Test
+    void effect_sharedSignalChangedInSessionTransaction_reRunsRightAway() {
+        CurrentInstance.clearAll();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+        VaadinSession.setCurrent(session);
+        var ui = new MockUI(session);
+
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+        Signal.effect(ui, () -> observed.add(signal.get()));
+
+        signal.set("changed");
+
+        assertEquals(List.of("initial", "changed"), observed);
     }
 
     @Test

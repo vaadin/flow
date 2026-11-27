@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 import tools.jackson.core.type.TypeReference;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
@@ -415,6 +416,111 @@ public class SharedValueSignalTest extends SignalTestBase {
         });
 
         assertEquals("initial", readonly.peek());
+    }
+
+    @Test
+    void usageTracking_changeHiddenByExplicitTransaction_listenerNotifiedWhenTransactionEnds() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return false;
+            });
+            assertEquals(List.of(), notified);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        assertEquals(List.of("hidden"), notified);
+    }
+
+    @Test
+    void usageTracking_changeStillHiddenByOuterTransaction_listenerNotifiedWhenOuterEnds() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            Transaction.runInTransaction(() -> {
+                UsageTracker.track(signal::get).onNextChange(immediate -> {
+                    notified.add(signal.peek());
+                    return false;
+                });
+            }, Transaction.Type.WRITE_THROUGH);
+            assertEquals(List.of(), notified);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        assertEquals(List.of("hidden"), notified);
+    }
+
+    @Test
+    void usageTracking_listenerRemovedBeforeTransactionEnds_isNotAdded() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
+            }).remove();
+        }, Transaction.Type.WRITE_THROUGH);
+        signal.set("again");
+
+        assertEquals(List.of(), notified);
+    }
+
+    @Test
+    void usageTracking_hiddenChangeRevertedBeforeTransactionEnds_listenerKeepsListening() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> {
+                signal.set("changed");
+                signal.set("initial");
+            });
+
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
+            });
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of(), notified);
+
+        signal.set("later");
+        assertEquals(List.of("later"), notified);
+    }
+
+    @Test
+    void usageTracking_listenerRemovedAfterTransactionEnds_notNotifiedAgain() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> notified = new ArrayList<>();
+        List<Registration> registrations = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+
+            registrations.add(usage.onNextChange(immediate -> {
+                notified.add(signal.peek());
+                return true;
+            }));
+        }, Transaction.Type.WRITE_THROUGH);
+        assertEquals(List.of("hidden"), notified);
+
+        registrations.get(0).remove();
+        signal.set("again");
+
+        assertEquals(List.of("hidden"), notified);
     }
 
     @Test

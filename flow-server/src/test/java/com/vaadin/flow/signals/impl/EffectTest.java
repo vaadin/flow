@@ -77,6 +77,21 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeHiddenByTransaction_effectCreatedInTransaction_reRunsWhenTransactionEnds() {
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        List<String> observed = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            signal.peek();
+            Signal.runWithoutTransaction(() -> signal.set("hidden"));
+            new Effect(() -> observed.add(signal.get()), Runnable::run);
+            assertEquals(List.of("initial"), observed);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        assertEquals(List.of("initial", "hidden"), observed);
+    }
+
+    @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();

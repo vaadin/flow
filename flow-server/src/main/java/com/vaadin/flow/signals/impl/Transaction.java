@@ -16,13 +16,17 @@
 package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.TransactionTask;
 import com.vaadin.flow.signals.function.ValueSupplier;
@@ -45,6 +49,8 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @since 25.1
  */
 public abstract class Transaction implements Serializable {
+    private transient @Nullable List<Runnable> finalizeTasks;
+
     /**
      * Creates a new transaction.
      */
@@ -203,6 +209,11 @@ public abstract class Transaction implements Serializable {
      * <p>
      * The supplier should return <code>null</code> if no fallback is available
      * for the current context (e.g. no session lock is held).
+     * <p>
+     * The code that provides a fallback transaction owns it and must finalize
+     * it with {@link #finalizeTransaction()} when it stops providing it, since
+     * signal listeners that are added while the transaction hides a change are
+     * only notified at that point.
      *
      * @param fallback
      *            the fallback supplier, or <code>null</code> to remove the
@@ -323,6 +334,7 @@ public abstract class Transaction implements Serializable {
 
         Transaction inner = transactionType.create(outer);
         currentTransaction.set(inner);
+        RuntimeException failure = null;
         try {
             T value = transactionTask.supply();
             TransactionOperation<T> op = new TransactionOperation<>(value);
@@ -333,6 +345,7 @@ public abstract class Transaction implements Serializable {
         } catch (RuntimeException e) {
             inner.rollback();
 
+            failure = e;
             throw e;
         } finally {
             if (previousThreadLocal == null) {
@@ -340,6 +353,20 @@ public abstract class Transaction implements Serializable {
             } else {
                 currentTransaction.set(previousThreadLocal);
             }
+            finalizeAfterRun(inner, failure);
+        }
+    }
+
+    private static void finalizeAfterRun(Transaction transaction,
+            @Nullable RuntimeException failure) {
+        try {
+            transaction.finalizeTransaction();
+        } catch (RuntimeException e) {
+            if (failure == null) {
+                throw e;
+            }
+            // Don't hide the exception from the transaction task
+            failure.addSuppressed(e);
         }
     }
 
@@ -489,6 +516,80 @@ public abstract class Transaction implements Serializable {
      * @return a tree revision to read from, not <code>null</code>
      */
     public abstract TreeRevision read(SignalTree tree);
+
+    /**
+     * Registers a task to run once this transaction has been finalized, i.e.
+     * when it no longer applies to the code that runs on the thread. The task
+     * runs outside this transaction, in the context of the code that finalized
+     * it. This can be used to react to changes that this transaction hides
+     * because it keeps returning the values it first read.
+     * <p>
+     * A transaction run with {@link #runInTransaction} is finalized when that
+     * method returns. Other transactions are finalized by the code that owns
+     * them, with {@link #finalizeTransaction()}.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @return a registration that can be used to remove the task before it has
+     *         been run, not <code>null</code>
+     */
+    public Registration runAfterFinalize(Runnable task) {
+        Objects.requireNonNull(task, "Task cannot be null");
+        synchronized (this) {
+            if (finalizeTasks == null) {
+                finalizeTasks = new ArrayList<>();
+            }
+            finalizeTasks.add(task);
+        }
+        return () -> {
+            synchronized (this) {
+                if (finalizeTasks != null) {
+                    finalizeTasks.remove(task);
+                }
+            }
+        };
+    }
+
+    /**
+     * Finalizes this transaction, running the tasks registered with
+     * {@link #runAfterFinalize(Runnable)}. This is intended for the code that
+     * owns a transaction that isn't run with {@link #runInTransaction}, to be
+     * called once the transaction no longer applies to the code that runs on
+     * the thread. The caller must make sure that this transaction isn't the
+     * current transaction while the tasks run.
+     * <p>
+     * All tasks are run even if some of them throw. The first exception is then
+     * rethrown, with any later ones added as suppressed exceptions, so that the
+     * caller can handle it after doing any necessary cleanup in a
+     * <code>finally</code> block.
+     */
+    public void finalizeTransaction() {
+        RuntimeException failure = null;
+        Runnable task;
+        while ((task = pollFinalizeTask()) != null) {
+            try {
+                task.run();
+            } catch (Exception e) {
+                if (failure == null) {
+                    failure = e instanceof RuntimeException runtimeException
+                            ? runtimeException
+                            : new IllegalStateException(e);
+                } else {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    private synchronized @Nullable Runnable pollFinalizeTask() {
+        if (finalizeTasks == null || finalizeTasks.isEmpty()) {
+            return null;
+        }
+        return finalizeTasks.remove(0);
+    }
 
     /**
      * Commits any staged commands in this transaction.

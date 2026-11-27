@@ -53,6 +53,77 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TransactionTest extends SignalTestBase {
 
     @Test
+    void finalizeTransaction_tasksThrow_remainingTasksRunAndFirstErrorRethrown() {
+        Transaction transaction = Transaction.createWriteThrough();
+        List<String> ran = new ArrayList<>();
+        RuntimeException first = new RuntimeException("first");
+        RuntimeException second = new RuntimeException("second");
+
+        transaction.runAfterFinalize(() -> {
+            throw first;
+        });
+        transaction.runAfterFinalize(() -> ran.add("task"));
+        transaction.runAfterFinalize(() -> {
+            throw second;
+        });
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                transaction::finalizeTransaction);
+
+        assertSame(first, thrown);
+        assertEquals(List.of(second), List.of(thrown.getSuppressed()));
+        assertEquals(List.of("task"), ran);
+
+        // Tasks run only once
+        transaction.finalizeTransaction();
+        assertEquals(List.of("task"), ran);
+    }
+
+    @Test
+    void runInTransaction_taskAndFinalizeTaskThrow_taskExceptionThrown() {
+        RuntimeException taskFailure = new RuntimeException("task");
+        RuntimeException finalizeFailure = new RuntimeException("finalize");
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> Transaction.runInTransaction(() -> {
+                    Transaction.getCurrent().runAfterFinalize(() -> {
+                        throw finalizeFailure;
+                    });
+                    throw taskFailure;
+                }));
+
+        assertSame(taskFailure, thrown);
+        assertEquals(List.of(finalizeFailure), List.of(thrown.getSuppressed()));
+    }
+
+    @Test
+    void runInTransaction_finalizeTaskThrows_exceptionPropagated() {
+        RuntimeException finalizeFailure = new RuntimeException("finalize");
+        Transaction outer = Transaction.getCurrent();
+
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> Transaction.runInTransaction(() -> {
+                    Transaction.getCurrent().runAfterFinalize(() -> {
+                        throw finalizeFailure;
+                    });
+                }));
+
+        assertSame(finalizeFailure, thrown);
+        assertSame(outer, Transaction.getCurrent());
+    }
+
+    @Test
+    void runAfterFinalize_removedBeforeFinalize_notRun() {
+        Transaction transaction = Transaction.createWriteThrough();
+        List<String> ran = new ArrayList<>();
+
+        transaction.runAfterFinalize(() -> ran.add("task")).remove();
+        transaction.finalizeTransaction();
+
+        assertEquals(List.of(), ran);
+    }
+
+    @Test
     void getCurrentTransaction_noTransaction_rootTransaction() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 

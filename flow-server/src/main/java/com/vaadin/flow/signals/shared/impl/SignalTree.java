@@ -36,6 +36,7 @@ import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.impl.LeafLock;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
 
@@ -256,6 +257,15 @@ public abstract class SignalTree implements Serializable {
      * snapshot. The observer is removed when invoked and needs to be registered
      * again if it's still relevant unless it returns <code>true</code>. It is
      * safe to register the observer again from within the callback.
+     * <p>
+     * If the current transaction shows an older version of the node than the
+     * submitted snapshot, e.g. because it provides repeatable reads and the
+     * node has been changed outside it, then the observer is instead added once
+     * that transaction has been finalized, see
+     * {@link Transaction#runAfterFinalize(Runnable)}. At that point, it is
+     * invoked right away with <code>immediate</code> set to <code>true</code>,
+     * in the context of the code that finalized the transaction, as if the node
+     * had changed at that moment.
      *
      * @param nodeId
      *            the id of the node to observe, not <code>null</code>
@@ -270,8 +280,30 @@ public abstract class SignalTree implements Serializable {
         assert nodeId != null;
         assert observer != null;
 
+        return observe(nodeId, observer, false);
+    }
+
+    /*
+     * Adds the observer, or defers it if the current transaction hides a change
+     * to the node. A deferred observer is notified right away once it is added,
+     * since the change happened before that. The tree lock is held so that a
+     * change between notifying and adding the observer isn't missed.
+     */
+    private Registration observe(Id nodeId, TransientListener observer,
+            boolean notifyNow) {
+        Transaction transaction = Transaction.getCurrent();
+
         return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
+
+            if (hasHiddenChange(transaction, nodeId)) {
+                return observeAfterFinalize(transaction, nodeId, observer);
+            }
+
+            if (notifyNow && !observer.invoke(true)) {
+                return () -> {
+                };
+            }
 
             List<TransientListener> list = observers.computeIfAbsent(nodeId,
                     ignore -> new ArrayList<>());
@@ -280,6 +312,51 @@ public abstract class SignalTree implements Serializable {
 
             return wrapWithLock(() -> list.remove(observer))::run;
         }));
+    }
+
+    /*
+     * A transaction with repeatable reads, such as the one used while a session
+     * is locked, keeps returning the node it first read even after someone else
+     * has changed it. An observer added now would only learn about later
+     * changes and thus never about that one.
+     */
+    private boolean hasHiddenChange(Transaction transaction, Id nodeId) {
+        return !transaction.read(this).data(nodeId)
+                .equals(submitted().data(nodeId));
+    }
+
+    /*
+     * Adds the observer once the transaction has been finalized, in the context
+     * that finalized it, and notifies it as if the change had happened at that
+     * moment. If an outer transaction still hides the change, the observer is
+     * deferred again until that one is finalized.
+     */
+    private Registration observeAfterFinalize(Transaction transaction,
+            Id nodeId, TransientListener observer) {
+        assert lock.isHeldByCurrentThread();
+
+        DeferredObserver deferred = new DeferredObserver();
+        deferred.registration = transaction
+                .runAfterFinalize(() -> runWithLock(() -> {
+                    if (!deferred.removed) {
+                        deferred.registration = observe(nodeId, observer, true);
+                    }
+                }));
+        return wrapWithLock(() -> {
+            deferred.removed = true;
+            deferred.registration.remove();
+        })::run;
+    }
+
+    /*
+     * The current registration of a deferred observer: the finalize task until
+     * the transaction has been finalized and then the observer in the tree.
+     * Guarded by the tree lock.
+     */
+    private static class DeferredObserver implements Serializable {
+        private Registration registration = () -> {
+        };
+        private boolean removed = false;
     }
 
     /**

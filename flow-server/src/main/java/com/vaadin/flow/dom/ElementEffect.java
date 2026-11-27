@@ -32,6 +32,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableExecutor;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.EffectContext;
@@ -273,9 +274,15 @@ public final class ElementEffect implements Serializable {
                 .error(new ErrorEvent(e, elem.getNode()));
 
         SerializableExecutor uiDispatcher = command -> {
+            VaadinSession session = ui.getSession();
             if (UI.getCurrent() == ui) {
                 // Run immediately if on the same UI
                 command.run();
+            } else if (session != null && session.hasLock()) {
+                // This thread already holds the lock, so access only queues
+                // the task to run before the lock is released, without
+                // locking another session or blocking
+                ui.access(command::run);
             } else {
                 SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
                     try {

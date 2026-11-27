@@ -144,7 +144,10 @@ public class UsageTracker {
         /**
          * Registers a listener that will be invoked the next time there's a
          * change to the used value. If this usage already has changes, then the
-         * listener is invoked immediately.
+         * listener is invoked immediately. If the value has been changed in a
+         * way that the current transaction doesn't show, then the listener is
+         * instead notified once that transaction has been finalized, see
+         * {@link Transaction#runAfterFinalize(Runnable)}.
          *
          * @param listener
          *            the listener to use, not <code>null</code>

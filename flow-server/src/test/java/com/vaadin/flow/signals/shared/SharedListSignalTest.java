@@ -99,6 +99,25 @@ class SharedListSignalTest extends SignalTestBase {
     }
 
     @Test
+    void usageTracking_insertHiddenByTransaction_listenerNotifiedWhenTransactionEnds() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        List<Integer> notified = new ArrayList<>();
+
+        Transaction.runInTransaction(() -> {
+            Usage usage = UsageTracker.track(signal::get);
+            Signal.runWithoutTransaction(() -> signal.insertLast("a"));
+
+            usage.onNextChange(immediate -> {
+                notified.add(signal.peek().size());
+                return false;
+            });
+            assertEquals(List.of(), notified);
+        }, Transaction.Type.WRITE_THROUGH);
+
+        assertEquals(List.of(1), notified);
+    }
+
+    @Test
     void insertLast_twoInserts_insertedInOrder() {
         SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
