@@ -19,6 +19,17 @@ exact, no fluff.
 - Length: under 72 chars
 - Allowed types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`
 - Breaking changes: append `!` before the colon (`feat!`, `fix!`, `chore!`)
+  - This includes a behaviour change that working application code can trip
+    over: same API, but a different return value, default, timing, calling
+    context or thrown exception that a reasonable caller or subclass could
+    have depended on, so that code has to change. This covers overriders too,
+    such as a protected hook that is now invoked at a different time. A method
+    that stops throwing a documented exception callers catch, replaces it with
+    a different type, or now rejects valid input it used to accept is breaking
+  - Skip `!` when no reasonable caller or subclass could have depended on the
+    old behaviour, such as a crash, an exception on input the API never
+    supported, or obviously wrong output nobody works around. Most bug fixes
+    are like this and stay a plain `fix:`
 - Start with an imperative verb — "add", "fix", "remove" — not "added", "adds", "adding"
 - Use English articles only when omitting them would be ambiguous
   - Good: `fix: handle null in parser`
@@ -188,8 +199,8 @@ would hide that the author checked at all.
 
 | Flag | Icon | Look for |
 |---|---|---|
-| Breaking change | ⚠️ | a signature, default or contract that existing code depends on |
-| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before" |
+| Breaking change | ⚠️ | a signature, default, thrown exception or contract that a reasonable caller or subclass could have depended on — the title gets `!` (see the subject line rules) |
+| Behaviour change | ⚠️ | same API, different outcome — including "it was wrong before"; the title gets `!` only when a reasonable caller or subclass could have depended on the old outcome (see the subject line rules) |
 | Public API | ⚠️ | additions, `protected` members that subclasses override, deprecations |
 | Security | 🔒 | authentication, authorization, permit lists, path matching, input trusted from the client |
 | Memory & leaks | 🧠 | anything held per UI, per session or per binder; who releases it |
@@ -314,6 +325,7 @@ Only when the change genuinely needs them, always after `How to test`:
 - Summary at most 3 sentences, no class or method names in it.
 - Every risk flag walked; non-empty ones at the top, the rest in one ✅ line.
 - Every behaviour change is in **Risks**, not only in the bullets.
+- The title has `!` when the change is breaking under the subject line rules, including a behaviour change a reasonable caller or subclass could have depended on.
 - Issue link present when there is an issue, with the right relation.
 - No `## Checklist`, no footer, no AI attribution.
 - Open the pull request as a draft, and self-review before marking it ready.
