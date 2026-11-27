@@ -49,6 +49,7 @@ import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsStringFallback;
 import com.vaadin.flow.theme.Theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -267,6 +268,40 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
     }
 
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Escape'")
+    interface EscapeFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    @JsStringFallback(filters = "event.key === 'Enter'")
+    interface EnterFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @JsDefinition
+    interface UnmarkedFallbacks extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
+    @Test
+    void frontendDependencies_seesWhatAStringFallbackLists() {
+        // The listed filters are functions of the bundle, and a marked
+        // interface generates its calls apart from other calls, while no
+        // method changes in either case
+        String imports = DevLoopRedefiner
+                .frontendDependencies(EscapeFallbacks.class);
+
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(EnterFallbacks.class));
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(UnmarkedFallbacks.class));
+    }
+
     // Only extended by definitions, so not annotated
     interface ScrollableJs extends JsInvokers {
         @JsExpression("this.scrollTop = $0")
@@ -286,6 +321,40 @@ class DevLoopRedefinerTest {
                 DevLoopRedefiner.frontendDependencies(ScrollableJs.class),
                 DevLoopRedefiner
                         .frontendDependencies(EditedScrollableJs.class));
+    }
+
+    // Calls the method of the same name on the element
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    interface EditedPopoverJs extends JsInvokers {
+        void showPopover(String source);
+    }
+
+    interface PlainPopover {
+        void showPopover();
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersOfAMethodWithoutExpression() {
+        String imports = DevLoopRedefiner.frontendDependencies(PopoverJs.class);
+
+        assertTrue(
+                imports.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover();", 0, false)),
+                imports);
+        String edited = DevLoopRedefiner
+                .frontendDependencies(EditedPopoverJs.class);
+        assertTrue(
+                edited.contains("jsdefinition:" + JsCall
+                        .functionId("return this.showPopover($0);", 1, false)),
+                edited);
+        assertNotEquals(imports, edited);
+        // An interface that does not extend JsInvokers declares nothing, so
+        // editing it is no frontend change
+        assertEquals("",
+                DevLoopRedefiner.frontendDependencies(PlainPopover.class));
     }
 
     @JsFunctionParameterNames({ "html", "item" })

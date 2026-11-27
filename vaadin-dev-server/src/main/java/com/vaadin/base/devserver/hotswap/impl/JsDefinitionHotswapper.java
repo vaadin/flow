@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +28,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
@@ -88,6 +92,10 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     @Override
     public void onClassesChange(HotswapClassEvent event) {
         Set<Class<?>> changed = event.getChangedClasses();
+        // Before anything returns early: a class that is no longer a
+        // definition at all may still be listed as a fallback
+        updateStringFallbacks(event.getVaadinService(), changed);
+
         List<Class<?>> definitions = new ArrayList<>(changed.stream()
                 .filter(JsDefinitionProxy::isDefinition).toList());
         List<Class<?>> snippetTypes = changed.stream()
@@ -136,14 +144,36 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
     }
 
     /**
+     * Keeps the @JsStringFallback interfaces the server matches string
+     * JavaScript against in step with the changed classes: the list the build
+     * wrote, which a service started later reads, and what the running service
+     * already read from it.
+     */
+    private static void updateStringFallbacks(VaadinService service,
+            Set<Class<?>> changed) {
+        try {
+            if (TaskGenerateJsDefinitions.updateStringFallbacks(
+                    DevModeInitializer.getServletResourceOutputDirectory(
+                            service.getDeploymentConfiguration()),
+                    changed)) {
+                JsStringFallbacks.reloadFallbacks(service);
+            }
+        } catch (UncheckedIOException e) {
+            getLogger().warn(
+                    "Could not update the @JsStringFallback list for the changed classes",
+                    e);
+        }
+    }
+
+    /**
      * Checks whether the given type is an interface with JavaScript of its own
      * or inherited, which is generated as part of the definitions that extend
      * it, whether or not it is a definition itself.
      */
     private static boolean declaresJavaScript(Class<?> type) {
-        return type.isInterface() && ReflectTools.getCurrentPublicMethods(type)
-                .stream().anyMatch(method -> method
-                        .isAnnotationPresent(JsExpression.class));
+        return type.isInterface()
+                && ReflectTools.getCurrentPublicMethods(type).stream().anyMatch(
+                        method -> JsCall.declaredExpression(method) != null);
     }
 
     /**

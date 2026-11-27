@@ -21,6 +21,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,9 @@ import com.vaadin.flow.js.JsFunctionParameterNames;
 import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.js.JsSnippets;
+import com.vaadin.flow.js.JsStringFallback;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.Options;
@@ -76,6 +80,13 @@ class JsDefinitionHotswapperTest {
         void count(Integer from);
     }
 
+    @JsDefinition
+    @JsStringFallback
+    interface FallbackJs extends JsInvokers {
+        @JsExpression("this.focus()")
+        void focus();
+    }
+
     @JsFunctionParameterNames({ "item" })
     interface TemplateSnippet extends JsSnippet {
     }
@@ -96,6 +107,17 @@ class JsDefinitionHotswapperTest {
     interface EditedScrollableJs extends JsInvokers {
         @JsExpression("this.scrollLeft = $0")
         void scrollTo(int top);
+    }
+
+    // Only extended, and declares JavaScript without @JsExpression
+    interface PopoverJs extends JsInvokers {
+        void showPopover();
+    }
+
+    @JsDefinition
+    interface PopoverMenuJs extends PopoverJs {
+        @JsExpression("this.scrollTop = 0")
+        void scrollToTop();
     }
 
     @JsDefinition
@@ -359,6 +381,22 @@ class JsDefinitionHotswapperTest {
     }
 
     @Test
+    void extendedInterfaceWithoutExpressions_definitionsExtendingItReported()
+            throws IOException {
+        writeGeneratedDefinitionsFor(PopoverMenuJs.class);
+        // What the file holds when the extended interface declared another
+        // method than it does now
+        editGeneratedDefinitions("return this.showPopover();",
+                "return this.hidePopover();");
+
+        classesChanged(PopoverJs.class);
+
+        assertEquals(List.of(PopoverMenuJs.class.getName()),
+                hotswapper.reported,
+                "a method without @JsExpression declares JavaScript too");
+    }
+
+    @Test
     void extendedInterfaceRedefinedInPlace_definitionsExtendingItSeeTheNewJavaScript()
             throws IOException {
         // Copies, so that the redefinition leaves the classes of the other
@@ -430,5 +468,36 @@ class JsDefinitionHotswapperTest {
 
         assertTrue(hotswapper.reported.isEmpty(),
                 "a class that declares no JavaScript is not a frontend change");
+    }
+
+    @Test
+    void stringFallbackChanged_listedForTheServer() throws IOException {
+        classesChanged(FallbackJs.class);
+
+        File list = Path.of(projectFolder.getPath(), "target", "classes",
+                Constants.VAADIN_SERVLET_RESOURCES,
+                Constants.JS_STRING_FALLBACKS_FILE).toFile();
+        assertTrue(Files.readString(list.toPath())
+                .contains(FallbackJs.class.getName()), list::toString);
+    }
+
+    @Test
+    void stringFallbackChanged_gradleProject_listedWithGradleResources()
+            throws IOException {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setApplicationOrSystemProperty(InitParameters.BUILD_FOLDER,
+                        "build");
+        // What Gradle has on the class path of the running application
+        File gradleResources = Path
+                .of(projectFolder.getPath(), "build", "resources", "main")
+                .toFile();
+        gradleResources.mkdirs();
+
+        classesChanged(FallbackJs.class);
+
+        File list = new File(gradleResources, Constants.VAADIN_SERVLET_RESOURCES
+                + Constants.JS_STRING_FALLBACKS_FILE);
+        assertTrue(Files.readString(list.toPath())
+                .contains(FallbackJs.class.getName()), list::toString);
     }
 }

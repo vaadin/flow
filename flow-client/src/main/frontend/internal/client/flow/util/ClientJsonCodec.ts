@@ -214,6 +214,7 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
   paramsAndCode.push(body);
 
   // Manifests a server-sent JS function, mirroring the Java NativeFunction.
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval -- the string JsFunction.of, remove with it
   const fn = new Function(...paramsAndCode) as JsFunction;
   return applyCaptures(fn, captures);
 }

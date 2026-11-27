@@ -57,6 +57,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Some tests check that the deprecated AbstractDownloadHandler.inline()
+// still works with Anchor until it is removed
+@SuppressWarnings("removal")
 class AnchorTest extends ComponentTest {
 
     private UI ui;

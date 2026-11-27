@@ -41,7 +41,17 @@ env:
   # is overloaded or behind a failing proxy (500, 502, 504) are just as
   # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
   # meant to set, against a resolver default of 300.
+  #
+  # The global settings file resolves Central through Google's mirror, because
+  # Central rate-limits the IP ranges GitHub-hosted runners share with every
+  # other project, and reads the public repository groups on
+  # repository.jboss.org from that mirror too. JBoss parent poms the
+  # wildfly-maven-plugin pulls in list that host ahead of Central for some
+  # BOMs, and when it answers 503 the retries above held the JBoss EAP dev loop
+  # job for up to 11 minutes before its tests started. See the comment in that
+  # file. The path is absolute because tests fork mvn from module directories.
   MAVEN_ARGS: >-
+    -gs ${{ github.workspace }}/.github/maven/settings.xml
     -Daether.connector.http.retryHandler.count=3
     -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
@@ -166,8 +176,14 @@ jobs:
           mkdir -p ~/.vaadin/
           echo '{"username":"'$(echo $TB_LICENSE | cut -d / -f1)'","proKey":"'$(echo $TB_LICENSE | cut -d / -f2)'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
+        # -Pcoverage only so that the JaCoCo plugin the unit-tests jobs run
+        # enters the cache this job saves: those jobs restore it with an exact
+        # hit, so actions/cache skips their save, and all of them would
+        # otherwise download the plugin from Maven Central at once, which
+        # answers that burst with HTTP 429. With the tests skipped the plugin
+        # only sets a property and skips its report.
         run: |
-          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests -Pcoverage -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Resolve what only the integration test modules pull
         # The it-tests jobs restore the cache this job saves, and cannot add to
@@ -817,7 +833,9 @@ jobs:
         # vaadin-spring. Enumerating everything that can break the job is
         # error prone and goes stale as modules are added, so anything that is
         # not known to be irrelevant runs it: what is left out is the
-        # integration tests, documentation and the unrelated workflows.
+        # integration tests, documentation and the unrelated workflows. The
+        # init scripts under .github/gradle are passed to the build, so they
+        # count.
         # Merge groups carry a base_sha, so they are filtered the same way; a
         # push or a manual run has nothing to compare against and always
         # builds. run stays true whenever the comparison cannot be made: a gate
@@ -852,6 +870,7 @@ jobs:
           else
             RELEVANT=$(printf '%s\n' "$CHANGED" | awk '
               $0 == ".github/workflows/validation.yml" { print; next }
+              /^\.github\/gradle\// { print; next }
               /^flow-tests\// { next }
               /^\.github\// { next }
               /\.md$/ { next }
@@ -960,8 +979,12 @@ jobs:
         # set to 999.99-SNAPSHOT above, so they exercise the workspace restored
         # here rather than a published snapshot. The functionalTest task passes
         # it on; AbstractGradleTest fails the build if it ever stops arriving.
+        #
+        # Gradle does not read the Maven settings file in MAVEN_ARGS, so the
+        # init script gives it the same Central mirror; functionalTest passes
+        # it on to the nested builds.
         run: |
-          ./gradlew build --stacktrace
+          ./gradlew build --stacktrace --init-script "$GITHUB_WORKSPACE/.github/gradle/central-mirror.init.gradle"
       - name: Package test-report files
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -1208,15 +1231,11 @@ jobs:
     needs: [changes, unit-tests, it-tests, cdi-tests, quarkus-tests]
     runs-on: ubuntu-26.04
     steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: tests-output
-          pattern: tests-output-*
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: tests-output
+          pattern: tests-output-*
+          merge-multiple: true
       - name: extract downloaded files
         run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results

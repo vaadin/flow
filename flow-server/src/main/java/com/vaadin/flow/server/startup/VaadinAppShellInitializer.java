@@ -41,6 +41,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.PushUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
@@ -88,6 +89,9 @@ public class VaadinAppShellInitializer
      *            this class.
      * @param context
      *            the {@link VaadinContext}.
+     * @throws InvalidApplicationConfigurationException
+     *             if the {@link Push} annotation of the app shell selects a
+     *             transport whose feature flag is not enabled
      * @since 6.0
      */
     @SuppressWarnings("unchecked")
@@ -151,6 +155,14 @@ public class VaadinAppShellInitializer
             } else {
                 String message = String.format(ERROR_HEADER_NO_SHELL, payload);
                 throw new InvalidApplicationConfigurationException(message);
+            }
+        }
+
+        Class<? extends AppShellConfigurator> shell = registry.getShell();
+        if (shell != null) {
+            for (Push push : shell.getAnnotationsByType(Push.class)) {
+                PushUtil.checkTransportEnabledAtStartup(push.transport(),
+                        context, "the app shell " + shell.getName());
             }
         }
     }

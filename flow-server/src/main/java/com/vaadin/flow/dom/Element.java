@@ -60,12 +60,14 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.internal.CspViolationReporter;
+import com.vaadin.flow.internal.ContentSecurityPolicyViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
+import com.vaadin.flow.internal.JsStringFallbacks;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.SuppressForbidden;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -77,8 +79,8 @@ import com.vaadin.flow.js.JsInvokers;
 import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.CspMode;
-import com.vaadin.flow.server.CspViolationException;
+import com.vaadin.flow.server.ContentSecurityPolicyMode;
+import com.vaadin.flow.server.ContentSecurityPolicyViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -2048,9 +2050,9 @@ public class Element extends Node<Element> {
      * <p>
      * The expression is sent to the browser and compiled there, which a content
      * security policy without <code>unsafe-eval</code> does not allow, so the
-     * {@link CspMode} of the application reports or refuses the call.
-     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
-     * collected into the bundle instead, and sends no expression.
+     * {@link ContentSecurityPolicyMode} of the application reports or refuses
+     * the call. {@link #executeJs(Class)} runs JavaScript that is declared in
+     * Java and collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -2061,14 +2063,25 @@ public class Element extends Node<Element> {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Object @Nullable... parameters) {
-        CspViolationReporter.reportStringJavaScript();
-        return scheduleExecuteJs(expression,
-                parameters == null ? new @Nullable Object[0] : parameters);
+        @Nullable
+        Object[] arguments = parameters == null ? new @Nullable Object[0]
+                : parameters;
+        JsCall fallback = JsStringFallbacks.findDeclaredCall(expression,
+                arguments);
+        if (fallback != null) {
+            return scheduleJsCall(fallback);
+        }
+        ContentSecurityPolicyViolationReporter.reportStringExecuteJs(expression,
+                arguments.length);
+        return scheduleExecuteJs(expression, arguments);
     }
 
     /**
@@ -2079,19 +2092,27 @@ public class Element extends Node<Element> {
      * arguments of the call as its parameters.
      * <p>
      * The interface is annotated with {@link JsDefinition}, which is what the
-     * build finds it by, extends {@link JsInvokers}, and each of its methods
-     * declares the JavaScript it runs with {@link JsExpression}:
+     * build finds it by, and extends {@link JsInvokers}. Each of its methods
+     * declares the JavaScript it runs with {@link JsExpression}, or leaves the
+     * annotation out to call the method of the same name on this element, with
+     * the arguments of the call:
      *
      * <pre>
      * &#64;JsDefinition
      * public interface GreeterJs extends JsInvokers {
      *     &#64;JsExpression("window.alert($0)")
      *     void showGreeting(String greeting);
+     *
+     *     // Runs return this.showPopover();
+     *     void showPopover();
      * }
      *
      * element.executeJs(GreeterJs.class).showGreeting("Hello");
      * </pre>
      *
+     * See {@link JsCall#declaredExpression(java.lang.reflect.Method)} for which
+     * methods call the element method and the JavaScript they run.
+     * <p>
      * The declared JavaScript runs the way an expression given to
      * {@link #executeJs(String, Object...)} does: in an <code>async</code>
      * JavaScript method, with this element available as <code>this</code> and
@@ -2104,12 +2125,17 @@ public class Element extends Node<Element> {
      * handlers already converted to that type.
      * <p>
      * What differs is that nothing about the JavaScript is decided at the call
-     * site: the build collects the declarations of every JavaScript definition
+     * site: the build collects the declarations of the JavaScript definitions
      * into the bundle, and the client runs the collected function after looking
-     * it up by an identifier of the JavaScript itself. No expression is sent
-     * and none is compiled in the browser, so the call works under a content
-     * security policy without <code>unsafe-eval</code>, and what declared the
-     * JavaScript in Java is not sent to a production browser either.
+     * it up by an identifier of the JavaScript itself. An optimized production
+     * build collects only the definitions it can reach from the entry points of
+     * the application; see {@link JsDefinition} for how to keep one that it
+     * does not reach. No expression is sent and none is compiled in the
+     * browser, so the call works under a content security policy without
+     * <code>unsafe-eval</code>, and what declared the JavaScript in Java is not
+     * sent to a production browser either. A method without
+     * {@link JsExpression} is the exception: the JavaScript it runs is a call
+     * of the method of the same name, so that name is in the bundle.
      * <p>
      * The scheduled invocation carries the call as a {@link JsCall}, so a
      * driver of the client side that can not run JavaScript can recognize it,
@@ -2140,14 +2166,16 @@ public class Element extends Node<Element> {
      *         JavaScript through, not <code>null</code>
      * @throws IllegalArgumentException
      *             if the type is not an interface, is not annotated with
-     *             {@link JsDefinition}, also extends {@link JsSnippets}, or has
-     *             a method that can not be answered
+     *             {@link JsDefinition}, also extends {@link JsSnippets}, has a
+     *             method that can not be answered, or has a method that
+     *             declares no JavaScript
      * @since 25.4
      */
     public <T extends JsInvokers> T executeJs(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
     }
 
+    @SuppressForbidden
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
             @Nullable Object[] parameters) {
 
@@ -2155,8 +2183,8 @@ public class Element extends Node<Element> {
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(null, wrappedExpression,
-                withElementAsLastParameter(parameters));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(
+                wrappedExpression, withElementAsLastParameter(parameters)));
     }
 
     /**
@@ -2168,8 +2196,8 @@ public class Element extends Node<Element> {
      * expression.
      */
     private PendingJavaScriptResult scheduleJsCall(JsCall call) {
-        return scheduleJavaScriptInvocation(call, call.getExpression(),
-                call.parametersFor(this));
+        return scheduleJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(this)));
     }
 
     private @Nullable Object[] withElementAsLastParameter(
@@ -2198,6 +2226,7 @@ public class Element extends Node<Element> {
      * @since 25.4
      */
     @Deprecated
+    @SuppressForbidden
     public PendingJavaScriptResult executeJs(String expression,
             @Nullable Serializable @Nullable [] parameters) {
         return executeJs(expression, (Object[]) parameters);
@@ -2242,9 +2271,13 @@ public class Element extends Node<Element> {
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
+     * @throws ContentSecurityPolicyViolationException
+     *             in the {@link ContentSecurityPolicyMode#STRICT} Content
+     *             Security Policy mode, unless the string is declared in an
+     *             interface marked with
+     *             {@link com.vaadin.flow.js.JsStringFallback}
      */
+    @SuppressForbidden
     public Registration addJsInitializer(String expression,
             @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
@@ -2319,12 +2352,8 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCall jsCall, String expression,
-            @Nullable Object[] parameters) {
+            JavaScriptInvocation invocation) {
         StateNode node = getNode();
-
-        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
-                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
