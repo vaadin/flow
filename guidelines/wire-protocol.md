@@ -354,7 +354,8 @@ parameters. The constant is one of two things:
 
 Because an invocation carries only the id, an expression that runs again
 costs a reference, not its text. Declared JavaScript goes one step
-further and sends no JavaScript at all.
+further and sends no JavaScript code over the wire at all; the code ships in
+the frontend bundle.
 
 Parameters are encoded by `JacksonCodec.encodeWithTypeInfo`. Native JSON
 types travel as themselves; everything JSON has no representation for
@@ -431,14 +432,15 @@ it, and by its function id otherwise.
 
 ### Constraints this puts on new code
 
-- **Prefer declared JavaScript for new framework code.** It works without
-  `unsafe-eval`, sends no JavaScript, and keeps Java names off the wire.
-- **Never concatenate values into an expression** — pass them as
-  parameters. See [Browser Integration](browser-integration.md) for the
-  full set of rules around calling into the browser. On the wire this is
-  also a leak: every distinct expression string becomes a pool entry
-  that is never evicted, so an expression with a value baked in adds one
-  per call for the lifetime of the UI.
+- **Declared JavaScript** is what the Client-Side JavaScript section of
+  [`CONVENTIONS.md`](../CONVENTIONS.md#client-side-javascript) asks for in
+  new framework code, because of the properties above: it works without
+  `unsafe-eval`, sends no JavaScript code over the wire at runtime, and keeps
+  Java names off the wire.
+- **A value concatenated into an expression is a leak.** Every distinct
+  expression string becomes a pool entry that is never evicted, so an
+  expression with a value baked in adds one per call for the lifetime of
+  the UI.
 - **Keep what an invocation runs stable.** For the same reason, do not
   generate expression variants per case — one expression with parameters
   is one constant, sent once.

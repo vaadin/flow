@@ -67,7 +67,7 @@ tunable options, and validate in the compact constructor.
 Do not introduce an interface and an abstract class as a pair speculatively.
 Ship a single class named `Xyz` unless you can demonstrate today a useful
 implementation that does not extend the abstract class. See
-`guidelines/design.md` for the full rule set.
+`guidelines/design.md` for the reasoning and the related cases.
 
 Use a sealed interface with record subtypes for values that are "one of N
 things", and design for exhaustive `switch` expressions — do not add `default:`
@@ -134,9 +134,9 @@ method beside it returning the same thing is one accessor too many.
 
 A second way to do what an existing method already does is an overload of that
 method, not a new name. An overload is found by everyone who already calls the
-method, while a separate name has to be discovered on its own. Spell out the
-difference between the overloads in the Javadoc of both. See
-`guidelines/design.md`.
+method, while a separate name has to be discovered on its own. Open the
+Javadoc of each overload with the same sentence about what the method does, and
+then say what is different about it. See `guidelines/design.md`.
 
 ## Nullability
 
@@ -233,6 +233,12 @@ Put non-trivial JavaScript in its own file rather than inlining it in a Java
 string, and prefer TypeScript for new files. See
 `guidelines/browser-integration.md` for which of the three homes to use.
 
+Prefer declared JavaScript — an interface annotated with `@JsDefinition` —
+over an expression string for new framework code. It runs under a content
+security policy without `unsafe-eval`, sends no JavaScript code over the wire
+at runtime, since the code ships in the frontend bundle, and keeps Java names
+off the wire. See `guidelines/wire-protocol.md`.
+
 Keep client-side global state and helper functions under `window.Vaadin.Flow`,
 unless only `@JsDefinitionImport` definitions use them: such a module exports
 them and sets no global.
@@ -286,11 +292,19 @@ changed class itself, such as regenerating a file the build generates from Java
 or updating what the browser already holds. Hotswapping through JRebel or
 HotswapAgent is the main way a developer sees a change without a restart, and
 it replaces only the class — the hotswapper does the rest and pushes it to the
-browser with an HMR event.
+browser with an HMR event. A hotswapper re-runs the real generator at the
+narrowest granularity that generator offers, and never derives the file
+content itself. See `guidelines/frontend-hotswap.md`.
 
 Keep reading and patching a generated file inside the task that generates it. A
 caller that reacts to a change asks the task to bring the file up to date; it
 does not parse the format itself.
+
+Write a whole generated file under the frontend generated folder through
+`writeIfChanged`, never with `Files.writeString` or a writer of your own. It
+leaves a file with unchanged content alone, so no frontend recompile starts,
+and it writes atomically, so Vite never reads a truncated file. See
+`guidelines/frontend-hotswap.md`.
 
 ## Build & Dependencies
 
@@ -582,6 +596,15 @@ instead of special-casing a missing file.
 
 If a reviewer has to ask why a check is there, it either needs a comment that
 says why, or it does not need to exist.
+
+Reach the UI through the component (`getUI()`) or through an event that
+provides it, such as `AttachEvent`. Use `UI.getCurrent()` only in code that
+has no component instance available. See `guidelines/architecture.md`.
+
+Do not use the `nodeId` of an element as a stable identifier that has to hold
+before attach or across a detach — it is `-1` until the node is attached. When
+you need one, use an identifier that does not depend on attachment, such as a
+UUID. See `guidelines/architecture.md`.
 
 ## Commit & PR Hygiene
 
