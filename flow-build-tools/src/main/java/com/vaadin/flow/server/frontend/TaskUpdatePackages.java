@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
@@ -148,7 +149,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         final JsonNode devDependencies = packageJson.get(DEV_DEPENDENCIES);
 
-        final Map<String, String> pinnedNpmVersions = collectPinnedNpmVersions();
+        final ObjectNode allPinnedNpmDependencies = getAllPinnedNpmDependencies();
+        final Map<String, String> pinnedNpmVersions = collectPinnedNpmVersions(
+                allPinnedNpmDependencies);
         final ObjectNode vaadinOverrides = computeVaadinOverrides(
                 pinnedNpmVersions, dependencies, devDependencies);
 
@@ -162,8 +165,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                 overrides);
 
         removeManagedOverrides(overrides,
-                managedOverrideKeys(pinnedNpmVersions), dependencies,
-                devDependencies);
+                managedOverrideKeys(pinnedNpmVersions,
+                        allPinnedNpmDependencies),
+                dependencies, devDependencies);
         overrides.putAll(flattenOverrides(vaadinOverrides));
 
         boolean updated = store.save(overrides) || store.migrated()
@@ -322,11 +326,13 @@ public class TaskUpdatePackages extends NodeUpdater {
      * <p>
      * Every package of the versions files is taken first, so that a package is
      * pinned to the version Vaadin ships even when it is only used
-     * transitively. What {@link #versionsJson} declares is then filled in for
-     * the packages the versions files do not cover. That is the same set of
-     * packages narrowed down to the current mode and without the SNAPSHOT and
-     * unparsable versions, plus the version package.json declares for each of
-     * its dependencies that is not pinned by a versions file.
+     * transitively. A versions file entry with an exotic version, such as a
+     * tarball URL, is skipped unless exotic versions are allowed. What
+     * {@link #versionsJson} declares is then filled in for the packages the
+     * versions files do not cover. That is the same set of packages narrowed
+     * down to the current mode and without the SNAPSHOT and unparsable
+     * versions, plus the version package.json declares for each of its
+     * dependencies that is not pinned by a versions file.
      * <p>
      * A version the user changed in package.json does not replace the one the
      * versions files declare; it only produces a warning when the user pinned
@@ -335,17 +341,21 @@ public class TaskUpdatePackages extends NodeUpdater {
      * This is not about what package.json currently pins through overrides:
      * those are read separately and are replaced by what this returns.
      *
+     * @param allPinnedNpmDependencies
+     *            the versions all versions files declare, by package name
      * @return the version to pin each npm package to, by package name
-     * @throws IOException
-     *             if the versions files cannot be read
      */
-    private Map<String, String> collectPinnedNpmVersions() throws IOException {
+    private Map<String, String> collectPinnedNpmVersions(
+            ObjectNode allPinnedNpmDependencies) {
         final Map<String, String> pinnedNpmVersions = new HashMap<>();
-        final ObjectNode allPinnedNpmDependencies = getAllPinnedNpmDependencies();
         for (String dependency : JacksonUtils
                 .getKeys(allPinnedNpmDependencies)) {
-            pinnedNpmVersions.put(dependency,
-                    allPinnedNpmDependencies.get(dependency).asString());
+            final String version = allPinnedNpmDependencies.get(dependency)
+                    .asString();
+            if (options.isNpmAllowExoticVersions()
+                    || !FrontendBuildUtils.isExoticVersion(version)) {
+                pinnedNpmVersions.put(dependency, version);
+            }
         }
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
             pinnedNpmVersions.putIfAbsent(dependency,
@@ -356,7 +366,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     /**
      * Builds the overrides Vaadin wants to enforce for the packages of
-     * {@link #collectPinnedNpmVersions()}: a dependency reference
+     * {@link #collectPinnedNpmVersions(ObjectNode)}: a dependency reference
      * ({@code $dependency}) when the package is declared directly in
      * package.json, the version to pin it to otherwise.
      */
@@ -394,6 +404,32 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
+     * Fails when a package is declared with an exotic version, such as a
+     * tarball URL or a git repository, and exotic versions are not allowed, as
+     * such a package is installed from neither the npm registry nor a local
+     * path.
+     */
+    private void verifyExoticVersionsAllowed(Map<String, String> dependencies) {
+        if (options.isNpmAllowExoticVersions()) {
+            return;
+        }
+        final String exoticDependencies = dependencies.entrySet().stream()
+                .filter(dep -> FrontendBuildUtils
+                        .isExoticVersion(dep.getValue()))
+                .map(dep -> "'" + dep.getKey() + "': '" + dep.getValue() + "'")
+                .sorted().collect(Collectors.joining(", "));
+        if (!exoticDependencies.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "The npm packages %s are declared using @NpmPackage with a version that is neither"
+                            + " a registry version nor a local path, which is not allowed by default."
+                            + " Set the 'npmAllowExoticVersions' plugin parameter or the '%s'"
+                            + " configuration property to true to allow such versions.",
+                    exoticDependencies,
+                    InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+        }
+    }
+
+    /**
      * Gets the version an npm package can be pinned to.
      *
      * @param version
@@ -424,13 +460,16 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Top-level override keys Vaadin manages, which are the ones it removes
      * from package.json once they are no longer pinned: the packages of
-     * {@link #collectPinnedNpmVersions()} and the default overrides Vaadin may
-     * add (e.g. workbox).
+     * {@link #collectPinnedNpmVersions(ObjectNode)}, all the packages of the
+     * versions files, including those skipped for an exotic version, and the
+     * default overrides Vaadin may add (e.g. workbox).
      */
     private Set<String> managedOverrideKeys(
-            Map<String, String> pinnedNpmVersions) {
+            Map<String, String> pinnedNpmVersions,
+            ObjectNode allPinnedNpmDependencies) {
         final Set<String> managedKeys = new HashSet<>(
                 pinnedNpmVersions.keySet());
+        managedKeys.addAll(JacksonUtils.getKeys(allPinnedNpmDependencies));
         managedKeys.addAll(JacksonUtils.getKeys(getManagedDefaultOverrides()));
         return managedKeys;
     }
@@ -664,6 +703,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
+        verifyExoticVersionsAllowed(filteredApplicationDependencies);
+        verifyExoticVersionsAllowed(applicationDevDependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : filteredApplicationDependencies

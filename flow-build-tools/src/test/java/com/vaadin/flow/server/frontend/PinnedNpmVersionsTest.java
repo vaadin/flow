@@ -729,7 +729,8 @@ class PinnedNpmVersionsTest {
                 """);
         List<String> origins = new ArrayList<>();
         VersionsJsonFilter filter = new VersionsJsonFilter(
-                JacksonUtils.createObjectNode(), NodeUpdater.DEPENDENCIES) {
+                JacksonUtils.createObjectNode(), NodeUpdater.DEPENDENCIES,
+                false) {
             @Override
             ObjectNode getFilteredVersions(ObjectNode versionsJson,
                     String versionOrigin) {
@@ -751,7 +752,7 @@ class PinnedNpmVersionsTest {
 
     private static VersionsJsonFilter keepEverything() {
         return new VersionsJsonFilter(JacksonUtils.createObjectNode(),
-                NodeUpdater.DEPENDENCIES);
+                NodeUpdater.DEPENDENCIES, true);
     }
 
     /**
