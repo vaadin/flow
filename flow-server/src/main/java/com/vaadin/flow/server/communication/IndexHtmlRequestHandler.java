@@ -37,6 +37,7 @@ import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -47,11 +48,13 @@ import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ColorScheme;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReload.Backend;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ContentSecurityPolicyNonceProvider;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -98,6 +101,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
     private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+
+    private transient @Nullable ContentSecurityPolicyNonceProvider contentSecurityPolicyNonceProvider;
+    private transient boolean contentSecurityPolicyNonceProviderLookedUp;
     private static final String CSP_SELF = "'self'";
     private static final String CSP_DATA = "data:";
 
@@ -154,9 +160,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (config
                 .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT) {
-            String nonce = createContentSecurityPolicyNonce();
-            indexHtmlResponse.setContentSecurityPolicy(nonce,
-                    createDefaultContentSecurityPolicy(nonce));
+            String providedNonce = findProvidedContentSecurityPolicyNonce(
+                    request);
+            if (providedNonce != null) {
+                // The policy that allows the nonce is sent by its provider
+                indexHtmlResponse.setContentSecurityPolicy(providedNonce, null);
+            } else {
+                String nonce = createContentSecurityPolicyNonce();
+                indexHtmlResponse.setContentSecurityPolicy(nonce,
+                        createDefaultContentSecurityPolicy(nonce));
+            }
         }
 
         addInitialFlow(initialJson, indexDocument, request);
@@ -258,12 +271,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
-        // The dev server and dev tools need eval, so the policy is only sent
-        // in production mode
         if (config
-                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT
-                && config.isProductionMode()) {
-            applyContentSecurityPolicy(indexHtmlResponse);
+                .getContentSecurityPolicyMode() == ContentSecurityPolicyMode.STRICT) {
+            if (indexHtmlResponse.getContentSecurityPolicy() == null) {
+                // A policy with the nonce is sent by its provider, whatever
+                // the mode, so the scripts need the nonce to run
+                addNonceToScripts(indexHtmlResponse);
+            } else if (config.isProductionMode()) {
+                // The dev server and dev tools need eval, so the policy of
+                // Vaadin is only sent in production mode
+                applyContentSecurityPolicy(indexHtmlResponse);
+            }
         }
 
         try {
@@ -318,18 +336,36 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     CONTENT_SECURITY_POLICY_HEADER,
                     InitParameters.CONTENT_SECURITY_POLICY));
         }
-        // Both are created for the strict mode, which the caller checks
-        String nonce = Objects.requireNonNull(
-                indexHtmlResponse.getContentSecurityPolicyNonce());
+        addNonceToScripts(indexHtmlResponse);
+        // Created for the strict mode, which the caller checks
         ContentSecurityPolicy policy = Objects
                 .requireNonNull(indexHtmlResponse.getContentSecurityPolicy());
-        // Done after the listeners have run so that every script in the page
-        // gets the nonce, whichever code added it
+        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                policy.toHeaderValue());
+    }
+
+    // Done after the listeners have run so that every script in the page gets
+    // the nonce, whichever code added it
+    private static void addNonceToScripts(IndexHtmlResponse indexHtmlResponse) {
+        // Created for the strict mode, which the caller checks
+        String nonce = Objects.requireNonNull(
+                indexHtmlResponse.getContentSecurityPolicyNonce());
         indexHtmlResponse.getDocument().select(
                 "script, link[rel=modulepreload], link[rel=preload][as=script]")
                 .attr("nonce", nonce);
-        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
-                policy.toHeaderValue());
+    }
+
+    private @Nullable String findProvidedContentSecurityPolicyNonce(
+            VaadinRequest request) {
+        // Looked up once: a lookup can be a search for beans
+        if (!contentSecurityPolicyNonceProviderLookedUp) {
+            contentSecurityPolicyNonceProvider = request.getService()
+                    .getContext().getAttribute(Lookup.class)
+                    .lookup(ContentSecurityPolicyNonceProvider.class);
+            contentSecurityPolicyNonceProviderLookedUp = true;
+        }
+        ContentSecurityPolicyNonceProvider provider = contentSecurityPolicyNonceProvider;
+        return provider == null ? null : provider.findNonce(request);
     }
 
     private void initializeFeatureFlags(Document indexDocument,

@@ -53,6 +53,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.SpringSecurityContentSecurityPolicyNonceProvider;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
@@ -116,6 +117,19 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     public VaadinDefaultRequestCache vaadinDefaultRequestCache() {
         return new VaadinDefaultRequestCache();
+    }
+
+    /**
+     * Makes Vaadin use the Content Security Policy nonce of Spring Security in
+     * the strict mode, so that the policy configured in Spring Security is sent
+     * with Vaadin pages. Vaadin finds it through
+     * {@link com.vaadin.flow.di.Lookup}.
+     *
+     * @return the provider of the nonce of Spring Security
+     */
+    @Bean
+    public SpringSecurityContentSecurityPolicyNonceProvider springSecurityContentSecurityPolicyNonceProvider() {
+        return new SpringSecurityContentSecurityPolicyNonceProvider();
     }
 
     /**

@@ -24,8 +24,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 /**
- * A Vaadin security configuration where Spring Security is also told to send a
- * Content Security Policy, as an application may have done before it turned on
+ * A Vaadin security configuration where the Content Security Policy of the
+ * application is configured in Spring Security, which is where an application
+ * with Spring Security configures it for
  * {@code vaadin.contentSecurityPolicy=strict}.
  */
 @EnableWebSecurity
@@ -33,11 +34,17 @@ import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 public class SecurityConfig {
 
     /**
-     * The policy Spring Security is configured with. {@code form-action} is in
-     * no other policy of this application, so a policy that has it comes from
-     * Spring Security.
+     * The policy Spring Security is configured with. It is the policy Vaadin
+     * sends in the {@code strict} mode, with the {@code {nonce}} placeholder
+     * that Spring Security replaces with the nonce of the request, and with
+     * {@code form-action}, which only this policy has.
      */
-    public static final String SPRING_SECURITY_POLICY = "default-src 'self'; form-action 'self'";
+    public static final String SPRING_SECURITY_POLICY = "default-src 'self'; "
+            + "script-src 'nonce-{nonce}' 'strict-dynamic'; "
+            + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+            + "font-src 'self' data:; connect-src 'self' data:; "
+            + "worker-src 'self'; object-src 'none'; base-uri 'self'; "
+            + "form-action 'self'";
 
     @Bean
     SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {

@@ -125,10 +125,11 @@ public class IndexHtmlResponse {
      * {@code script-src} directive of the Content Security Policy.
      * <p>
      * A new nonce is created for every response when the application runs with
-     * the {@link ContentSecurityPolicyMode#STRICT} mode. Scripts added by an
-     * {@link IndexHtmlRequestListener} get the nonce automatically, but the
-     * value can also be used for other content that needs it. The nonce is not
-     * put on the scripts in development mode.
+     * the {@link ContentSecurityPolicyMode#STRICT} mode. It is the nonce of
+     * Spring Security when a Content Security Policy is configured there.
+     * Scripts added by an {@link IndexHtmlRequestListener} get the nonce
+     * automatically, but the value can also be used for other content that
+     * needs it. The nonce is not put on the scripts in development mode.
      *
      * @return the nonce, or {@code null} if the mode is not
      *         {@link ContentSecurityPolicyMode#STRICT}
@@ -160,13 +161,16 @@ public class IndexHtmlResponse {
      * tools need {@code eval}. In production mode, the request fails with an
      * {@link IllegalStateException} if the response already has a
      * {@code Content-Security-Policy} header when the page is written, for
-     * example from a servlet filter that runs before Vaadin. A filter that
-     * writes its header only when the response is committed, such as Spring
-     * Security's {@code HeaderWriterFilter} by default, cannot be detected; its
-     * policy should be configured here instead.
+     * example from a servlet filter that runs before Vaadin.
+     * <p>
+     * There is no policy to adjust when the application sends its own with a
+     * nonce it shares with Vaadin, which is the case when a Content Security
+     * Policy is configured in Spring Security. That policy is sent with the
+     * page as configured, and is adjusted where it is configured.
      *
      * @return the mutable policy, or {@code null} if the mode is not
-     *         {@link ContentSecurityPolicyMode#STRICT}
+     *         {@link ContentSecurityPolicyMode#STRICT} or if the policy is not
+     *         sent by Vaadin
      * @since 25.4
      */
     public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
@@ -174,7 +178,7 @@ public class IndexHtmlResponse {
     }
 
     void setContentSecurityPolicy(String contentSecurityPolicyNonce,
-            ContentSecurityPolicy contentSecurityPolicy) {
+            @Nullable ContentSecurityPolicy contentSecurityPolicy) {
         this.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
         this.contentSecurityPolicy = contentSecurityPolicy;
     }
