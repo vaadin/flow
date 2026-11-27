@@ -5,6 +5,8 @@ import type {
   ResourceLoadListener
 } from '../../../../../main/frontend/internal/client/ResourceRegistry';
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
+import { Console } from '../../../../../main/frontend/internal/client/Console';
 import {
   MessageHandler,
   parseJson,
@@ -22,6 +24,7 @@ import {
   UILifecycle,
   UIState
 } from '../../../../../main/frontend/internal/client/UILifecycle';
+import { Reactive } from '../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { ClientEvents } from '../../../../../main/frontend/internal/client/ClientEvents';
 import { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
@@ -636,6 +639,187 @@ describe('MessageHandler', () => {
       await afterDeferred();
 
       expect(called).to.equal(1);
+    });
+
+    describe('view transition', () => {
+      const original = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
+      let flushes: number;
+      let pendingUpdate: (() => void) | null;
+
+      beforeEach(() => {
+        flushes = 0;
+        pendingUpdate = null;
+      });
+
+      afterEach(() => {
+        Reactive.reset();
+        if (original) {
+          Object.defineProperty(document, 'startViewTransition', original);
+        } else {
+          delete (document as { startViewTransition?: unknown }).startViewTransition;
+        }
+      });
+
+      // Like the real API, the stub returns before running the update callback;
+      // the test runs it through pendingUpdate once the snapshot would be taken.
+      // An error thrown by the callback rejects updateCallbackDone and finished
+      // instead of propagating. The returned transition is one the browser
+      // skips, so its ready promise rejects.
+      function stubStartViewTransition(supported: boolean): void {
+        const value = supported
+          ? (callback: () => void) => {
+              let settle!: (error?: unknown) => void;
+              const updateCallbackDone = new Promise<void>((resolve, reject) => {
+                settle = (error) => (error === undefined ? resolve() : reject(error));
+              });
+              pendingUpdate = () => {
+                try {
+                  callback();
+                  settle();
+                } catch (e) {
+                  settle(e);
+                }
+              };
+              return {
+                ready: Promise.reject(new DOMException('Transition was skipped', 'AbortError')),
+                updateCallbackDone,
+                finished: updateCallbackDone.then(() => {})
+              };
+            }
+          : undefined;
+        Object.defineProperty(document, 'startViewTransition', { configurable: true, writable: true, value });
+      }
+
+      function runPendingUpdate(): void {
+        pendingUpdate!();
+      }
+
+      function handle(handler: MessageHandler, message: Record<string, unknown>): void {
+        Reactive.addFlushListener(() => flushes++);
+        handler.handleMessage(message);
+      }
+
+      it('applies the changes and ends the request only once the view transition runs its update', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+
+        handle(handler, { syncId: 0, meta: { viewTransition: true } });
+
+        expect(pendingUpdate).to.not.equal(null);
+        expect(flushes).to.equal(0);
+        expect(registry.log.endRequests).to.equal(0);
+        expect(registry.log.stopLoadings).to.equal(0);
+
+        pendingUpdate!();
+
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
+        expect(registry.log.stopLoadings).to.equal(1);
+      });
+
+      it('holds back the next message until the view transition has applied the changes', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+
+        handle(handler, { syncId: 0, meta: { viewTransition: true } });
+        // e.g. a push message arriving while the transition is pending
+        handle(handler, { syncId: 1, meta: { async: true } });
+
+        expect(handler.getLastSeenServerSyncId()).to.equal(0);
+        expect(flushes).to.equal(0);
+
+        pendingUpdate!();
+
+        expect(handler.getLastSeenServerSyncId()).to.equal(1);
+      });
+
+      it('does not report a skipped view transition as an unhandled rejection', async () => {
+        stubStartViewTransition(true);
+        const unhandled: unknown[] = [];
+        const listener = (e: PromiseRejectionEvent) => {
+          unhandled.push(e.reason);
+          e.preventDefault();
+        };
+        window.addEventListener('unhandledrejection', listener);
+        try {
+          handle(new MessageHandler(makeRegistry().registry), { syncId: 0, meta: { viewTransition: true } });
+          pendingUpdate!();
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        } finally {
+          window.removeEventListener('unhandledrejection', listener);
+        }
+
+        expect(unhandled).to.deep.equal([]);
+      });
+
+      for (const supported of [true, false]) {
+        it(`ends the request once and reports the error when applying the changes throws (view transitions ${supported ? 'supported' : 'unsupported'})`, async () => {
+          stubStartViewTransition(supported);
+          const registry = makeRegistry();
+          const handler = new MessageHandler(registry.registry);
+          const reportStacktrace = sinon.stub(Console, 'reportStacktrace');
+          const unhandled: unknown[] = [];
+          const listener = (e: PromiseRejectionEvent) => {
+            unhandled.push(e.reason);
+            e.preventDefault();
+          };
+          window.addEventListener('unhandledrejection', listener);
+          try {
+            // Reactive keeps a listener that throws, so only throw for the first message
+            const error = new Error('boom');
+            let thrown = false;
+            Reactive.addFlushListener(() => {
+              if (!thrown) {
+                thrown = true;
+                throw error;
+              }
+            });
+
+            const first = () => handle(handler, { syncId: 0, meta: { viewTransition: true } });
+            if (supported) {
+              first();
+              handle(handler, { syncId: 1, meta: { async: true } });
+              runPendingUpdate();
+              await new Promise((resolve) => setTimeout(resolve, 10));
+              expect(reportStacktrace.calledOnceWithExactly(error)).to.be.true;
+            } else {
+              expect(first).to.throw('boom');
+              handle(handler, { syncId: 1, meta: { async: true } });
+            }
+
+            expect(unhandled).to.deep.equal([]);
+            expect(registry.log.endRequests).to.equal(1);
+            expect(registry.log.stopLoadings).to.equal(1);
+            expect(handler.getLastSeenServerSyncId()).to.equal(1);
+          } finally {
+            window.removeEventListener('unhandledrejection', listener);
+            reportStacktrace.restore();
+          }
+        });
+      }
+
+      it('applies the changes directly when no view transition is requested', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+
+        handle(new MessageHandler(registry.registry), { syncId: 0 });
+
+        expect(pendingUpdate).to.equal(null);
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
+      });
+
+      it('applies the changes directly when the browser does not support view transitions', () => {
+        stubStartViewTransition(false);
+        const registry = makeRegistry();
+
+        handle(new MessageHandler(registry.registry), { syncId: 0, meta: { viewTransition: true } });
+
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
+      });
     });
 
     describe('beyond the Java suite', () => {
