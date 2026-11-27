@@ -257,18 +257,16 @@ public class UIInternals implements Serializable {
     private volatile Instant lastUpdateSentTimestamp = Instant.now();
 
     /**
-     * The number of JavaScript invocations that have been scheduled for the
-     * related UI without being sent to the client. Kept here instead of on the
-     * individual state nodes to avoid growing the size of every node.
+     * The JavaScript invocations that have been scheduled for the related UI
+     * without being sent to the client. Kept here instead of on the individual
+     * state nodes to avoid growing the size of every node.
      * <p>
      * Serialized together with the invocations that make up the count, each of
      * which references these internals until it stops being counted, so a UI
      * that has been through a serialization round trip keeps counting where it
      * left off.
      */
-    private int undeliveredJsInvocations;
-
-    private boolean undeliveredJsInvocationsWarningLogged;
+    private final UndeliveredJsInvocations undeliveredJsInvocations = new UndeliveredJsInvocations();
 
     private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
@@ -586,34 +584,46 @@ public class UIInternals implements Serializable {
      * @return the number of undelivered JavaScript invocations after the
      *         change, never negative
      */
-    // Package private: only used through PendingJavaScriptInvocationUtil
+    // Package private: only used through PendingJavaScriptInvocation
     int addUndeliveredJsInvocations(int delta) {
         session.checkHasLock();
-        // Only an invocation that this instance counted uncounts itself, so
-        // the count is not expected to go negative. Clamped rather than
-        // asserted since a slip in the bookkeeping behind a warning is not
-        // worth failing an application over
-        undeliveredJsInvocations = Math.max(0,
-                undeliveredJsInvocations + delta);
+        return undeliveredJsInvocations.add(delta);
+    }
+
+    // Package private: only used through PendingJavaScriptInvocationUtil
+    void undeliveredJsInvocationScheduled(
+            PendingJavaScriptInvocation invocation) {
+        session.checkHasLock();
+        undeliveredJsInvocations.scheduled(invocation);
+    }
+
+    // Non-private for testing purposes
+    UndeliveredJsInvocations getUndeliveredJsInvocations() {
         return undeliveredJsInvocations;
     }
 
     /**
-     * Marks the warning about undelivered JavaScript invocations as logged for
-     * the related UI, so that it is logged only once even if the number of
-     * undelivered invocations keeps crossing the threshold.
-     *
-     * @return <code>true</code> if the warning had not been logged for the
-     *         related UI before
+     * Checks whether JavaScript invocations are piling up for the related UI
+     * without being sent to the client, and logs a warning if they are. Called
+     * by the framework right before the session lock is released, after
+     * automatic push, if enabled, has sent the pending changes. Never throws,
+     * since a warning is not worth failing the release of the lock over.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      */
-    // Package private: only used through PendingJavaScriptInvocationUtil
-    boolean markUndeliveredJsInvocationsWarningLogged() {
-        session.checkHasLock();
-        if (undeliveredJsInvocationsWarningLogged) {
-            return false;
+    public void checkUndeliveredJavaScriptInvocations() {
+        if (session == null) {
+            // A UI that failed to close properly may still be listed in the
+            // session after being detached from it, and has nothing to check
+            return;
         }
-        undeliveredJsInvocationsWarningLogged = true;
-        return true;
+        try {
+            session.checkHasLock();
+            undeliveredJsInvocations.lockReleasing(this);
+        } catch (RuntimeException e) {
+            getLogger().debug(
+                    "Failed to check undelivered JavaScript invocations", e);
+        }
     }
 
     /**
@@ -937,6 +947,7 @@ public class UIInternals implements Serializable {
         lastUpdateSentTimestamp = Instant.now();
 
         if (pendingJsInvocations.isEmpty()) {
+            undeliveredJsInvocations.queueSent(Collections.emptyList());
             return Collections.emptyList();
         }
 
@@ -953,6 +964,7 @@ public class UIInternals implements Serializable {
         pendingJsInvocationOwners = retained.stream()
                 .map(PendingJavaScriptInvocation::getOwner)
                 .collect(Collectors.toCollection(HashSet::new));
+        undeliveredJsInvocations.queueSent(retained);
 
         return readyToSend;
     }

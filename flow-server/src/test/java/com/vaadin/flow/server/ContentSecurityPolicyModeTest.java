@@ -70,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
@@ -341,7 +342,7 @@ class ContentSecurityPolicyModeTest {
         setup.getDeploymentConfiguration().setContentSecurityPolicyMode(mode);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
             loggerFactory
                     .when(() -> LoggerFactory.getLogger(
                             ContentSecurityPolicyViolationReporter.class))
@@ -386,7 +387,7 @@ class ContentSecurityPolicyModeTest {
                 .setContentSecurityPolicyMode(ContentSecurityPolicyMode.WARN);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
             loggerFactory
                     .when(() -> LoggerFactory.getLogger(
                             ContentSecurityPolicyViolationReporter.class))
