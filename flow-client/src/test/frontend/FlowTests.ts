@@ -564,6 +564,24 @@ describe('Flow', () => {
     document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
   });
 
+  it('should load the page it was loaded from as a new page when the UI stops after it started', async () => {
+    failingEvent = 'ui-leave-navigation';
+    const loadPage = sinon.stub(Flow.prototype as any, 'loadPage');
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+    const elem: any = await new Flow().serverSideRoutes[0].action({ pathname: 'Foo' });
+    await elem.onBeforeEnter({ pathname: 'Foo' }, {});
+    await settledSoon(elem.onBeforeLeave({ pathname: 'Lorem' }, { prevent: () => 'prevented', continue: () => {} }));
+
+    // The UI started, so loading the page again cannot loop on a failing start
+    const { pathname, search } = window.location;
+    expect(await settledSoon(elem.onBeforeEnter({ pathname, search }, { prevent: () => 'prevented' }))).to.equal(
+      'prevented'
+    );
+    expect(loadPage.args).to.deep.equal([[pathname + search]]);
+    document.querySelectorAll('.v-system-error').forEach((e) => e.remove());
+  });
+
   it('onBeforeEnter should handle forwardTo `server->client` navigation', () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', false, undefined, { pathname: 'Lorem', search: '' });

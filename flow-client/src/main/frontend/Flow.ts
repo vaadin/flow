@@ -104,10 +104,13 @@ export class Flow {
   private baseRegex = /^\//;
   private appShellTitle: string;
 
-  // The URL this page was loaded from, which is not loaded again when the UI
-  // has stopped: its UI may have stopped while starting, and loading it again
-  // could loop.
+  // The URL this page was loaded from. Not loaded again when the UI stopped
+  // before it answered a navigation: it may have stopped while starting, and
+  // loading the page again could loop.
   private readonly loadedUrl = window.location.pathname + window.location.search;
+
+  // Set once the server has answered a navigation, i.e. the UI has started
+  private navigationAnswered = false;
 
   private navigation: string = '';
 
@@ -260,7 +263,10 @@ export class Flow {
         resolve(cmd && cancel ? cmd.prevent() : cmd?.continue?.());
         this.loadingFinished();
       };
-      this.container.serverConnected = serverConnected;
+      this.container.serverConnected = (cancel) => {
+        this.navigationAnswered = true;
+        serverConnected(cancel);
+      };
       // A stopped UI cannot keep the view, so let the navigation leave it
       this.settleRoundTrip = () => serverConnected(false);
 
@@ -289,7 +295,10 @@ export class Flow {
           }
           this.loadingFinished();
         };
-        this.container.serverConnected = serverConnected;
+        this.container.serverConnected = (cancel, redirectContext) => {
+          this.navigationAnswered = true;
+          serverConnected(cancel, redirectContext);
+        };
 
         this.container.serverPaused = () => {
           this.loadingFinished();
@@ -300,7 +309,7 @@ export class Flow {
           // page, which starts a new UI
           serverConnected(true);
           const target = this.getPageUrl(ctx);
-          if (target.pathname + target.search !== this.loadedUrl) {
+          if (this.navigationAnswered || target.pathname + target.search !== this.loadedUrl) {
             this.loadPage(target.pathname + target.search + target.hash);
           }
           return;
