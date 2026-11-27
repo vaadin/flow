@@ -48,7 +48,7 @@ import com.vaadin.flow.signals.shared.impl.TreeRevision;
  * @since 25.1
  */
 public abstract class Transaction implements Serializable {
-    private transient @Nullable List<Runnable> endTasks;
+    private transient @Nullable List<Runnable> finalizeTasks;
 
     /**
      * Creates a new transaction.
@@ -209,10 +209,10 @@ public abstract class Transaction implements Serializable {
      * The supplier should return <code>null</code> if no fallback is available
      * for the current context (e.g. no session lock is held).
      * <p>
-     * The code that provides a fallback transaction owns it and must call
-     * {@link #runEndTasks()} on it when it stops providing it, since signal
-     * listeners that are added while the transaction hides a change are only
-     * added again at that point.
+     * The code that provides a fallback transaction owns it and must finalize
+     * it with {@link #finalizeTransaction()} when it stops providing it, since
+     * signal listeners that are added while the transaction hides a change are
+     * only notified at that point.
      *
      * @param fallback
      *            the fallback supplier, or <code>null</code> to remove the
@@ -350,7 +350,7 @@ public abstract class Transaction implements Serializable {
             } else {
                 currentTransaction.set(previousThreadLocal);
             }
-            inner.runEndTasks();
+            inner.finalizeTransaction();
         }
     }
 
@@ -502,48 +502,49 @@ public abstract class Transaction implements Serializable {
     public abstract TreeRevision read(SignalTree tree);
 
     /**
-     * Registers a task to run once this transaction has ended. The task runs
-     * outside this transaction, in the context of the code that ended it. This
-     * can be used to react to changes that this transaction hides because it
-     * keeps returning the values it first read.
+     * Registers a task to run once this transaction has been finalized, i.e.
+     * when it no longer applies to the code that runs on the thread. The task
+     * runs outside this transaction, in the context of the code that finalized
+     * it. This can be used to react to changes that this transaction hides
+     * because it keeps returning the values it first read.
      * <p>
-     * The tasks of a transaction run with {@link #runInTransaction} are run
-     * when that method returns. For other transactions, the code that owns the
-     * transaction runs them with {@link #runEndTasks()}.
+     * A transaction run with {@link #runInTransaction} is finalized when that
+     * method returns. Other transactions are finalized by the code that owns
+     * them, with {@link #finalizeTransaction()}.
      *
      * @param task
      *            the task to run, not <code>null</code>
      */
-    public void runAfterEnd(Runnable task) {
+    public void runAfterFinalize(Runnable task) {
         Objects.requireNonNull(task, "Task cannot be null");
-        if (endTasks == null) {
-            endTasks = new ArrayList<>();
+        if (finalizeTasks == null) {
+            finalizeTasks = new ArrayList<>();
         }
-        endTasks.add(task);
+        finalizeTasks.add(task);
     }
 
     /**
-     * Runs and forgets the tasks registered with
-     * {@link #runAfterEnd(Runnable)}. This is intended for the code that owns a
-     * transaction that isn't run with {@link #runInTransaction}, to be called
-     * when that transaction ends or when it no longer applies to the code that
-     * is about to run. The caller must make sure that this transaction isn't
-     * the current transaction while the tasks run.
+     * Finalizes this transaction, running the tasks registered with
+     * {@link #runAfterFinalize(Runnable)}. This is intended for the code that
+     * owns a transaction that isn't run with {@link #runInTransaction}, to be
+     * called once the transaction no longer applies to the code that runs on
+     * the thread. The caller must make sure that this transaction isn't the
+     * current transaction while the tasks run.
      * <p>
      * An exception from a task is passed to the uncaught exception handler of
      * the current thread so that the remaining tasks still run and the caller
-     * can finish ending the transaction.
+     * can complete finalizing the transaction.
      */
-    public void runEndTasks() {
-        List<Runnable> tasks = endTasks;
+    public void finalizeTransaction() {
+        List<Runnable> tasks = finalizeTasks;
         if (tasks == null) {
             return;
         }
-        endTasks = null;
+        finalizeTasks = null;
         for (Runnable task : tasks) {
             try {
                 task.run();
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
                         e);

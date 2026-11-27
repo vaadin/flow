@@ -755,9 +755,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Clears the session-scoped transaction so that the next signal operation
-     * will create a fresh transaction with up-to-date values. Signal listeners
-     * that the transaction has deferred because it hid a change are released,
-     * see {@link #runSessionScopedTransactionEndTasks()}.
+     * will create a fresh transaction with up-to-date values.
+     * <p>
+     * The cleared transaction is finalized outside any transaction and without
+     * a current UI. Signal listeners that it has deferred because it kept
+     * returning an old value after another thread changed a shared signal are
+     * thus notified as if that change had been made by another thread at this
+     * moment. An effect of a UI in this session then queues an access task that
+     * is run before the lock is released.
      * <p>
      * The session lock must be held when calling this method.
      */
@@ -765,26 +770,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert hasLock();
         Transaction transaction = sessionScopedTransaction;
         sessionScopedTransaction = null;
-        runEndTasks(transaction);
-    }
-
-    /**
-     * Releases the signal listeners that the session-scoped transaction has
-     * deferred because it kept returning an old value after another thread
-     * changed a shared signal. The listeners are added again outside the
-     * transaction and without a current UI, so that they see the change as a
-     * change made by another thread at this moment. An effect of a UI in this
-     * session then queues an access task that is run before the lock is
-     * released.
-     * <p>
-     * The session lock must be held when calling this method.
-     */
-    void runSessionScopedTransactionEndTasks() {
-        assert hasLock();
-        runEndTasks(sessionScopedTransaction);
-    }
-
-    private void runEndTasks(Transaction transaction) {
         if (transaction == null) {
             return;
         }
@@ -793,11 +778,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         CurrentInstance.clearAll();
         CurrentInstance.setCurrent(this);
         try {
-            Transaction.runWithoutTransaction(transaction::runEndTasks);
+            Transaction.runWithoutTransaction(transaction::finalizeTransaction);
         } finally {
             CurrentInstance.clearAll();
             CurrentInstance.restoreInstances(oldInstances);
         }
+        // Signals don't use the transaction fallback while running without a
+        // transaction, so finalizing doesn't create a new session transaction
+        assert sessionScopedTransaction == null;
     }
 
     /**
