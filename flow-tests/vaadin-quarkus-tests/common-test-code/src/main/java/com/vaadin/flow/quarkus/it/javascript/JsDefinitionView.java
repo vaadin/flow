@@ -43,12 +43,31 @@ public class JsDefinitionView extends Div {
     public static final String SNIPPET_RESULT_ID = "snippet-result";
     public static final String CHECK_INHERITED_METHOD_ID = "check-inherited-method";
     public static final String INHERITED_METHOD_RESULT_ID = "inherited-method-result";
+    public static final String CALL_ELEMENT_METHODS_ID = "call-element-methods";
+    public static final String ELEMENT_METHODS_RESULT_ID = "element-methods-result";
 
     @JsDefinition
     public interface JoinJs extends JsInvokers {
 
         @JsExpression("return [$0, ...$1].join('-')")
         PendingJavaScriptResult join(String first, Object... rest);
+    }
+
+    /**
+     * Only extended, so not annotated. A method without an expression calls the
+     * method of the same name on the element.
+     */
+    public interface AttributeSetterJs extends JsInvokers {
+        void setAttribute(String name, String value);
+    }
+
+    /**
+     * Calls element methods: one that it inherits and one that it declares,
+     * which the proxy reads from the interfaces through reflection.
+     */
+    @JsDefinition
+    public interface AttributeJs extends AttributeSetterJs {
+        PendingJavaScriptResult getAttribute(String name);
     }
 
     /**
@@ -131,5 +150,18 @@ public class JsDefinitionView extends Div {
                 });
         checkInheritedMethod.setId(CHECK_INHERITED_METHOD_ID);
         add(checkInheritedMethod, inheritedMethodResult);
+
+        Span elementMethodsResult = new Span();
+        elementMethodsResult.setId(ELEMENT_METHODS_RESULT_ID);
+        NativeButton callElementMethods = new NativeButton(
+                "Call element methods", event -> {
+                    AttributeJs attributes = elementMethodsResult.getElement()
+                            .executeJs(AttributeJs.class);
+                    attributes.setAttribute("data-greeting", "element method");
+                    attributes.getAttribute("data-greeting").then(String.class,
+                            elementMethodsResult::setText);
+                });
+        callElementMethods.setId(CALL_ELEMENT_METHODS_ID);
+        add(callElementMethods, elementMethodsResult);
     }
 }

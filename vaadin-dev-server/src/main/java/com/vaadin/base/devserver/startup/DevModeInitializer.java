@@ -74,7 +74,6 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
@@ -175,25 +174,17 @@ public class DevModeInitializer implements Serializable {
 
     /**
      * Gets the folder that the development mode build writes the files to that
-     * the server reads back from the class path, such as the list of
-     * {@code @JsStringFallback} interfaces. It is in the folder the build tool
-     * puts resources into, {@code target/classes} for Maven and
-     * {@code build/resources/main} for Gradle, since only that one is on the
-     * class path of the running application.
+     * the server reads, such as the list of {@code @JsStringFallback}
+     * interfaces.
      *
      * @param configuration
      *            the configuration of the application, not <code>null</code>
      * @return the folder, not <code>null</code>
+     * @see FrontendUtils#getServletResourceOutputDirectory(AbstractConfiguration)
      */
     public static File getServletResourceOutputDirectory(
             AbstractConfiguration configuration) {
-        File resources = configuration.getOutputResourceFolder();
-        if (resources == null) {
-            // No project folder to find it in: the Maven layout, relative to
-            // where the application runs
-            resources = new File(configuration.getBuildFolder(), "classes");
-        }
-        return new File(resources, VAADIN_SERVLET_RESOURCES);
+        return FrontendUtils.getServletResourceOutputDirectory(configuration);
     }
 
     /**

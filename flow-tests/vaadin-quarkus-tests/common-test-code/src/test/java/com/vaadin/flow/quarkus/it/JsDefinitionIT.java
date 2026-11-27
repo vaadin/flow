@@ -65,4 +65,16 @@ class JsDefinitionIT extends AbstractChromeIT {
                 .id(JsDefinitionView.INHERITED_METHOD_RESULT_ID);
         waitUntil(driver -> result.getText().contains("declares label"));
     }
+
+    @Test
+    void callElementMethods_declaredAndInheritedMethodsRun() {
+        open();
+
+        $(NativeButtonElement.class)
+                .id(JsDefinitionView.CALL_ELEMENT_METHODS_ID).click();
+
+        SpanElement result = $(SpanElement.class)
+                .id(JsDefinitionView.ELEMENT_METHODS_RESULT_ID);
+        waitUntil(driver -> "element method".equals(result.getText()));
+    }
 }

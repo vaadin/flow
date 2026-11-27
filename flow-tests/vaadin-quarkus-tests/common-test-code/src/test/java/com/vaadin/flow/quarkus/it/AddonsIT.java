@@ -18,6 +18,9 @@ package com.vaadin.flow.quarkus.it;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.quarkus.it.addons.AddonsView;
 import com.vaadin.flow.test.AbstractChromeIT;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -54,5 +57,21 @@ public class AddonsIT extends AbstractChromeIT {
                 addon.$("axa-input-text").id("npm-dep-jandex").$("input")
                         .single().hasClassName("a-input-text__input"),
                 "Expecting axa-input-text element with id 'npm-dep-jandex' to be rendered in 'hello-world-jandex' shadow DOM, but was not");
+    }
+
+    @Test
+    void addonDefinitionsRun() {
+        open();
+
+        $(NativeButtonElement.class).id(AddonsView.GREET_ID).click();
+
+        SpanElement withoutJandex = $(SpanElement.class)
+                .id(AddonsView.WITHOUT_JANDEX_GREETING_ID);
+        waitUntil(driver -> "Hello from hello-world, native"
+                .equals(withoutJandex.getText()));
+        SpanElement withJandex = $(SpanElement.class)
+                .id(AddonsView.WITH_JANDEX_GREETING_ID);
+        waitUntil(driver -> "Hello from hello-world-jandex, native"
+                .equals(withJandex.getText()));
     }
 }

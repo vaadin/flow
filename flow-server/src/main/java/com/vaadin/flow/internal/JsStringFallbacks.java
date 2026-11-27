@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +40,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.BundledEventData;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
@@ -295,7 +298,7 @@ public final class JsStringFallbacks {
     private static Fallbacks loadFallbacks(VaadinService service) {
         ClassLoader classLoader = service.getClassLoader();
         List<Class<?>> definitionTypes = new ArrayList<>();
-        try (InputStream list = classLoader.getResourceAsStream(RESOURCE)) {
+        try (InputStream list = openList(service)) {
             if (list == null) {
                 return Fallbacks.NONE;
             }
@@ -325,6 +328,31 @@ public final class JsStringFallbacks {
                     + " until this is fixed", RESOURCE, e);
             return Fallbacks.NONE;
         }
+    }
+
+    /**
+     * Opens the list of a service, or gives <code>null</code> when there is
+     * none.
+     * <p>
+     * In development mode, the list is written while the application starts and
+     * again when a class changes, into the resource folder of the project. That
+     * folder is not on the class path when the application runs from a packaged
+     * jar, and a copy that the jar holds is older, so the list is read from the
+     * folder. The class path is where a production build puts it.
+     */
+    private static @Nullable InputStream openList(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration configuration = service
+                .getDeploymentConfiguration();
+        if (!configuration.isProductionMode()) {
+            File written = new File(FrontendUtils
+                    .getServletResourceOutputDirectory(configuration),
+                    Constants.JS_STRING_FALLBACKS_FILE);
+            if (written.isFile()) {
+                return Files.newInputStream(written.toPath());
+            }
+        }
+        return service.getClassLoader().getResourceAsStream(RESOURCE);
     }
 
     private static @Nullable Class<?> loadListedClass(String name,

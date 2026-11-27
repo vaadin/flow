@@ -19,6 +19,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsInvokers;
 
 @Tag("hello-world")
 @NpmPackage(value = "@axa-ch/input-text", version = "6.1.0")
@@ -26,8 +30,30 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 public class HelloWorld extends Component {
 
     /**
+     * A definition of the add-on. The application finds it only because
+     * {@code quarkus.index-dependency} adds the add-on to the index.
+     */
+    @JsDefinition
+    public interface GreetingJs extends JsInvokers {
+
+        @JsExpression("return 'Hello from ' + this.localName + ', ' + $0")
+        PendingJavaScriptResult greet(String name);
+    }
+
+    /**
      * Creates the hello world template.
      */
     public HelloWorld() {
+    }
+
+    /**
+     * Greets the given name in the browser.
+     *
+     * @param name
+     *            the name to greet
+     * @return the greeting
+     */
+    public PendingJavaScriptResult greet(String name) {
+        return getElement().executeJs(GreetingJs.class).greet(name);
     }
 }

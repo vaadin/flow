@@ -749,23 +749,8 @@ public class VaadinServletContextInitializer
     public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
 
-        String neverScanProperty = appContext.getEnvironment()
-                .getProperty("vaadin.blocked-packages");
-        if (neverScanProperty == null) {
-            neverScanProperty = appContext.getEnvironment()
-                    .getProperty("vaadin.blacklisted-packages");
-            if (neverScanProperty != null) {
-                getLogger().warn(
-                        "vaadin.blacklisted-packages is deprecated and may not be supported in the future. Use vaadin.blocked-packages instead.");
-            }
-        }
-        List<String> neverScan;
-        if (neverScanProperty == null) {
-            neverScan = Collections.emptyList();
-        } else {
-            neverScan = Arrays.stream(neverScanProperty.split(","))
-                    .map(pkg -> pkg.replace('.', '/').trim()).toList();
-        }
+        List<String> neverScan = getBlockedPackages(
+                appContext.getEnvironment());
 
         String onlyScanProperty = appContext.getEnvironment()
                 .getProperty("vaadin.allowed-packages");
@@ -792,6 +777,46 @@ public class VaadinServletContextInitializer
             getLogger().warn(
                     "vaadin.blocked-packages is ignored because both vaadin.allowed-packages and vaadin.blocked-packages have been set.");
         }
+    }
+
+    /**
+     * Creates the resource loader that development mode reads classes through
+     * when it scans the whole class path, which it does when
+     * {@code vaadin.allowed-packages} is not set. The loader skips the
+     * libraries that are never scanned, the packages in
+     * {@code vaadin.blocked-packages}, and what the
+     * {@code META-INF/VAADIN/package.properties} of a jar or module leaves out.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param resourceLoader
+     *            the resource loader to read the classes with
+     * @param environment
+     *            the environment to read the blocked packages from
+     * @return the filtering resource loader
+     */
+    public static ResourceLoader createClassPathScanLoader(
+            ResourceLoader resourceLoader, Environment environment) {
+        return new CustomResourceLoader(resourceLoader,
+                getBlockedPackages(environment));
+    }
+
+    private static List<String> getBlockedPackages(Environment environment) {
+        String neverScanProperty = environment
+                .getProperty("vaadin.blocked-packages");
+        if (neverScanProperty == null) {
+            neverScanProperty = environment
+                    .getProperty("vaadin.blacklisted-packages");
+            if (neverScanProperty != null) {
+                getLogger().warn(
+                        "vaadin.blacklisted-packages is deprecated and may not be supported in the future. Use vaadin.blocked-packages instead.");
+            }
+        }
+        if (neverScanProperty == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(neverScanProperty.split(","))
+                .map(pkg -> pkg.replace('.', '/').trim()).toList();
     }
 
     @Override

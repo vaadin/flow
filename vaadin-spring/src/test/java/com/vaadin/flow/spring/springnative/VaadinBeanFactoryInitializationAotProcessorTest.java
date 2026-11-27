@@ -20,6 +20,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,9 +44,13 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mock.env.MockEnvironment;
+import org.vaadin.example.addon.AddonGreetingJs;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.copilot.example.CopilotGreetingJs;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
@@ -73,6 +78,8 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.auth.MenuAccessControl;
+import com.vaadin.flow.spring.VaadinServletContextInitializer;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -806,16 +813,106 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
-    void getJsDefinitionTypes_findsAnnotatedInterfaces() {
+    void getJsDefinitionTypes_wholeClassPath_findsAddonDefinitions() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
-        Collection<Class<?>> definitions = processor
-                .getJsDefinitionTypes(getClass().getPackageName());
+        Collection<Class<?>> definitions = processor.getJsDefinitionTypes("",
+                VaadinServletContextInitializer.createClassPathScanLoader(
+                        new DefaultResourceLoader(), new MockEnvironment()));
+
+        assertThat(definitions).as(
+                "Should find @JsDefinition annotated interfaces, also of add-ons outside the packages of the application")
+                .contains(TestJsDefinition.class, TestSnippetJs.class,
+                        AddonGreetingJs.class)
+                .as("Should not find interfaces without the annotation")
+                .doesNotContain(TestUnannotatedJs.class)
+                .as("Should skip Vaadin packages that development mode never scans")
+                .doesNotContain(CopilotGreetingJs.class);
+    }
+
+    @Test
+    void getJsDefinitionTypes_vaadinPackagesWithoutFilter_findsDefinitionsInNeverScannedPackages() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        Collection<Class<?>> definitions = processor.getJsDefinitionTypes(
+                "com.vaadin",
+                new FilterableResourceResolver(new DefaultResourceLoader()));
+
+        assertThat(definitions).as(
+                "Should find definitions in Vaadin packages that development mode never scans")
+                .contains(CopilotGreetingJs.class, TestJsDefinition.class);
+    }
+
+    @Test
+    void getJsDefinitionTypes_wholeClassPathWithBlockedPackage_leavesBlockedDefinitionsOut() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+        MockEnvironment environment = new MockEnvironment().withProperty(
+                "vaadin.blocked-packages",
+                AddonGreetingJs.class.getPackageName());
+
+        Collection<Class<?>> definitions = processor.getJsDefinitionTypes("",
+                VaadinServletContextInitializer.createClassPathScanLoader(
+                        new DefaultResourceLoader(), environment));
 
         assertThat(definitions)
-                .as("Should find @JsDefinition annotated interfaces")
-                .containsExactlyInAnyOrder(TestJsDefinition.class,
-                        TestSnippetJs.class);
+                .as("Should leave out definitions in blocked packages")
+                .doesNotContain(AddonGreetingJs.class)
+                .as("Should still find definitions in other packages")
+                .contains(TestJsDefinition.class);
+    }
+
+    @Test
+    void processAheadOfTime_noAllowedPackages_jsDefinitionsScannedInWholeClassPathAndVaadinPackages() {
+        List<String> scannedPackages = new ArrayList<>();
+        List<ResourceLoader> loaders = new ArrayList<>();
+        VaadinBeanFactoryInitializationAotProcessor processor = new StubProcessor() {
+            @Override
+            Collection<Class<?>> getJsDefinitionTypes(String basePackage,
+                    ResourceLoader resourceLoader) {
+                scannedPackages.add(basePackage);
+                loaders.add(resourceLoader);
+                return List.of(TestJsDefinition.class);
+            }
+        };
+
+        RuntimeHints hints = processAotForHints(processor);
+
+        // The package of the application, which is this one, is inside
+        // com.vaadin, so it is scanned as part of it
+        assertThat(scannedPackages).as(
+                "Should scan from the root of the class path, and the Vaadin packages without the development mode filter")
+                .containsExactly("", "com.vaadin");
+        assertThat(loaders.get(1)).as(
+                "Vaadin packages should not use the development mode filter")
+                .isInstanceOf(FilterableResourceResolver.class);
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestJsDefinition.class))
+                .as("A definition found by both scans should be registered")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_allowedPackages_jsDefinitionsScannedOnlyInThem() {
+        String allowedPackage = "org.example.addon";
+        List<String> scannedPackages = new ArrayList<>();
+        VaadinBeanFactoryInitializationAotProcessor processor = new StubProcessor() {
+            @Override
+            Collection<Class<?>> getJsDefinitionTypes(String basePackage,
+                    ResourceLoader resourceLoader) {
+                scannedPackages.add(basePackage);
+                return List.of();
+            }
+        };
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("vaadin.allowed-packages", allowedPackage);
+
+        processAotForHints(processor, environment);
+
+        // The package of the application, which is this one, is inside
+        // com.vaadin, so it is scanned as part of it
+        assertThat(scannedPackages).as(
+                "Should scan the allowed packages besides the one of Vaadin, not the whole class path")
+                .containsExactlyInAnyOrder("com.vaadin", allowedPackage);
     }
 
     @Test
@@ -924,7 +1021,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         }
 
         @Override
-        Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+        Collection<Class<?>> getJsDefinitionTypes(String basePackage,
+                ResourceLoader resourceLoader) {
             return List.of();
         }
     }
@@ -965,7 +1063,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
             Class<?>... definitionTypes) {
         return new StubProcessor() {
             @Override
-            Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+            Collection<Class<?>> getJsDefinitionTypes(String basePackage,
+                    ResourceLoader resourceLoader) {
                 return Arrays.asList(definitionTypes);
             }
         };
