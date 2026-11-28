@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
@@ -183,6 +187,9 @@ class BundleUtilsTest {
     interface NoConfigurationJs {
     }
 
+    interface UnresolvedImportJs {
+    }
+
     @Test
     void checkJsFunctionsBundled_productionMode_logsErrorOnceForMissingFunction() {
         Logger logger = mock(Logger.class);
@@ -228,6 +235,69 @@ class BundleUtilsTest {
         verifyNoInteractions(logger);
     }
 
+    @Test
+    void checkJsFunctionsBundled_functionLeftOutForAModuleNotFound_logsNothing() {
+        Logger logger = mock(Logger.class);
+
+        // The class is reached; calling the function says what is wrong
+        runCheck(logger, true, true,
+                () -> BundleUtils.checkJsFunctionsBundled(
+                        UnresolvedImportJs.class,
+                        () -> List.of("f00d", "cafe")));
+
+        verifyNoInteractions(logger);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "true, true", "true, false", "false, true" })
+    void getUnresolvedJsImports_productionMode_readsTheStats(
+            boolean productionMode, boolean statsListFunctions) {
+        // Stats of an older bundle list nothing, and development mode reads
+        // the file of the project rather than any stats
+        Map<String, String> expected = productionMode && statsListFunctions
+                ? Map.of("cafe", "./missing.js")
+                : Map.of();
+        runCheck(mock(Logger.class), productionMode, statsListFunctions,
+                () -> assertEquals(expected,
+                        BundleUtils.getUnresolvedJsImports()));
+    }
+
+    @Test
+    void getUnresolvedJsImports_developmentMode_readsTheFileAsItIsNow()
+            throws IOException {
+        Path frontend = temporaryFolder.resolve("frontend");
+        Path idsFile = frontend.resolve(FrontendUtils.GENERATED)
+                .resolve(FrontendUtils.JS_DEFINITION_IDS_FILE_NAME);
+        Files.createDirectories(idsFile.getParent());
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.getFrontendFolder()).thenReturn(frontend.toFile());
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        VaadinService.setCurrent(service);
+        try {
+            assertEquals(Map.of(), BundleUtils.getUnresolvedJsImports());
+
+            Files.writeString(idsFile,
+                    "{\"functionIds\": [], \"unresolvedImports\": {\"cafe\": \"./missing.js\"}}");
+            assertEquals(Map.of("cafe", "./missing.js"),
+                    BundleUtils.getUnresolvedJsImports());
+
+            // Written again by a hotswap
+            Files.writeString(idsFile,
+                    "{\"functionIds\": [], \"unresolvedImports\": {\"beef\": \"./other.js\"}}");
+            Files.setLastModifiedTime(idsFile, FileTime.fromMillis(
+                    Files.getLastModifiedTime(idsFile).toMillis() + 2000));
+            assertEquals(Map.of("beef", "./other.js"),
+                    BundleUtils.getUnresolvedJsImports());
+
+            Files.writeString(idsFile, "{\"functionIds\": []}");
+            assertEquals(Map.of(), BundleUtils.getUnresolvedJsImports());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
     /**
      * Runs the given checks with a current service in the given mode, or
      * without a configuration when the mode is <code>null</code>, stats that
@@ -239,6 +309,9 @@ class BundleUtilsTest {
         if (statsListFunctions) {
             statsJson.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY)
                     .add("f00d").add("beef");
+            statsJson.putObject(
+                    BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)
+                    .put("cafe", "./missing.js");
         }
         DeploymentConfiguration configuration = null;
         if (productionMode != null) {

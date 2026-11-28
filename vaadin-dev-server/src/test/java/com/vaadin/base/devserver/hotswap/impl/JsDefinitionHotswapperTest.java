@@ -39,7 +39,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
@@ -79,6 +81,13 @@ class JsDefinitionHotswapperTest {
     @JsDefinition
     @JsDefinitionImport(from = "./greeting.js", exports = "greet")
     interface ImportingGreeterJs extends JsInvokers {
+        @JsExpression("greet(this, $0)")
+        void showGreeting(String greeting);
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./missing-greeting.js", exports = "greet")
+    interface MissingModuleGreeterJs extends JsInvokers {
         @JsExpression("greet(this, $0)")
         void showGreeting(String greeting);
     }
@@ -189,7 +198,7 @@ class JsDefinitionHotswapperTest {
     private ApplicationConfiguration configuration;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         hotswapper = new TestHotswapper();
 
         MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
@@ -199,6 +208,13 @@ class JsDefinitionHotswapperTest {
         // the file where the hotswapper looks for it
         frontendFolder = FrontendUtils
                 .getProjectFrontendDir(deploymentConfiguration);
+        // What the importing definitions import from the project, as a module
+        // that can not be found is left out
+        Files.createDirectories(frontendFolder.toPath());
+        for (String module : List.of("greeting.js", "scroll.js",
+                "smooth-scroll.js")) {
+            Files.writeString(frontendFolder.toPath().resolve(module), "");
+        }
 
         configuration = mock(ApplicationConfiguration.class);
         // What a browser runs without the frontend dev server is a bundle,
@@ -330,6 +346,29 @@ class JsDefinitionHotswapperTest {
         assertTrue(generated.contains(
                 "import(\"Frontend/generated/jar-resources/js-definition-hotswap-addon.js\")"),
                 generated);
+    }
+
+    @Test
+    void definitionImportingAModuleNotFound_leftOutAndListedForTheServer()
+            throws IOException, NoSuchMethodException {
+        withFrontendDevServer();
+
+        classesChanged(MissingModuleGreeterJs.class);
+
+        assertTrue(hotswapper.reported.isEmpty(),
+                hotswapper.reported::toString);
+        String functionId = JsCall.functionId(MissingModuleGreeterJs.class
+                .getMethod("showGreeting", String.class));
+        assertFalse(readGeneratedDefinitions().contains(functionId),
+                "the dev server would fail on the import");
+        String ids = Files.readString(new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITION_IDS_FILE_NAME).toPath());
+        assertEquals("./missing-greeting.js",
+                JacksonUtils.readTree(ids)
+                        .get(BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_KEY)
+                        .get(functionId).asString(),
+                ids);
     }
 
     @Test

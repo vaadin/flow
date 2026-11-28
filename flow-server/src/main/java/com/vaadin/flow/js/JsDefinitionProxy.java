@@ -132,6 +132,11 @@ public final class JsDefinitionProxy {
      * Creates an implementation of the given JavaScript definition, which hands
      * every call of it to the given function and answers with what the function
      * answers, for a method that declares a result.
+     * <p>
+     * A call of a method that the frontend build left out, because it could not
+     * find a module that the interface declaring the method imports with
+     * {@link JsDefinitionImport}, throws an {@link IllegalStateException}
+     * naming the module instead, as the browser has no function to run.
      *
      * @param <T>
      *            the JavaScript definition type
@@ -704,8 +709,10 @@ public final class JsDefinitionProxy {
             }
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
-            PendingJavaScriptResult result = runner.apply(
-                    new JsCall(definitionType, method.getName(), arguments));
+            JsCall call = new JsCall(definitionType, method.getName(),
+                    arguments);
+            checkImportsFound(call, method);
+            PendingJavaScriptResult result = runner.apply(call);
             Class<?> returnType = method.getReturnType();
             if (returnType == JavaScriptResult.class) {
                 JavaType valueType = resultTypes.get(definitionType)
@@ -720,6 +727,32 @@ public final class JsDefinitionProxy {
                         : new TypedJavaScriptResult<>(result, valueType);
             }
             return returnType == void.class ? null : result;
+        }
+
+        /**
+         * Fails a call whose function the frontend build left out because it
+         * could not find a module that the JavaScript imports. Checked for each
+         * call rather than when the definition is handed out, since only the
+         * methods of the interface that declares the import are left out, and
+         * an inherited method with imports that were found still works.
+         */
+        private void checkImportsFound(JsCall call, Method method) {
+            Map<String, String> unresolvedImports = BundleUtils
+                    .getUnresolvedJsImports();
+            if (unresolvedImports.isEmpty()) {
+                return;
+            }
+            String module = unresolvedImports.get(call.getFunctionId());
+            if (module != null) {
+                throw new IllegalStateException("Cannot call "
+                        + definitionType.getName() + "." + method.getName()
+                        + ": the frontend build could not find the module '"
+                        + module + "' that "
+                        + method.getDeclaringClass().getName()
+                        + " imports with @JsDefinitionImport, so the JavaScript"
+                        + " of the method was left out of the bundle. The"
+                        + " build log tells why the module was not found.");
+            }
         }
     }
 

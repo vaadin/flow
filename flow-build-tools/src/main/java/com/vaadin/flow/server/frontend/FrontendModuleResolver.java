@@ -16,8 +16,13 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -39,11 +44,40 @@ class FrontendModuleResolver {
 
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
 
+    // What Vite tries after the path as it is, by default
+    private static final List<String> VITE_EXTENSIONS = List.of(".mjs", ".js",
+            ".mts", ".ts", ".jsx", ".tsx", ".json");
+
+    // What vite.generated.ts maps to a folder rather than to a package
+    private static final List<String> VITE_ALIASES = List
+            .of(FRONTEND_FOLDER_ALIAS, "@vaadin/flow-frontend/");
+
     private final ClassFinder classFinder;
 
     private final File frontendDirectory;
 
     private final Logger logger;
+
+    private final Supplier<@Nullable Set<String>> declaredPackages;
+
+    private @Nullable Set<String> packages;
+
+    private boolean packagesFound;
+
+    /**
+     * Creates a resolver for the project the given options describe, which
+     * takes any npm package to be there.
+     *
+     * @param options
+     *            the options of the build, with the class finder that finds the
+     *            frontend files of jars, not <code>null</code>
+     * @param logger
+     *            where to warn about a path that is missing its {@code ./}
+     *            prefix, not <code>null</code>
+     */
+    FrontendModuleResolver(Options options, Logger logger) {
+        this(options, logger, () -> null);
+    }
 
     /**
      * Creates a resolver for the project the given options describe.
@@ -54,11 +88,18 @@ class FrontendModuleResolver {
      * @param logger
      *            where to warn about a path that is missing its {@code ./}
      *            prefix, not <code>null</code>
+     * @param declaredPackages
+     *            the names of the npm packages the project depends on, asked
+     *            for once and only when a module is checked that is an npm
+     *            package; answers <code>null</code> when they can not be told,
+     *            which takes any package to be there
      */
-    FrontendModuleResolver(Options options, Logger logger) {
+    FrontendModuleResolver(Options options, Logger logger,
+            Supplier<@Nullable Set<String>> declaredPackages) {
         this.classFinder = options.getClassFinder();
         this.frontendDirectory = options.getFrontendDirectory();
         this.logger = logger;
+        this.declaredPackages = declaredPackages;
     }
 
     /**
@@ -141,6 +182,96 @@ class FrontendModuleResolver {
                     + query;
         }
         return toValidBrowserImport(resolved) + query;
+    }
+
+    /**
+     * Tells why the module of the given path can not be found, before anything
+     * is installed or copied, so that a build can leave out what imports it
+     * rather than fail in the frontend build, which does not say what declared
+     * the import.
+     * <p>
+     * A path starting with {@code ./} names a file of the frontend folder or a
+     * frontend file of a jar, which is looked for as Vite looks for it: as it
+     * is, with one of the extensions Vite tries, and as an index file of a
+     * folder of that name. A query, such as {@code ?inline}, is not part of the
+     * name of the file. Any other path that is not a file of the frontend
+     * folder or of a jar names an npm package, which has to be one that the
+     * project depends on: npm installs packages after this is asked, so what is
+     * installed is not what counts. Anything else, such as an alias of the
+     * frontend folder or a relative path that leaves it, is taken to resolve,
+     * as is any package when the packages the project depends on can not be
+     * told.
+     *
+     * @param modulePath
+     *            the path as it is declared, not <code>null</code>
+     * @return why the module can not be found, or <code>null</code> when it can
+     *         be found or that can not be told
+     */
+    @Nullable
+    String findUnresolvableReason(String modulePath) {
+        String path = stripQuery(modulePath);
+        if (path.startsWith("./")) {
+            String resource = STARTING_DOT_SLASH.matcher(path).replaceFirst("");
+            if (findCandidates(resource).stream().anyMatch(this::fileExists)) {
+                return null;
+            }
+            return "no file '" + resource + "' (or with one of the extensions "
+                    + String.join(", ", VITE_EXTENSIONS)
+                    + ", or as an index file of a folder of that name) is in the frontend folder '"
+                    + frontendDirectory + "' or in "
+                    + RESOURCES_FRONTEND_DEFAULT + " or "
+                    + COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                    + " of the class path";
+        }
+        // A path relative to somewhere else, a URL or a module with a scheme
+        // such as virtual: is resolved by Vite or a plugin, which can not be
+        // told from here
+        if (path.startsWith(".") || path.startsWith("/") || path.contains(":")
+                || VITE_ALIASES.stream().anyMatch(path::startsWith)
+                || fileExists(path)) {
+            return null;
+        }
+        String packageName = getPackageName(path);
+        Set<String> declared = getDeclaredPackages();
+        if (declared == null || declared.contains(packageName)) {
+            return null;
+        }
+        return "the npm package '" + packageName
+                + "' is not a dependency of the project. Add it with @NpmPackage"
+                + " or to the dependencies in package.json";
+    }
+
+    private @Nullable Set<String> getDeclaredPackages() {
+        if (!packagesFound) {
+            packages = declaredPackages.get();
+            packagesFound = true;
+        }
+        return packages;
+    }
+
+    private static String getPackageName(String path) {
+        String[] segments = path.split("/", 3);
+        return path.startsWith("@") && segments.length > 1
+                ? segments[0] + "/" + segments[1]
+                : segments[0];
+    }
+
+    private static List<String> findCandidates(String resource) {
+        List<String> candidates = new ArrayList<>();
+        candidates.add(resource);
+        VITE_EXTENSIONS
+                .forEach(extension -> candidates.add(resource + extension));
+        String folder = resource.isEmpty() || resource.endsWith("/") ? resource
+                : resource + "/";
+        VITE_EXTENSIONS.forEach(
+                extension -> candidates.add(folder + "index" + extension));
+        return candidates;
+    }
+
+    private boolean fileExists(String resource) {
+        return !resource.isEmpty()
+                && (new File(frontendDirectory, resource).isFile()
+                        || hasMetaInfResource(resource));
     }
 
     /**

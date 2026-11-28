@@ -26,6 +26,7 @@ import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,12 +38,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -54,6 +57,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.internal.BundledEventData;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -73,6 +77,7 @@ import com.vaadin.flow.js.internal.JsDefinitionImports.ModuleImport;
 import com.vaadin.flow.js.internal.JsWithExecutionContext;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
@@ -90,7 +95,12 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * modules the first time it is called, and its JavaScript gets what they export
  * as parameters. A definition that does not pass
  * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
- * in the log.
+ * in the log. So is a method whose imports name a module that can not be found
+ * before anything is installed or copied, see
+ * {@link FrontendModuleResolver#findUnresolvableReason(String)}: the frontend
+ * build would otherwise stop without saying which interface declared the
+ * import. The identifiers of the functions left out that way are listed with
+ * the module, so that calling one fails on the server with the reason.
  * <p>
  * A production build that uses the bytecode scanner renders only the
  * definitions and event types that the scanner reaches from the entry points of
@@ -164,7 +174,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * for production lists what a browser can run and nothing of what declared
      * it.
      */
-    static final String FUNCTION_IDS_FILE_NAME = "vaadin-js-definition-ids.json";
+    static final String FUNCTION_IDS_FILE_NAME = FrontendUtils.JS_DEFINITION_IDS_FILE_NAME;
 
     static final String FUNCTION_IDS_KEY = "functionIds";
 
@@ -177,6 +187,34 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * can tell whether the bundle carries what they are now.
      */
     static final String IMPORTS_KEY = "imports";
+
+    /**
+     * The key of the functions left out because a module they import can not be
+     * found, by identifier, each with the module as it is declared, in the file
+     * next to the generated one. vite.generated.ts copies it into the stats of
+     * a bundle, which name no Java class, and a development server reads it
+     * from the file.
+     */
+    static final String UNRESOLVED_IMPORTS_KEY = BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_KEY;
+
+    /**
+     * What turns the module of a {@link JsDefinitionImport} into the path the
+     * generated file imports it by, and tells why a module can not be found.
+     *
+     * @param toImport
+     *            gives the path to import a module by
+     * @param findUnresolvableReason
+     *            gives why a module can not be found, or <code>null</code> when
+     *            it can
+     */
+    private record ImportResolver(UnaryOperator<String> toImport,
+            Function<String, @Nullable String> findUnresolvableReason) {
+    }
+
+    // The modules of imports are rendered as declared and taken to be there,
+    // which is enough for what has no files to resolve them against
+    private static final ImportResolver AS_DECLARED = new ImportResolver(
+            UnaryOperator.identity(), module -> null);
 
     // Writing this file again while the application runs replaces it in the
     // browser that has it: everything above only writes into the registry, so
@@ -212,19 +250,33 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            the paths of the modules that the functions import, as the
      *            file imports them but without a query, sorted; empty when they
      *            import nothing
+     * @param unresolvedImports
+     *            the module as it is declared by the identifier of each
+     *            function left out because the module can not be found, sorted
+     *            by identifier; empty when nothing is left out
      */
     record Rendered(String content, Map<String, String> functionIds,
-            Map<String, List<String>> names, List<String> imports) {
+            Map<String, List<String>> names, List<String> imports,
+            Map<String, String> unresolvedImports) {
     }
 
     /**
      * One function the file registers: its identifier, the binary name of the
      * class that declares its JavaScript, the name it registers for it or
-     * <code>null</code> when it registers none, what it is written as, and the
-     * paths of the modules it imports.
+     * <code>null</code> when it registers none, what it is written as, the
+     * paths of the modules it imports, and why it is left out when a module it
+     * imports can not be found.
      */
     private record RenderedFunction(String id, String declaredBy, String name,
-            String text, List<String> imports) {
+            String text, List<String> imports,
+            @Nullable UnresolvedImport unresolved) {
+    }
+
+    /**
+     * Why a function is left out of the file: the module as it is declared,
+     * which can not be found, and the message that says so in the log.
+     */
+    private record UnresolvedImport(String module, String message) {
     }
 
     @Override
@@ -245,6 +297,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             if (!rendered.imports().isEmpty()) {
                 ArrayNode imports = ids.putArray(IMPORTS_KEY);
                 rendered.imports().forEach(imports::add);
+            }
+            if (!rendered.unresolvedImports().isEmpty()) {
+                ObjectNode unresolved = ids.putObject(UNRESOLVED_IMPORTS_KEY);
+                rendered.unresolvedImports().forEach(unresolved::put);
             }
             writeIfChanged(functionIdsFile, JacksonUtils.toFileJson(ids));
         } catch (IOException exception) {
@@ -409,7 +465,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         reportMisplacedImports(classFinder);
         return render(definitions, eventTypes, !options.isProductionMode(),
-                createImportResolver(options));
+                createImportResolver(options, true));
     }
 
     /**
@@ -436,12 +492,70 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * Resolves the module of a {@link JsDefinitionImport} to the path the
-     * generated file imports it by.
+     * generated file imports it by, and tells why it can not be found.
+     *
+     * @param scanPackages
+     *            whether the npm packages the project depends on include those
+     *            that a build writes into package.json later, rather than only
+     *            those in package.json, as when the application runs
      */
-    private static UnaryOperator<String> createImportResolver(Options options) {
+    private static ImportResolver createImportResolver(Options options,
+            boolean scanPackages) {
         FrontendModuleResolver resolver = new FrontendModuleResolver(options,
-                getLogger());
-        return resolver::resolveImport;
+                getLogger(), () -> findDeclaredPackages(options, scanPackages));
+        return new ImportResolver(resolver::resolveImport,
+                resolver::findUnresolvableReason);
+    }
+
+    /**
+     * The names of the npm packages the project depends on: those in its
+     * package.json and, when scanning, those that the build adds to it later,
+     * which are the defaults of Flow and those the classes declare with
+     * {@code @NpmPackage}. What is installed is not looked at, as npm installs
+     * after this runs. A production build removes a package.json it created, so
+     * the next build starts without one.
+     *
+     * @return the names, or <code>null</code> when they can not be told
+     */
+    private static @Nullable Set<String> findDeclaredPackages(Options options,
+            boolean scan) {
+        File npmFolder = options.getNpmFolder();
+        File packageJson = npmFolder == null ? null
+                : new File(npmFolder, Constants.PACKAGE_JSON);
+        boolean hasPackageJson = packageJson != null && packageJson.isFile();
+        if (!hasPackageJson && !scan) {
+            return null;
+        }
+        try {
+            Set<String> packages = new HashSet<>();
+            if (hasPackageJson) {
+                JsonNode json = JacksonUtils.readTree(Files.readString(
+                        packageJson.toPath(), StandardCharsets.UTF_8));
+                for (String key : List.of(NodeUpdater.DEPENDENCIES,
+                        NodeUpdater.DEV_DEPENDENCIES)) {
+                    JsonNode dependencies = json.get(key);
+                    if (dependencies != null && dependencies.isObject()) {
+                        packages.addAll(JacksonUtils.getKeys(dependencies));
+                    }
+                }
+            }
+            if (scan) {
+                NodeUpdater packageUpdater = new TaskUpdatePackages(options);
+                packages.addAll(
+                        packageUpdater.getDefaultDependencies().keySet());
+                packages.addAll(
+                        packageUpdater.getDefaultDevDependencies().keySet());
+                FrontendDependenciesScanner scanner = options
+                        .getFrontendDependenciesScanner();
+                packages.addAll(scanner.getPackages().keySet());
+                packages.addAll(scanner.getDevPackages().keySet());
+            }
+            return packages;
+        } catch (IOException | RuntimeException e) {
+            getLogger().debug("Could not tell the npm packages of the project",
+                    e);
+            return null;
+        }
     }
 
     /**
@@ -534,10 +648,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     static Rendered render(Collection<Class<?>> definitions,
             Collection<Class<?>> eventTypes, boolean withNames) {
-        // The modules of imports are rendered as declared, which is enough
-        // for what has no files to resolve them against
-        return render(definitions, eventTypes, withNames,
-                UnaryOperator.identity());
+        return render(definitions, eventTypes, withNames, AS_DECLARED);
     }
 
     /**
@@ -556,12 +667,13 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            which is for a development bundle
      * @param importResolver
      *            turns the module of a {@link JsDefinitionImport} into the path
-     *            the file imports it by, not <code>null</code>
+     *            the file imports it by and tells why it can not be found, not
+     *            <code>null</code>
      * @return the content of the file and the functions it registers
      */
     static Rendered render(Collection<Class<?>> definitions,
             Collection<Class<?>> eventTypes, boolean withNames,
-            UnaryOperator<String> importResolver) {
+            ImportResolver importResolver) {
         List<RenderedFunction> functions = new ArrayList<>();
         definitions.stream().sorted(Comparator.comparing(Class::getName))
                 .forEach(definition -> functions.addAll(renderFunctions(
@@ -573,7 +685,14 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         Map<String, String> functionIds = new LinkedHashMap<>();
         Map<String, List<String>> names = new LinkedHashMap<>();
         Set<String> imports = new TreeSet<>();
+        Map<String, String> unresolvedImports = new TreeMap<>();
         for (RenderedFunction function : functions) {
+            if (function.unresolved() != null) {
+                getLogger().error(function.unresolved().message());
+                unresolvedImports.putIfAbsent(function.id(),
+                        function.unresolved().module());
+                continue;
+            }
             // Without a query, such as ?inline, as the file names it
             function.imports().stream().map(FrontendModuleResolver::stripQuery)
                     .forEach(imports::add);
@@ -591,7 +710,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         }
         lines.addAll(FOOTER);
         return new Rendered(String.join(System.lineSeparator(), lines),
-                functionIds, names, List.copyOf(imports));
+                functionIds, names, List.copyOf(imports),
+                Collections.unmodifiableMap(unresolvedImports));
     }
 
     /**
@@ -668,7 +788,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             functions.add(new RenderedFunction(functionId,
                     declaringClassOf.get(functionId),
                     withNames ? declaredBy.get(functionId) : null,
-                    String.join(System.lineSeparator(), lines), List.of()));
+                    String.join(System.lineSeparator(), lines), List.of(),
+                    null));
         });
         return functions;
     }
@@ -788,7 +909,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> findMissingFromGeneratedFile(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        UnaryOperator<String> importResolver = createImportResolver(options);
+        ImportResolver importResolver = createImportResolver(options, false);
         return definitions.stream()
                 .filter(definition -> !isInGeneratedFile(definition, generated,
                         importResolver))
@@ -845,7 +966,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     public static List<Class<?>> updateJsDefinitions(Options options,
             Collection<Class<?>> definitions) {
         String generated = readGeneratedFile(options);
-        UnaryOperator<String> importResolver = createImportResolver(options);
+        ImportResolver importResolver = createImportResolver(options, false);
         String content = withMissingEntries(generated, definitions,
                 importResolver);
 
@@ -866,6 +987,62 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
     }
 
     /**
+     * Brings the list of functions left out because a module they import can
+     * not be found, in the file next to the generated one, up to date with what
+     * the given definitions declare, for a caller that changes them while the
+     * application runs. The server reads the list from the file, so that a call
+     * of such a function fails there with the reason rather than in the
+     * browser. The reason is logged for each function left out.
+     * <p>
+     * The functions of the definitions that can be generated are taken off the
+     * list. What other definitions left out stays on it.
+     *
+     * @param options
+     *            where the file is, not <code>null</code>
+     * @param definitions
+     *            the JavaScript definitions that changed, not <code>null</code>
+     */
+    public static void updateUnresolvedImports(Options options,
+            Collection<Class<?>> definitions) {
+        TaskGenerateJsDefinitions task = new TaskGenerateJsDefinitions(options);
+        File idsFile = new File(task.getGeneratedFile().getParentFile(),
+                FUNCTION_IDS_FILE_NAME);
+        ImportResolver importResolver = createImportResolver(options, false);
+        try {
+            ObjectNode ids = idsFile.isFile()
+                    ? JacksonUtils.readTree(Files.readString(idsFile.toPath(),
+                            StandardCharsets.UTF_8))
+                    : JacksonUtils.createObjectNode();
+            Map<String, String> unresolvedImports = new TreeMap<>();
+            JsonNode listed = ids.get(UNRESOLVED_IMPORTS_KEY);
+            if (listed != null && listed.isObject()) {
+                listed.properties().forEach(entry -> unresolvedImports
+                        .put(entry.getKey(), entry.getValue().asString()));
+            }
+            definitions.stream().sorted(Comparator.comparing(Class::getName))
+                    .flatMap(definition -> renderFunctions(definition, true,
+                            importResolver).stream())
+                    .forEach(function -> {
+                        if (function.unresolved() == null) {
+                            unresolvedImports.remove(function.id());
+                        } else {
+                            getLogger().error(function.unresolved().message());
+                            unresolvedImports.put(function.id(),
+                                    function.unresolved().module());
+                        }
+                    });
+            ids.remove(UNRESOLVED_IMPORTS_KEY);
+            if (!unresolvedImports.isEmpty()) {
+                ObjectNode unresolved = ids.putObject(UNRESOLVED_IMPORTS_KEY);
+                unresolvedImports.forEach(unresolved::put);
+            }
+            task.writeIfChanged(idsFile, JacksonUtils.toFileJson(ids));
+        } catch (IOException | RuntimeException e) {
+            getLogger().debug("Could not update {}", idsFile, e);
+        }
+    }
+
+    /**
      * Whether the given content carries what the definition declares, compared
      * as this class renders it for a development build - the one the caller of
      * this runs in - so the JavaScript of every method, the number of arguments
@@ -874,7 +1051,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * calling it.
      */
     private static boolean isInGeneratedFile(Class<?> definition,
-            String generated, UnaryOperator<String> importResolver) {
+            String generated, ImportResolver importResolver) {
         if (generated == null) {
             return false;
         }
@@ -906,8 +1083,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      * than for everything an application declares.
      */
     private static String withMissingEntries(String generated,
-            Collection<Class<?>> definitions,
-            UnaryOperator<String> importResolver) {
+            Collection<Class<?>> definitions, ImportResolver importResolver) {
         if (generated == null || generated.isBlank()) {
             return render(definitions, List.of(), true, importResolver)
                     .content();
@@ -915,7 +1091,9 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         List<String> missing = new ArrayList<>(definitions.stream()
                 .sorted(Comparator.comparing(Class::getName))
                 .flatMap(definition -> renderFunctions(definition, true,
-                        importResolver).stream().map(RenderedFunction::text))
+                        importResolver).stream()
+                        .filter(function -> function.unresolved() == null)
+                        .map(RenderedFunction::text))
                 .filter(function -> !generated.contains(function))
                 .flatMap(function -> Arrays
                         .stream(function.split(System.lineSeparator())))
@@ -1010,13 +1188,16 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      *            the JavaScript definition to render, not <code>null</code>
      * @param importResolver
      *            turns the module of a {@link JsDefinitionImport} into the path
-     *            the file imports it by, not <code>null</code>
+     *            the file imports it by and tells why it can not be found, not
+     *            <code>null</code>
      * @return the lines this definition contributes, empty if it declares no
-     *         JavaScript
+     *         JavaScript or only JavaScript that imports a module that can not
+     *         be found
      */
     static List<String> renderDefinitionLines(Class<?> definition,
-            boolean withNames, UnaryOperator<String> importResolver) {
+            boolean withNames, ImportResolver importResolver) {
         return renderFunctions(definition, withNames, importResolver).stream()
+                .filter(function -> function.unresolved() == null)
                 .flatMap(function -> Arrays
                         .stream(function.text().split(System.lineSeparator())))
                 .toList();
@@ -1024,10 +1205,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     /**
      * What one JavaScript definition contributes, one registered function per
-     * method that declares JavaScript, each as the lines it is written as.
+     * method that declares JavaScript, each as the lines it is written as, or
+     * with why it is left out when a module it imports can not be found.
      */
     private static List<RenderedFunction> renderFunctions(Class<?> definition,
-            boolean withNames, UnaryOperator<String> importResolver) {
+            boolean withNames, ImportResolver importResolver) {
         boolean snippets;
         try {
             snippets = JsDefinitionProxy
@@ -1110,8 +1292,17 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     function.addAll(JsStringFallbacks.stringFallbackBody(
                             expression, method.getParameterCount()));
                 } else if (!imports.isEmpty()) {
+                    UnresolvedImport unresolved = findUnresolvedImport(
+                            definition, method, imports, importResolver);
+                    if (unresolved != null) {
+                        functions.add(new RenderedFunction(rawId,
+                                definition.getName(),
+                                withNames ? nameOf(definition, method) : null,
+                                "", List.of(), unresolved));
+                        continue;
+                    }
                     importPaths = imports.stream().map(ModuleImport::from)
-                            .map(importResolver).toList();
+                            .map(importResolver.toImport()).toList();
                     function.addAll(renderImportingBody(expression, importPaths,
                             imports));
                 } else {
@@ -1126,10 +1317,33 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             }
             functions.add(new RenderedFunction(rawId, definition.getName(),
                     withNames ? nameOf(definition, method) : null,
-                    String.join(System.lineSeparator(), function),
-                    importPaths));
+                    String.join(System.lineSeparator(), function), importPaths,
+                    null));
         }
         return functions;
+    }
+
+    /**
+     * Tells why the given method is left out by the first of the given modules
+     * that can not be found, or <code>null</code> when all of them can.
+     */
+    private static @Nullable UnresolvedImport findUnresolvedImport(
+            Class<?> definition, Method method, List<ModuleImport> imports,
+            ImportResolver importResolver) {
+        for (ModuleImport module : imports) {
+            String reason = importResolver.findUnresolvableReason()
+                    .apply(module.from());
+            if (reason != null) {
+                return new UnresolvedImport(module.from(), String.format(
+                        "Leaving the JavaScript of %s.%s out of the bundle, so"
+                                + " calling it fails: the module '%s' that %s"
+                                + " imports with @JsDefinitionImport can not be"
+                                + " found, as %s",
+                        definition.getName(), method.getName(), module.from(),
+                        method.getDeclaringClass().getName(), reason));
+            }
+        }
+        return null;
     }
 
     /**
