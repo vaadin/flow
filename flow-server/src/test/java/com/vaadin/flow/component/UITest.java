@@ -1553,6 +1553,28 @@ public class UITest {
     }
 
     @Test
+    public void setChildComponentModal_directUIChild_overlayUntilDetached() {
+        UI ui = createTestUI();
+        initUI(ui, "", null);
+        Component overlay = new AttachableComponent();
+        Component nested = new AttachableComponent();
+        ui.add(overlay);
+        overlay.getElement().appendChild(nested.getElement());
+
+        ui.setChildComponentModal(nested, ModalityMode.MODELESS);
+        assertFalse(ui.getInternals().hasOverlayComponent(),
+                "A component that is not a direct UI child is not an overlay");
+
+        ui.setChildComponentModal(overlay, ModalityMode.MODELESS);
+        assertTrue(ui.getInternals().hasOverlayComponent());
+        assertFalse(ui.hasModalComponent());
+
+        ui.remove(overlay);
+        assertFalse(ui.getInternals().hasOverlayComponent(),
+                "Detaching should end the overlay registration");
+    }
+
+    @Test
     public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
         final TestFixture fixture = new TestFixture();
         assertEquals(fixture.modalComponent,
