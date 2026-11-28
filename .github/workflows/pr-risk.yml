@@ -1,0 +1,85 @@
+name: PR Risk
+
+# On trial: rates every ready pull request to main as low, medium or high
+# risk and posts one comment that explains why. It sets no label or check,
+# and nothing in the review or merge process reads it.
+#
+# Rules in .github/pr-risk/policy.js set a minimum level from the changed
+# paths, the added code, the title, the author and linked issues. Claude rates
+# the impact, blast radius, uncertainty and reversibility and suggests a level,
+# which can raise the minimum but not lower it. Pull requests of authors
+# outside the organization are rated by the rules alone, so that a fork cannot
+# run up the bill by pushing again and again. To rate a pull request locally,
+# run `node .github/pr-risk/cli.js <pull request URL>`.
+#
+# Runs on pull_request_target, so that pull requests from forks are rated too.
+# It never checks out or runs the code of the pull request: the scripts come
+# from the base branch, and the diff is read from the API as untrusted text for
+# the agent, which gets no tools.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  classify:
+    # Drafts are rated once they are ready for review. Of the edits, a new
+    # title or description can change the level, and a pull request whose
+    # base changes back to main may have new commits that no run classified.
+    if: |
+      github.event.pull_request.draft == false &&
+      (github.event.action != 'edited' || github.event.changes.title || github.event.changes.body || github.event.changes.base)
+    # One run per pull request at a time; a new push queues instead of
+    # aborting a run that may be mid-comment. Group is enforced on the job
+    # level, so that a skipped run does not cancel a queued run.
+    concurrency:
+      group: pr-risk-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      # The base branch, not the pull request
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/pr-risk
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '26.13.0'
+
+      - name: Install dependencies
+        working-directory: .github/pr-risk
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      # On pull_request_target events, private members of the organization
+      # have the author association CONTRIBUTOR, so check the membership
+      - name: Check org membership
+        id: author
+        env:
+          GH_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN || github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          if gh api "orgs/${{ github.repository_owner }}/members/$AUTHOR" --silent; then
+            echo "member=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "member=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Classify
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AUTHOR_IS_MEMBER: ${{ steps.author.outputs.member }}
+        with:
+          script: |
+            const { run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/pr-risk/main.js`);
+            await run({ github, context, core });
