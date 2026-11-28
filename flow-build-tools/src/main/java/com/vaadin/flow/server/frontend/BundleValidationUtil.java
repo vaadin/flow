@@ -1082,9 +1082,11 @@ public final class BundleValidationUtil {
      * production mode, each of those functions also has to be registered under
      * a name that the application gives it, so that a message about a call does
      * not name a definition or method that was renamed. A bundle whose stats
-     * list the identifiers but no names is rebuilt there. A bundle whose stats
-     * do not list the identifiers is accepted only if it was built from the
-     * same generated file.
+     * list the identifiers but no names is rebuilt there. A function left out
+     * because a module it imports can not be found is not needed, but the stats
+     * have to list the same functions as left out, as the server tells a call
+     * of one by them. A bundle whose stats do not list the identifiers is
+     * accepted only if it was built from the same generated file.
      */
     private static boolean jsDefinitionsChanged(Options options,
             JsonNode statsJson) {
@@ -1118,6 +1120,18 @@ public final class BundleValidationUtil {
                 getLogger().info(
                         "Detected JavaScript that the bundle does not carry, declared by: {}",
                         String.join(", ", missingFrom));
+                return true;
+            }
+            // A function left out because a module it imports can not be
+            // found is not one the bundle has to carry, but the server tells
+            // a call of it by the stats, so they have to list what is left out
+            // now. Once the module is there, the function is needed and
+            // missing from the bundle, which the check above finds.
+            if (!BundleUtils.parseUnresolvedJsImports(statsJson.get(
+                    BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY))
+                    .equals(rendered.unresolvedImports())) {
+                getLogger().info(
+                        "Detected a change in the JavaScript left out of the bundle because a module it imports can not be found");
                 return true;
             }
             // The identifier leaves out what a development bundle names a

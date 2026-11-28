@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -1074,6 +1075,44 @@ class JsDefinitionProxyTest {
                                     String[].class))),
                     captureCheckedIds(bundleUtils, TemplateJs.class));
         }
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./missing.js", namespace = "missing")
+    interface MissingModuleJs extends ImportingParentJs {
+        @JsExpression("missing.init(this)")
+        void init();
+    }
+
+    @Test
+    void create_methodLeftOutForAModuleNotFound_failsEveryCallOfItOnly()
+            throws NoSuchMethodException {
+        String init = JsCall
+                .functionId(MissingModuleJs.class.getMethod("init"));
+        try (MockedStatic<BundleUtils> bundleUtils = mockStatic(
+                BundleUtils.class, CALLS_REAL_METHODS)) {
+            bundleUtils.when(BundleUtils::getUnresolvedJsImports)
+                    .thenReturn(Map.of(init, "./missing.js"));
+            MissingModuleJs definition = proxy(MissingModuleJs.class);
+
+            for (int call = 0; call < 2; call++) {
+                IllegalStateException exception = assertThrows(
+                        IllegalStateException.class, definition::init);
+                assertTrue(
+                        exception.getMessage().contains(
+                                MissingModuleJs.class.getName() + ".init"),
+                        exception.getMessage());
+                assertTrue(exception.getMessage().contains("'./missing.js'"),
+                        exception.getMessage());
+            }
+            assertEquals(List.of(), calls, "nothing should be run");
+
+            // Inherited, with imports of the interface declaring it
+            definition.refresh();
+        }
+        assertEquals(List
+                .of(new JsCall(MissingModuleJs.class, "refresh", List.of())),
+                calls);
     }
 
     @JsDefinition

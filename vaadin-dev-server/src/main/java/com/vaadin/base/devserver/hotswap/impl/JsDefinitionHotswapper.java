@@ -84,6 +84,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * interface is handled the same way: the definitions the generated file names
  * that extend it are written again or reported.
  * <p>
+ * With the frontend dev server running, a method whose imports name a module
+ * that can not be found is left out of the file, as in a build, and listed for
+ * the server, so that calling it fails there with the reason, which is also
+ * logged.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  * 
  * @since 25.4
@@ -127,6 +132,11 @@ public class JsDefinitionHotswapper implements VaadinHotswapper {
 
         List<Class<?>> missing;
         if (canReplaceInTheBrowser(service)) {
+            // Before the file the browser runs, so that a call made once the
+            // browser has it is already told apart on the server. Without the
+            // dev server the list stays what the bundle was built with.
+            TaskGenerateJsDefinitions.updateUnresolvedImports(options,
+                    definitions);
             // Writing the file again is what the browser runs afterwards, and
             // the write leaves the file alone when nothing it holds changed,
             // so what comes back is what could not be applied

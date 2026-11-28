@@ -233,6 +233,13 @@ public class FrontendUtils {
     public static final String JS_DEFINITIONS_FILE_NAME = "vaadin-js-definitions.js";
 
     /**
+     * File name of the file next to {@link #JS_DEFINITIONS_FILE_NAME} that
+     * lists the identifiers of the functions it registers and those it leaves
+     * out because a module they import can not be found.
+     */
+    public static final String JS_DEFINITION_IDS_FILE_NAME = "vaadin-js-definition-ids.json";
+
+    /**
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";

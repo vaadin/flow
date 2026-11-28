@@ -1307,6 +1307,40 @@ class BundleValidationTest {
                 "an unchanged file imported both ways should not make the bundle be rebuilt");
     }
 
+    @ParameterizedTest
+    @MethodSource("modes")
+    void definitionImportingAMissingModule_rebuildOnlyWhenWhatIsLeftOutChanges(
+            Mode mode) throws IOException, NoSuchMethodException {
+        setupMode(mode);
+        doReturn(Set.of(MissingModuleJs.class)).when(finder)
+                .getAnnotatedClasses(JsDefinition.class);
+        doReturn(Set.of()).when(finder).getSubTypesOf(ComponentEvent.class);
+        String apply = JsCall
+                .functionId(MissingModuleJs.class.getMethod("apply"));
+        ObjectNode stats = getBasicStats();
+        stats.putArray(BundleUtils.JS_DEFINITION_FUNCTION_IDS_STATS_KEY);
+        stats.putObject(BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY);
+        stats.putObject(BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)
+                .put(apply, "./definition-missing.js");
+        setupFrontendUtilsMock(stats);
+
+        assertFalse(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a function left out of the bundle as it was before should not make it be rebuilt");
+
+        stats.remove(BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY);
+        setupFrontendUtilsMock(stats);
+        assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "the stats should list a function that is left out now");
+
+        // Stats that list nothing left out, as there is nothing now
+        File frontend = options.getFrontendDirectory();
+        FileUtils.forceMkdir(frontend);
+        Files.writeString(new File(frontend, "definition-missing.js").toPath(),
+                "export const apply = () => {};");
+        assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
+                "a module that is found now should make the bundle carry the function");
+    }
+
     static Stream<Arguments> reachedDefinitions() {
         // The bundle carries the function of AlsoBundledJs only, so it is
         // rebuilt only when BundledJs is reached
@@ -3326,6 +3360,13 @@ class BundleValidationTest {
     @JsDefinitionImport(from = "./definition-probe", namespace = "probe")
     interface UnhashedImportsJs extends JsInvokers {
         @JsExpression("probe.apply(this, styles)")
+        void apply();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./definition-missing.js", namespace = "missing")
+    interface MissingModuleJs extends JsInvokers {
+        @JsExpression("missing.apply(this)")
         void apply();
     }
 

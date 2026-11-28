@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -54,6 +59,20 @@ public final class BundleUtils {
     public static final String JS_DEFINITION_FUNCTION_IDS_STATS_KEY = "jsDefinitionFunctionIds";
 
     /**
+     * The key of the stats.json entry that maps the identifier of each function
+     * the bundle leaves out, because a module its JavaScript imports could not
+     * be found when the bundle was built, to that module as it is declared.
+     */
+    public static final String JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY = "jsDefinitionUnresolvedImports";
+
+    /**
+     * The key of the same map in
+     * {@link FrontendUtils#JS_DEFINITION_IDS_FILE_NAME}, which a development
+     * server reads, as it is written again while the application runs.
+     */
+    public static final String JS_DEFINITION_UNRESOLVED_IMPORTS_KEY = "unresolvedImports";
+
+    /**
      * The classes that {@link #checkJsFunctionsBundled(Class, Supplier)} has
      * checked, so that each is reported once rather than on every use.
      */
@@ -71,6 +90,26 @@ public final class BundleUtils {
      * indefinitely.
      */
     private static volatile ObjectNode cachedStatsJson = null;
+
+    /**
+     * The functions the production bundle leaves out, with the stats they were
+     * read from, which can not change at runtime.
+     */
+    private record BundleUnresolvedImports(JsonNode stats,
+            Map<String, String> unresolvedImports) {
+    }
+
+    private static volatile BundleUnresolvedImports cachedBundleUnresolvedImports = null;
+
+    /**
+     * The functions the development build leaves out, as read from the file
+     * that lists them, with what tells whether the file was written since.
+     */
+    private record UnresolvedImportsFile(File file, FileTime modified,
+            long size, Map<String, String> unresolvedImports) {
+    }
+
+    private static volatile UnresolvedImportsFile cachedUnresolvedImportsFile = null;
 
     /**
      * Loads stats.json from the classpath (from the production bundle) and
@@ -199,7 +238,9 @@ public final class BundleUtils {
      * server says which class is missing and how to get it into the bundle.
      * <p>
      * Checks a class once, and only in production mode with a bundle whose
-     * stats list the functions it registers.
+     * stats list the functions it registers. A function that the bundle leaves
+     * out because a module it imports could not be found is not reported here:
+     * the class is reached, and calling the function says what is missing.
      * <p>
      * Calls that a {@code @JsStringFallback} interface stands in for are not
      * checked: the build always keeps those interfaces in the bundle, as they
@@ -233,6 +274,10 @@ public final class BundleUtils {
         }
         Set<String> bundledIds = new HashSet<>();
         bundled.forEach(id -> bundledIds.add(id.asString()));
+        // A function left out because a module it imports could not be
+        // found is not missing for want of a reference to the class, and
+        // calling it says why on its own
+        bundledIds.addAll(getBundleUnresolvedImports().keySet());
         if (!bundledIds.containsAll(functionIds.get())) {
             String name = declaringType.getSimpleName();
             getLogger().error("{} declares JavaScript that was not included"
@@ -243,6 +288,106 @@ public final class BundleUtils {
                     + " to a class that the application uses.",
                     declaringType.getName(), name, name);
         }
+    }
+
+    /**
+     * Gets the functions that the frontend build left out because a module that
+     * their JavaScript imports with {@code @JsDefinitionImport} could not be
+     * found, so that calling one of them can fail on the server with the reason
+     * rather than in the browser.
+     * <p>
+     * In production mode they are read from the stats of the bundle. In
+     * development mode they are read from the file the build writes next to the
+     * generated JavaScript, which is written again when a JavaScript definition
+     * is hotswapped, so the answer follows it.
+     *
+     * @return the module as it is declared by the identifier of each function
+     *         that was left out, empty when nothing was or when there is no
+     *         running service to tell the mode by
+     */
+    public static Map<String, String> getUnresolvedJsImports() {
+        VaadinService service = VaadinService.getCurrent();
+        // A service mocked for a test may have no configuration
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
+        if (configuration == null) {
+            return Map.of();
+        }
+        if (configuration.isProductionMode()) {
+            return getBundleUnresolvedImports();
+        }
+        File frontendFolder = configuration.getFrontendFolder();
+        if (frontendFolder == null) {
+            return Map.of();
+        }
+        return readUnresolvedImports(new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITION_IDS_FILE_NAME));
+    }
+
+    private static Map<String, String> getBundleUnresolvedImports() {
+        JsonNode stats = loadStatsJson();
+        BundleUnresolvedImports cached = cachedBundleUnresolvedImports;
+        if (cached == null || cached.stats() != stats) {
+            // A bundle built before the stats listed them has none to tell
+            cached = new BundleUnresolvedImports(stats,
+                    parseUnresolvedJsImports(stats
+                            .get(JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)));
+            cachedBundleUnresolvedImports = cached;
+        }
+        return cached.unresolvedImports();
+    }
+
+    private static Map<String, String> readUnresolvedImports(File file) {
+        UnresolvedImportsFile cached = cachedUnresolvedImportsFile;
+        try {
+            if (!file.isFile()) {
+                return Map.of();
+            }
+            FileTime modified = Files.getLastModifiedTime(file.toPath());
+            long size = Files.size(file.toPath());
+            if (cached != null && cached.file().equals(file)
+                    && cached.modified().equals(modified)
+                    && cached.size() == size) {
+                return cached.unresolvedImports();
+            }
+            Map<String, String> unresolvedImports = parseUnresolvedJsImports(
+                    JacksonUtils
+                            .readTree(Files.readString(file.toPath(),
+                                    StandardCharsets.UTF_8))
+                            .get(JS_DEFINITION_UNRESOLVED_IMPORTS_KEY));
+            cachedUnresolvedImportsFile = new UnresolvedImportsFile(file,
+                    modified, size, unresolvedImports);
+            return unresolvedImports;
+        } catch (IOException | RuntimeException e) {
+            // Being written while it is read, or written by another version:
+            // a call then fails in the browser rather than on the server
+            getLogger().debug("Could not read {}", file, e);
+            return Map.of();
+        }
+    }
+
+    /**
+     * Reads the functions left out of a bundle because a module they import
+     * could not be found, as the stats or the file next to the generated
+     * JavaScript list them.
+     *
+     * @param node
+     *            the value of
+     *            {@link #JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY} or
+     *            {@link #JS_DEFINITION_UNRESOLVED_IMPORTS_KEY}, or
+     *            <code>null</code> when there is none
+     * @return the module as it is declared by the identifier of each function,
+     *         empty when the value lists none or is not an object
+     */
+    public static Map<String, String> parseUnresolvedJsImports(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return Map.of();
+        }
+        Map<String, String> unresolvedImports = new HashMap<>();
+        node.properties().forEach(entry -> unresolvedImports.put(entry.getKey(),
+                entry.getValue().asString()));
+        return Map.copyOf(unresolvedImports);
     }
 
     private static Logger getLogger() {

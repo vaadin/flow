@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -81,6 +83,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -319,10 +322,53 @@ class TaskGenerateJsDefinitionsTest {
         void stop(String reason);
     }
 
+    @JsDefinitionImport(from = "./mixin", namespace = "mixin")
+    public interface FoundImportMixin {
+        @JsExpression("mixin.run(this)")
+        void run();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "./missing.js", namespace = "missing")
+    public interface MissingModuleJs extends JsInvokers, FoundImportMixin {
+        @JsExpression("missing.init(this)")
+        void init();
+    }
+
+    // A default of Flow and one declared with @NpmPackage, which the build
+    // writes into package.json after rendering
+    @JsDefinition
+    @JsDefinitionImport(from = "lit", namespace = "lit")
+    @JsDefinitionImport(from = "@scanned/package/sub", namespace = "scanned")
+    @JsDefinitionImport(from = "scanned-dev", namespace = "scannedDev")
+    public interface DeclaredPackagesJs extends JsInvokers {
+        @JsExpression("scanned.run(lit, scannedDev)")
+        void run();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "a-package/sub", namespace = "project")
+    @JsDefinitionImport(from = "dev-package", namespace = "dev")
+    public interface ProjectPackageJs extends JsInvokers {
+        @JsExpression("project.run(dev)")
+        void run();
+    }
+
+    @JsDefinition
+    @JsDefinitionImport(from = "not-a-dependency", namespace = "missing")
+    public interface UndeclaredPackageJs extends JsInvokers {
+        @JsExpression("missing.run()")
+        void run();
+    }
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();
+        // What the importing definitions below import from the project
+        for (String module : List.of("project.js", "addon.js", "addon.css")) {
+            Files.writeString(new File(frontendFolder, module).toPath(), "");
+        }
         options = new Options(mock(Lookup.class),
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, PopoverJs.class)),
@@ -634,7 +680,11 @@ class TaskGenerateJsDefinitionsTest {
                             + TaskGenerateJsDefinitions.FUNCTION_IDS_KEY + ",",
                     BundleValidationUtil.JS_DEFINITION_NAMES_STATS_KEY
                             + ": jsDefinitionIds."
-                            + TaskGenerateJsDefinitions.NAMES_KEY + ",")) {
+                            + TaskGenerateJsDefinitions.NAMES_KEY + ",",
+                    BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY
+                            + ": jsDefinitionIds."
+                            + TaskGenerateJsDefinitions.UNRESOLVED_IMPORTS_KEY
+                            + ",")) {
                 assertTrue(content.contains(line),
                         "vite.generated.ts should write " + line);
             }
@@ -1439,7 +1489,8 @@ class TaskGenerateJsDefinitionsTest {
                         .getResource("TaskGenerateJsDefinitionsTest.class"));
         Options importingOptions = new Options(mock(Lookup.class), classFinder,
                 null).withFrontendDirectory(frontendFolder)
-                .withProductionMode(false);
+                .withProductionMode(false)
+                .withFrontendDependenciesScanner(declaringTooltip());
 
         String content = new TaskGenerateJsDefinitions(importingOptions)
                 .render().content();
@@ -1513,8 +1564,8 @@ class TaskGenerateJsDefinitionsTest {
             throws ExecutionFailedException, IOException {
         Options importingOptions = new Options(mock(Lookup.class),
                 new DefaultClassFinder(Set.of(ImportingJs.class)), null)
-                .withFrontendDirectory(frontendFolder)
-                .withProductionMode(false);
+                .withFrontendDirectory(frontendFolder).withProductionMode(false)
+                .withFrontendDependenciesScanner(declaringTooltip());
 
         new TaskGenerateJsDefinitions(importingOptions).execute();
 
@@ -1582,5 +1633,165 @@ class TaskGenerateJsDefinitionsTest {
                 .contains("import(\"Frontend/project.js\")"));
         assertTrue(TaskGenerateJsDefinitions.findMissingFromGeneratedFile(
                 options, List.of(ImportingJs.class)).isEmpty());
+    }
+
+    @Test
+    void moduleNotFound_leavesOutTheMethodsOfTheInterfaceImportingIt()
+            throws Exception {
+        // Found as Vite finds it, with an extension it tries
+        Files.writeString(new File(frontendFolder, "mixin.ts").toPath(), "");
+        Options importingOptions = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(MissingModuleJs.class)), null)
+                .withFrontendDirectory(frontendFolder)
+                .withProductionMode(false);
+        String missingId = JsCall
+                .functionId(MissingModuleJs.class.getMethod("init"));
+        String foundId = JsCall
+                .functionId(FoundImportMixin.class.getMethod("run"));
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(TaskGenerateJsDefinitions.class))
+                    .thenReturn(logger);
+
+            new TaskGenerateJsDefinitions(importingOptions).execute();
+        }
+
+        File generatedFolder = new File(frontendFolder, GENERATED);
+        String content = Files.readString(
+                new File(generatedFolder, JS_DEFINITIONS_FILE_NAME).toPath());
+        assertFalse(content.contains(missingId),
+                "the method importing the missing module should be left out: "
+                        + content);
+        assertFalse(content.contains("missing.js"), content);
+        // Inherited with imports of its own, which are found
+        assertTrue(content.contains("[\"" + foundId + "\"]"), content);
+        assertTrue(content.contains("import(\"Frontend/mixin\")"), content);
+
+        JsonNode written = JacksonUtils.getMapper()
+                .readTree(new File(generatedFolder,
+                        TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME));
+        // By identifier, as the stats of a production bundle name no class
+        assertEquals(Map.of(missingId, "./missing.js"),
+                JacksonUtils.getMapper().convertValue(written
+                        .get(TaskGenerateJsDefinitions.UNRESOLVED_IMPORTS_KEY),
+                        Map.class));
+        assertEquals(List.of(foundId), JacksonUtils
+                .<JsonNode> stream((ArrayNode) written
+                        .get(TaskGenerateJsDefinitions.FUNCTION_IDS_KEY))
+                .map(JsonNode::asString).toList());
+        verify(logger).error(argThat((String message) -> message
+                .contains(MissingModuleJs.class.getName() + ".init")
+                && message.contains("'./missing.js'")
+                && message.contains(frontendFolder.getPath())));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void npmPackageNotDeclared_isLeftOutWhileDeclaredOnesAreKept(
+            boolean withPackageJson) throws Exception {
+        File projectFolder = new File(temporaryFolder, "project");
+        projectFolder.mkdirs();
+        // A production build removes a package.json it created, so the next
+        // one starts without it
+        if (withPackageJson) {
+            Files.writeString(new File(projectFolder, "package.json").toPath(),
+                    """
+                            {"dependencies": {"a-package": "1.0.0"},
+                             "devDependencies": {"dev-package": "1.0.0"}}
+                            """);
+        }
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getPackages())
+                .thenReturn(Map.of("@scanned/package", "1.0.0"));
+        when(scanner.getDevPackages())
+                .thenReturn(Map.of("scanned-dev", "1.0.0"));
+        Options packageOptions = new Options(mock(Lookup.class),
+                new DefaultClassFinder(Set.of(DeclaredPackagesJs.class,
+                        ProjectPackageJs.class, UndeclaredPackageJs.class)),
+                projectFolder).withFrontendDirectory(frontendFolder)
+                .withProductionMode(false)
+                .withFrontendDependenciesScanner(scanner);
+
+        TaskGenerateJsDefinitions.Rendered rendered = new TaskGenerateJsDefinitions(
+                packageOptions).render();
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put(
+                JsCall.functionId(UndeclaredPackageJs.class.getMethod("run")),
+                "not-a-dependency");
+        if (!withPackageJson) {
+            expected.put(
+                    JsCall.functionId(ProjectPackageJs.class.getMethod("run")),
+                    "a-package/sub");
+        }
+        assertEquals(expected, rendered.unresolvedImports());
+        assertTrue(rendered.functionIds().containsKey(
+                JsCall.functionId(DeclaredPackagesJs.class.getMethod("run"))));
+    }
+
+    @Test
+    void updateUnresolvedImports_followsTheDefinitionsThatChanged()
+            throws Exception {
+        Files.writeString(new File(frontendFolder, "mixin.js").toPath(), "");
+        task.execute();
+        File generated = new File(new File(frontendFolder, GENERATED),
+                JS_DEFINITIONS_FILE_NAME);
+        String missingId = JsCall
+                .functionId(MissingModuleJs.class.getMethod("init"));
+        // Left out for a definition that does not change
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        Files.writeString(idsFile.toPath(),
+                """
+                        {"functionIds": [], "unresolvedImports": {"f00d": "./elsewhere.js"}}
+                        """);
+
+        // As a hotswap of the definition does
+        TaskGenerateJsDefinitions.updateUnresolvedImports(options,
+                List.of(MissingModuleJs.class));
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(MissingModuleJs.class));
+
+        assertEquals(
+                Map.of(missingId, "./missing.js", "f00d", "./elsewhere.js"),
+                readUnresolvedImports());
+        String content = Files.readString(generated.toPath());
+        assertFalse(content.contains(missingId), content);
+        assertTrue(content.contains(
+                JsCall.functionId(FoundImportMixin.class.getMethod("run"))));
+        // Not missing from the file: what is left out can not go into it
+        assertTrue(TaskGenerateJsDefinitions.findMissingFromGeneratedFile(
+                options, List.of(MissingModuleJs.class)).isEmpty());
+
+        Files.writeString(new File(frontendFolder, "missing.js").toPath(), "");
+        TaskGenerateJsDefinitions.updateUnresolvedImports(options,
+                List.of(MissingModuleJs.class));
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(MissingModuleJs.class));
+
+        assertEquals(Map.of("f00d", "./elsewhere.js"), readUnresolvedImports());
+        assertTrue(Files.readString(generated.toPath()).contains(missingId));
+    }
+
+    // What declares the npm package that ImportingJs imports
+    private static FrontendDependenciesScanner declaringTooltip() {
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getPackages())
+                .thenReturn(Map.of("@vaadin/tooltip", "1.0.0"));
+        return scanner;
+    }
+
+    private Map<?, ?> readUnresolvedImports() throws IOException {
+        JsonNode unresolved = JacksonUtils.getMapper()
+                .readTree(new File(new File(frontendFolder, GENERATED),
+                        TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME))
+                .get(TaskGenerateJsDefinitions.UNRESOLVED_IMPORTS_KEY);
+        return unresolved == null ? Map.of()
+                : JacksonUtils.getMapper().convertValue(unresolved, Map.class);
     }
 }

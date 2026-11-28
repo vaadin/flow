@@ -256,7 +256,12 @@ function statsExtracterPlugin(): PluginOption {
       );
       const generatedImports = Array.from(generatedImportsSet).sort();
 
-      const jsDefinitionIds: { functionIds?: string[]; names?: Record<string, string>; imports?: string[] } =
+      const jsDefinitionIds: {
+        functionIds?: string[];
+        names?: Record<string, string>;
+        imports?: string[];
+        unresolvedImports?: Record<string, string>;
+      } =
         existsSync(jsDefinitionIdsFile) ? JSON.parse(readFileSync(jsDefinitionIdsFile, { encoding: 'utf-8' })) : {};
       // The modules that JavaScript definitions import are frontend files of
       // the bundle too, so their content is hashed as for the imports above
@@ -396,6 +401,9 @@ function statsExtracterPlugin(): PluginOption {
         frontendHashes: frontendFiles,
         jsDefinitionFunctionIds: jsDefinitionIds.functionIds,
         jsDefinitionNames: jsDefinitionIds.names,
+        // The functions left out because a module they import was not found,
+        // with the module, so that calling one fails on the server
+        jsDefinitionUnresolvedImports: jsDefinitionIds.unresolvedImports,
         themeJsonContents: themeJsonContents,
         pwaOfflinePath: settings.offlinePath,
         pwaOfflineEnabled: settings.offlineEnabled,
