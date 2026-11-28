@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -100,6 +101,23 @@ class HierarchicalDataCommunicatorDataRefreshTest
         clearInvocations(dataCommunicatorSpy);
 
         treeDataProvider.refreshAll();
+        verify(dataCommunicatorSpy).reset();
+    }
+
+    @Test
+    void itemsAddedOrRemovedThroughDataProvider_resetMethodCalled() {
+        var dataCommunicatorSpy = spy(dataCommunicator);
+        dataCommunicatorSpy.setDataProvider(treeDataProvider, null);
+        clearInvocations(dataCommunicatorSpy);
+
+        // The events do not name the parent of the items, so the whole
+        // hierarchy is reset
+        var item = new Item("Item 0");
+        treeDataProvider.notifyItemsAdded(List.of(item));
+        verify(dataCommunicatorSpy).reset();
+
+        clearInvocations(dataCommunicatorSpy);
+        treeDataProvider.notifyItemsRemoved(List.of(item));
         verify(dataCommunicatorSpy).reset();
     }
 

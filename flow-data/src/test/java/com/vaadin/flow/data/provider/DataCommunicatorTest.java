@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -56,6 +57,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -113,6 +116,7 @@ public class DataCommunicatorTest {
 
     public Range lastClear = null;
     public Range lastSet = null;
+    public List<JsonNode> lastSetItems = null;
     public int lastUpdateId = -1;
     private int pageSize;
 
@@ -139,6 +143,7 @@ public class DataCommunicatorTest {
             @Override
             public void set(int start, List<JsonNode> items) {
                 lastSet = Range.withLength(start, items.size());
+                lastSetItems = items;
             }
 
             @Override
@@ -444,6 +449,46 @@ public class DataCommunicatorTest {
                 }));
         assertThat(ex.getMessage(), containsString(
                 "exceeds the limit specified by the query (4)."));
+    }
+
+    @Test
+    void itemsAddedAndRemoved_viewportReloadedWithoutDestroyingOtherItems() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            items.add(new Item(i));
+        }
+        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+        clearInvocations(dataGenerator);
+        Item removed = items.get(1);
+
+        Item added = new Item(42);
+        items.add(2, added);
+        dataProvider.notifyItemsAdded(List.of(added));
+        fakeClientCommunication();
+
+        assertEquals(List.of(0, 1, 42, 2, 3), getLastSetItemIds());
+        assertEquals(11, dataCommunicator.getItemCount());
+
+        items.remove(removed);
+        dataProvider.notifyItemsRemoved(List.of(removed));
+        fakeClientCommunication();
+
+        assertEquals(List.of(0, 42, 2, 3, 4), getLastSetItemIds());
+        assertEquals(10, dataCommunicator.getItemCount());
+        // Like when scrolling, the removed item is kept until the client has
+        // confirmed the update, since it can still send events for it
+        verify(dataGenerator, never()).destroyData(removed);
+        dataCommunicator.confirmUpdate(lastUpdateId);
+        verify(dataGenerator).destroyData(removed);
+        verify(dataGenerator, never()).destroyAllData();
+    }
+
+    private List<Integer> getLastSetItemIds() {
+        return lastSetItems.stream().map(json -> dataCommunicator.getKeyMapper()
+                .get(json.get("key").asString()).id).toList();
     }
 
     @ParameterizedTest

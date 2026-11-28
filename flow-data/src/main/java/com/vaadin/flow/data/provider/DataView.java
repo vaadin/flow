@@ -16,6 +16,9 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -128,6 +131,88 @@ public interface DataView<T> extends Serializable {
      * @since 5.0.2
      */
     void refreshAll();
+
+    /**
+     * Notifies the component that the item has been added to the data, while
+     * all other items are unchanged. Call it after the item is stored in the
+     * backend.
+     * <p>
+     * Unlike {@link #refreshAll()}, the component keeps the state of the other
+     * items, such as components rendered for them, and only updates the item
+     * count and the visible items.
+     * <p>
+     * This method delegates to
+     * {@link DataProvider#notifyItemsAdded(java.util.Collection)}. The default
+     * implementation calls {@link #refreshAll()}.
+     *
+     * @param item
+     *            the added item, not {@code null}
+     */
+    default void notifyItemAdded(T item) {
+        notifyItemsAdded(List.of(item));
+    }
+
+    /**
+     * Notifies the component that the items have been added to the data, while
+     * all other items are unchanged. Call it after the items are stored in the
+     * backend.
+     * <p>
+     * Unlike {@link #refreshAll()}, the component keeps the state of the other
+     * items, such as components rendered for them, and only updates the item
+     * count and the visible items.
+     * <p>
+     * This method delegates to
+     * {@link DataProvider#notifyItemsAdded(java.util.Collection)}. The default
+     * implementation calls {@link #refreshAll()}.
+     *
+     * @param items
+     *            the added items, not {@code null}
+     */
+    default void notifyItemsAdded(Collection<T> items) {
+        Objects.requireNonNull(items, "Added items cannot be null");
+        refreshAll();
+    }
+
+    /**
+     * Notifies the component that the item has been removed from the data,
+     * while all other items are unchanged. Call it after the item is deleted
+     * from the backend.
+     * <p>
+     * Unlike {@link #refreshAll()}, the component keeps the state of the other
+     * items, such as components rendered for them, and only updates the item
+     * count and the visible items.
+     * <p>
+     * This method delegates to
+     * {@link DataProvider#notifyItemsRemoved(java.util.Collection)}. The
+     * default implementation calls {@link #refreshAll()}.
+     *
+     * @param item
+     *            the removed item, not {@code null}
+     */
+    default void notifyItemRemoved(T item) {
+        notifyItemsRemoved(List.of(item));
+    }
+
+    /**
+     * Notifies the component that the items have been removed from the data,
+     * while all other items are unchanged. Call it after the items are deleted
+     * from the backend.
+     * <p>
+     * Unlike {@link #refreshAll()}, the component keeps the state of the other
+     * items, such as components rendered for them, and only updates the item
+     * count and the visible items.
+     * <p>
+     * This method delegates to
+     * {@link DataProvider#notifyItemsRemoved(java.util.Collection)}. The
+     * default implementation calls {@link #refreshAll()}.
+     *
+     * @param items
+     *            the removed items, not {@code null}
+     */
+    default void notifyItemsRemoved(Collection<T> items) {
+        Objects.requireNonNull(items, "Removed items cannot be null");
+        refreshAll();
+    }
 
     /**
      * Add an item count change listener that is fired when the item count

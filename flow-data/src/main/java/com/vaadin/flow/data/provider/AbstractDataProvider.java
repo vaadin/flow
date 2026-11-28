@@ -17,12 +17,15 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemsAddedEvent;
+import com.vaadin.flow.data.provider.DataChangeEvent.ItemsRemovedEvent;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
@@ -70,6 +73,16 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     @Override
     public void refreshAll() {
         fireEvent(new DataChangeEvent<>(this));
+    }
+
+    @Override
+    public void notifyItemsAdded(Collection<T> items) {
+        fireEvent(new ItemsAddedEvent<>(this, items));
+    }
+
+    @Override
+    public void notifyItemsRemoved(Collection<T> items) {
+        fireEvent(new ItemsRemovedEvent<>(this, items));
     }
 
     @Override

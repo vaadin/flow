@@ -191,6 +191,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
+     * Resets the whole hierarchy, since the event does not tell under which
+     * parent the items were added or removed.
+     */
+    @Override
+    protected void handleItemsAddedOrRemovedEvent(DataChangeEvent<T> event) {
+        reset();
+    }
+
+    /**
      * Replaces the cached item with a new instance and schedules a client
      * update to re-render this item.
      * 

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
@@ -101,4 +104,22 @@ class ConfigurableFilterDataProviderWrapperTest {
                 "Only zyz filter should be used");
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    void notifyItemsAddedAndRemoved_forwardedToWrappedDataProvider() {
+        List<DataChangeEvent<StrBean>> events = new ArrayList<>();
+        backEndProvider.addDataProviderListener(events::add);
+        List<StrBean> items = StrBean.generateRandomBeans(1);
+
+        configurableVoid.notifyItemsAdded(items);
+        configurableVoid.notifyItemsRemoved(items);
+
+        assertEquals(2, events.size());
+        assertEquals(items,
+                ((DataChangeEvent.ItemsAddedEvent<StrBean>) events.get(0))
+                        .getItems());
+        assertEquals(items,
+                ((DataChangeEvent.ItemsRemovedEvent<StrBean>) events.get(1))
+                        .getItems());
+    }
 }

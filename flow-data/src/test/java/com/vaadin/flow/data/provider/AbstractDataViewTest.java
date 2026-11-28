@@ -112,6 +112,24 @@ class AbstractDataViewTest {
     }
 
     @Test
+    void notifyItemAddedAndRemoved_listenersGetChangedItems() {
+        List<DataChangeEvent<Item>> events = new ArrayList<>();
+        dataProvider.addDataProviderListener(events::add);
+        Item item = new Item(4L, "new", "description4");
+
+        dataView.notifyItemAdded(item);
+        dataView.notifyItemRemoved(item);
+
+        assertEquals(List.of(item),
+                ((DataChangeEvent.ItemsAddedEvent<Item>) events.get(0))
+                        .getItems());
+        assertEquals(List.of(item),
+                ((DataChangeEvent.ItemsRemovedEvent<Item>) events.get(1))
+                        .getItems());
+        assertEquals(2, events.size());
+    }
+
+    @Test
     void verifyDataProviderType_wrappedDataProviderIsSupported() {
         // starting with EmptyDataProvider to bypass checking too early in
         // the DataViewImpl constructor.
