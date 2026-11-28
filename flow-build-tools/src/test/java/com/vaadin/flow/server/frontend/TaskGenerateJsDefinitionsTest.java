@@ -340,15 +340,17 @@ class TaskGenerateJsDefinitionsTest {
     @JsDefinition
     @JsDefinitionImport(from = "lit", namespace = "lit")
     @JsDefinitionImport(from = "@scanned/package/sub", namespace = "scanned")
+    @JsDefinitionImport(from = "scanned-dev", namespace = "scannedDev")
     public interface DeclaredPackagesJs extends JsInvokers {
-        @JsExpression("scanned.run(lit)")
+        @JsExpression("scanned.run(lit, scannedDev)")
         void run();
     }
 
     @JsDefinition
     @JsDefinitionImport(from = "a-package/sub", namespace = "project")
+    @JsDefinitionImport(from = "dev-package", namespace = "dev")
     public interface ProjectPackageJs extends JsInvokers {
-        @JsExpression("project.run()")
+        @JsExpression("project.run(dev)")
         void run();
     }
 
@@ -1696,12 +1698,17 @@ class TaskGenerateJsDefinitionsTest {
         // one starts without it
         if (withPackageJson) {
             Files.writeString(new File(projectFolder, "package.json").toPath(),
-                    "{\"dependencies\": {\"a-package\": \"1.0.0\"}}");
+                    """
+                            {"dependencies": {"a-package": "1.0.0"},
+                             "devDependencies": {"dev-package": "1.0.0"}}
+                            """);
         }
         FrontendDependenciesScanner scanner = mock(
                 FrontendDependenciesScanner.class);
         when(scanner.getPackages())
                 .thenReturn(Map.of("@scanned/package", "1.0.0"));
+        when(scanner.getDevPackages())
+                .thenReturn(Map.of("scanned-dev", "1.0.0"));
         Options packageOptions = new Options(mock(Lookup.class),
                 new DefaultClassFinder(Set.of(DeclaredPackagesJs.class,
                         ProjectPackageJs.class, UndeclaredPackageJs.class)),
@@ -1735,6 +1742,13 @@ class TaskGenerateJsDefinitionsTest {
                 JS_DEFINITIONS_FILE_NAME);
         String missingId = JsCall
                 .functionId(MissingModuleJs.class.getMethod("init"));
+        // Left out for a definition that does not change
+        File idsFile = new File(new File(frontendFolder, GENERATED),
+                TaskGenerateJsDefinitions.FUNCTION_IDS_FILE_NAME);
+        Files.writeString(idsFile.toPath(),
+                """
+                        {"functionIds": [], "unresolvedImports": {"f00d": "./elsewhere.js"}}
+                        """);
 
         // As a hotswap of the definition does
         TaskGenerateJsDefinitions.updateUnresolvedImports(options,
@@ -1742,7 +1756,8 @@ class TaskGenerateJsDefinitionsTest {
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(MissingModuleJs.class));
 
-        assertEquals(Map.of(missingId, "./missing.js"),
+        assertEquals(
+                Map.of(missingId, "./missing.js", "f00d", "./elsewhere.js"),
                 readUnresolvedImports());
         String content = Files.readString(generated.toPath());
         assertFalse(content.contains(missingId), content);
@@ -1758,7 +1773,7 @@ class TaskGenerateJsDefinitionsTest {
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(MissingModuleJs.class));
 
-        assertEquals(Map.of(), readUnresolvedImports());
+        assertEquals(Map.of("f00d", "./elsewhere.js"), readUnresolvedImports());
         assertTrue(Files.readString(generated.toPath()).contains(missingId));
     }
 

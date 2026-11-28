@@ -330,8 +330,9 @@ public final class BundleUtils {
         BundleUnresolvedImports cached = cachedBundleUnresolvedImports;
         if (cached == null || cached.stats() != stats) {
             // A bundle built before the stats listed them has none to tell
-            cached = new BundleUnresolvedImports(stats, toUnresolvedImports(
-                    stats.get(JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)));
+            cached = new BundleUnresolvedImports(stats,
+                    parseUnresolvedJsImports(stats
+                            .get(JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)));
             cachedBundleUnresolvedImports = cached;
         }
         return cached.unresolvedImports();
@@ -350,7 +351,7 @@ public final class BundleUtils {
                     && cached.size() == size) {
                 return cached.unresolvedImports();
             }
-            Map<String, String> unresolvedImports = toUnresolvedImports(
+            Map<String, String> unresolvedImports = parseUnresolvedJsImports(
                     JacksonUtils
                             .readTree(Files.readString(file.toPath(),
                                     StandardCharsets.UTF_8))
@@ -366,7 +367,20 @@ public final class BundleUtils {
         }
     }
 
-    private static Map<String, String> toUnresolvedImports(JsonNode node) {
+    /**
+     * Reads the functions left out of a bundle because a module they import
+     * could not be found, as the stats or the file next to the generated
+     * JavaScript list them.
+     *
+     * @param node
+     *            the value of
+     *            {@link #JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY} or
+     *            {@link #JS_DEFINITION_UNRESOLVED_IMPORTS_KEY}, or
+     *            <code>null</code> when there is none
+     * @return the module as it is declared by the identifier of each function,
+     *         empty when the value lists none or is not an object
+     */
+    public static Map<String, String> parseUnresolvedJsImports(JsonNode node) {
         if (node == null || !node.isObject()) {
             return Map.of();
         }

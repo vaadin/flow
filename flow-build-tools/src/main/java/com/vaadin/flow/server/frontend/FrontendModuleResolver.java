@@ -190,17 +190,18 @@ class FrontendModuleResolver {
      * rather than fail in the frontend build, which does not say what declared
      * the import.
      * <p>
-     * A path starting with {@code ./} names a file of the frontend folder or a
-     * frontend file of a jar, which is looked for as Vite looks for it: as it
-     * is, with one of the extensions Vite tries, and as an index file of a
-     * folder of that name. A query, such as {@code ?inline}, is not part of the
-     * name of the file. Any other path that is not a file of the frontend
-     * folder or of a jar names an npm package, which has to be one that the
-     * project depends on: npm installs packages after this is asked, so what is
-     * installed is not what counts. Anything else, such as an alias of the
-     * frontend folder or a relative path that leaves it, is taken to resolve,
-     * as is any package when the packages the project depends on can not be
-     * told.
+     * A path starting with {@code ./} names a frontend file of a jar, which the
+     * path has to name as it is, or a file of the frontend folder, which is
+     * looked for as Vite looks for it: as it is, with one of the extensions
+     * Vite tries, and as an index file of a folder of that name. A query, such
+     * as {@code ?inline}, is not part of the name of the file. Any other path
+     * that is not a file of the frontend folder or of a jar names an npm
+     * package, which has to be one that the project depends on: npm installs
+     * packages after this is asked, so what is installed is not what counts.
+     * Anything else, such as an alias of the frontend folder, a subpath import
+     * starting with {@code #} or a relative path that leaves the frontend
+     * folder, is taken to resolve, as is any package when the packages the
+     * project depends on can not be told.
      *
      * @param modulePath
      *            the path as it is declared, not <code>null</code>
@@ -212,23 +213,28 @@ class FrontendModuleResolver {
         String path = stripQuery(modulePath);
         if (path.startsWith("./")) {
             String resource = STARTING_DOT_SLASH.matcher(path).replaceFirst("");
-            if (findCandidates(resource).stream().anyMatch(this::fileExists)) {
+            // A frontend file of a jar is imported from where the build
+            // copies it only when the path names the file as it is, see
+            // resolveResource, so Vite tries nothing else for it
+            if (hasMetaInfResource(resource) || findCandidates(resource)
+                    .stream().anyMatch(this::isFrontendFolderFile)) {
                 return null;
             }
-            return "no file '" + resource + "' (or with one of the extensions "
-                    + String.join(", ", VITE_EXTENSIONS)
-                    + ", or as an index file of a folder of that name) is in the frontend folder '"
-                    + frontendDirectory + "' or in "
+            return "no file '" + resource + "' is in "
                     + RESOURCES_FRONTEND_DEFAULT + " or "
                     + COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
-                    + " of the class path";
+                    + " of the class path, and neither it nor a file with one of the extensions "
+                    + String.join(", ", VITE_EXTENSIONS)
+                    + " or an index file of a folder of that name is in the frontend folder '"
+                    + frontendDirectory + "'";
         }
-        // A path relative to somewhere else, a URL or a module with a scheme
-        // such as virtual: is resolved by Vite or a plugin, which can not be
-        // told from here
-        if (path.startsWith(".") || path.startsWith("/") || path.contains(":")
+        // A path relative to somewhere else, a URL, a module with a scheme
+        // such as virtual: or a subpath import starting with # is resolved
+        // by Vite, a plugin or package.json, which can not be told from here
+        if (path.startsWith(".") || path.startsWith("/") || path.startsWith("#")
+                || path.contains(":")
                 || VITE_ALIASES.stream().anyMatch(path::startsWith)
-                || fileExists(path)) {
+                || isFrontendFolderFile(path) || hasMetaInfResource(path)) {
             return null;
         }
         String packageName = getPackageName(path);
@@ -268,10 +274,9 @@ class FrontendModuleResolver {
         return candidates;
     }
 
-    private boolean fileExists(String resource) {
+    private boolean isFrontendFolderFile(String resource) {
         return !resource.isEmpty()
-                && (new File(frontendDirectory, resource).isFile()
-                        || hasMetaInfResource(resource));
+                && new File(frontendDirectory, resource).isFile();
     }
 
     /**

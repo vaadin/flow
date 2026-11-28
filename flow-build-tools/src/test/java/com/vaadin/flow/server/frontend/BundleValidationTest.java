@@ -1332,9 +1332,7 @@ class BundleValidationTest {
         assertTrue(BundleValidationUtil.needsBuild(options, depScanner, mode),
                 "the stats should list a function that is left out now");
 
-        stats.putObject(BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY)
-                .put(apply, "./definition-missing.js");
-        setupFrontendUtilsMock(stats);
+        // Stats that list nothing left out, as there is nothing now
         File frontend = options.getFrontendDirectory();
         FileUtils.forceMkdir(frontend);
         Files.writeString(new File(frontend, "definition-missing.js").toPath(),

@@ -1013,12 +1013,8 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                     ? JacksonUtils.readTree(Files.readString(idsFile.toPath(),
                             StandardCharsets.UTF_8))
                     : JacksonUtils.createObjectNode();
-            Map<String, String> unresolvedImports = new TreeMap<>();
-            JsonNode listed = ids.get(UNRESOLVED_IMPORTS_KEY);
-            if (listed != null && listed.isObject()) {
-                listed.properties().forEach(entry -> unresolvedImports
-                        .put(entry.getKey(), entry.getValue().asString()));
-            }
+            Map<String, String> unresolvedImports = new TreeMap<>(BundleUtils
+                    .parseUnresolvedJsImports(ids.get(UNRESOLVED_IMPORTS_KEY)));
             definitions.stream().sorted(Comparator.comparing(Class::getName))
                     .flatMap(definition -> renderFunctions(definition, true,
                             importResolver).stream())

@@ -1127,15 +1127,9 @@ public final class BundleValidationUtil {
             // a call of it by the stats, so they have to list what is left out
             // now. Once the module is there, the function is needed and
             // missing from the bundle, which the check above finds.
-            Map<String, String> bundledUnresolved = new HashMap<>();
-            JsonNode unresolvedInStats = statsJson.get(
-                    BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY);
-            if (unresolvedInStats != null && unresolvedInStats.isObject()) {
-                unresolvedInStats.properties()
-                        .forEach(entry -> bundledUnresolved.put(entry.getKey(),
-                                entry.getValue().asString()));
-            }
-            if (!bundledUnresolved.equals(rendered.unresolvedImports())) {
+            if (!BundleUtils.parseUnresolvedJsImports(statsJson.get(
+                    BundleUtils.JS_DEFINITION_UNRESOLVED_IMPORTS_STATS_KEY))
+                    .equals(rendered.unresolvedImports())) {
                 getLogger().info(
                         "Detected a change in the JavaScript left out of the bundle because a module it imports can not be found");
                 return true;

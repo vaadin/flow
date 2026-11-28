@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +67,8 @@ class FrontendModuleResolverTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "./probe", "./probe.ts", "./styles.css?inline",
-            "./folder", "./folder/", "./addon", "./addon.js", "./legacy",
-            "declared", "declared/sub/path.js", "@scope/declared",
+            "./folder", "./folder/", "./addon.js", "./legacy/index.mjs",
+            "#internal", "declared", "declared/sub/path.js", "@scope/declared",
             "@scope/declared/sub", "Frontend/missing.js",
             "@vaadin/flow-frontend/missing.js", "../outside.js", "styles.css" })
     void foundOrNotToBeTold_resolves(String module) {
@@ -77,7 +78,9 @@ class FrontendModuleResolverTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "./missing.js", "./probe.js", "./folder/other",
-            "./styles.css.map?inline" })
+            "./styles.css.map?inline",
+            // Imported from where the build copies jar files only as named
+            "./addon", "./legacy" })
     void fileNotFound_saysWhereItWasLookedFor(String module) {
         String reason = createResolver(Set.of()).findUnresolvableReason(module);
 
@@ -88,16 +91,14 @@ class FrontendModuleResolverTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "undeclared", "undeclared/sub",
-            "@scope/undeclared/sub", "@scope/declared-not" })
-    void packageNotDeclared_namesThePackage(String module) {
+    @CsvSource({ "undeclared, undeclared", "undeclared/sub, undeclared",
+            "@scope/undeclared/sub, @scope/undeclared",
+            "@scope/declared-not, @scope/declared-not" })
+    void packageNotDeclared_namesThePackage(String module, String packageName) {
         String reason = createResolver(Set.of("declared", "@scope/declared"))
                 .findUnresolvableReason(module);
 
         assertNotNull(reason, module);
-        String packageName = module.startsWith("@")
-                ? module.split("/")[0] + "/" + module.split("/")[1]
-                : module.split("/")[0];
         assertTrue(reason.contains("'" + packageName + "'"), reason);
     }
 
